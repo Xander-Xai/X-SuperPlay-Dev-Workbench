@@ -2,6 +2,7 @@ import {TYPES,STACKS,AGENTS,ADDONS,SKILLS,STAGES,SOURCE} from "./catalog.mjs";
 import {assemble,xengDryRun,toMarkdown,toManifest} from "./engine.mjs";
 import {skillKitCommand,skillsForStage} from "./install-contract.mjs";
 import {starterMarkdown} from "./starter.mjs";
+import {normalizeBaseline} from "./baseline.mjs";
 
 const one=(selector)=>document.querySelector(selector);
 const all=(selector)=>[...document.querySelectorAll(selector)];
@@ -12,7 +13,7 @@ const newElement=(tag,cls,text)=>{
   return el;
 };
 let kind="mini-program", activeStage=0, activeView="planner";
-let generatedAt=""; let toastTimeout;
+let generatedAt=""; let toastTimeout; let localBaseline=null;
 const names={saas:"SaaS 应用",enterprise:"企业内部系统","mini-program":"微信预约服务小程序",app:"移动端应用"};
 
 function toast(message) {
@@ -24,7 +25,8 @@ function readConfig() {
     type:kind,stack:one("#project-stack").value,agent:one("#project-agent").value,
     addons:all("#addon-list input:checked").map(x=>x.value),
     name:one("#project-name").value,description:one("#project-description").value,
-    tier:one("#project-tier").value,mode:one("#project-mode").value
+    tier:one("#project-tier").value,mode:one("#project-mode").value,
+    baseline:localBaseline && localBaseline.projectType===kind && one("#project-mode").value==="existing"?localBaseline:null
   };
 }
 function plan() {return assemble(readConfig());}
@@ -79,6 +81,9 @@ function renderSummary(p){
     const li=newElement("li");li.append(newElement("span","check-marker","○"),newElement("span","",x));checks.append(li);
   });
   one("#app-stack-field").hidden=kind!=="app";
+  one("#baseline-state").textContent=p.config.baseline
+    ? "已导入只读基线："+p.config.baseline.name+" · HEAD "+p.config.baseline.headSha.slice(0,12)+" · 测试 NOT_RUN"
+    : "未导入基线。可本地运行 project-probe.mjs 并选择 JSON；不会上传。";
 }
 function renderStages(p){
   const list=one("#stage-list");list.replaceChildren();
@@ -221,6 +226,22 @@ function init() {
   all("[data-view]").forEach(btn=>btn.addEventListener("click",()=>{
     switchView(btn.dataset.view);location.hash=btn.dataset.view;
   }));
+  one("#baseline-file").addEventListener("change",async()=>{
+    const input=one("#baseline-file");
+    const file=input.files?.[0];if(!file)return;
+    try{
+      if(file.size>65536)throw Error("文件过大：基线报告最多 64KB");
+      const normalized=normalizeBaseline(JSON.parse(await file.text()));
+      localBaseline=normalized;
+      kind=normalized.projectType;
+      one("#project-mode").value="existing";
+      if(Object.values(names).includes(one("#project-name").value))
+        one("#project-name").value=normalized.name;
+      activeStage=0;render();
+      toast("已本地导入只读基线；并未运行测试或上传数据。");
+    }catch(e){localBaseline=null;render();toast("基线导入失败："+e.message);}
+    finally{input.value="";}
+  });
   one("#project-name").addEventListener("input",render);
   one("#project-description").addEventListener("input",render);
   for(const id of ["#project-mode","#project-agent","#project-tier","#project-stack"])

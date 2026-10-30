@@ -9,7 +9,8 @@
     "test": "node --test",
     "check": "node tools/check.mjs",
     "verify": "npm run check && npm test",
-    "build": "node tools/build-site.mjs"
+    "build": "node tools/build-site.mjs",
+    "probe": "node tools/project-probe.mjs"
   },
   "engines": {
     "node": ">=20"

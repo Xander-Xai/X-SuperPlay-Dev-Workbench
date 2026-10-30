@@ -67,6 +67,7 @@
                   <div class="form-field" id="app-stack-field" hidden><label for="project-stack">APP 技术路线</label><select id="project-stack"></select></div>
                 </div>
                 <div class="form-field"><label>扩展工程能力 <small>可选 · 叠加 Profile</small></label><div class="addon-list" id="addon-list"></div></div>
+                <div class="form-field"><label for="baseline-file">导入本地工程基线（可选） <small>已有项目 · 纯浏览器解析，不上传</small></label><input id="baseline-file" type="file" accept=".json,application/json" /><p id="baseline-state" class="install-disclaimer">先在本地执行 project-probe.mjs，选择 JSON 报告导入。未导入时所有运行证据保持 NOT_RUN。</p></div>
                 <div class="config-foot"><span>默认仅生成方案，任何本地写入与安装都需另外确认。</span><button class="primary-button" id="generate" type="button">生成开发方案 <span>↗</span></button></div>
               </section>
               <section class="card result-card" aria-label="项目装配摘要">
