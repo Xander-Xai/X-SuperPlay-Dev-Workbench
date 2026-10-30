@@ -5,7 +5,8 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'none'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0a121b" />
-  <meta name="description" content="选择 SaaS、企业自研、小程序或 APP 项目，装配分阶段工程流程、Profiles 与候选 Skills，生成可审查的开发方案。" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%230a121b'/%3E%3Ctext x='8' y='12' font-family='monospace' font-size='11' fill='%2366e0c2' text-anchor='middle'%3EX%3C/text%3E%3C/svg%3E" />
+  <meta name="description" content="X-SuperPlay Dev Workbench：选择项目类型与任务，组合 Profiles 与候选 Skills，生成十一阶段工程路线、工作区资产与可审查的 Agent 交接。" />
   <title>X-SuperPlay · Dev Workbench</title>
   <link rel="stylesheet" href="./styles.css" />
   <script type="module" src="./src/app.mjs"></script>
@@ -13,44 +14,46 @@
 <body>
   <div class="shell">
     <aside class="sidebar" aria-label="主导航">
-      <a class="brand" href="#planner">
+      <a class="brand" href="#launcher">
         <span class="brand-mark">X<span>·</span></span>
         <span><strong>SUPERPLAY</strong><small>DEV WORKBENCH / LAB</small></span>
       </a>
       <div class="side-label">WORKSPACE</div>
       <nav class="nav" id="nav">
-        <button class="nav-item active" data-view="planner" type="button"><span>◫</span> 开发工作台 <small>01</small></button>
-        <button class="nav-item" data-view="skills" type="button"><span>◇</span> Skills 能力库 <small>02</small></button>
-        <button class="nav-item" data-view="quality" type="button"><span>◉</span> 工程验收 <small>03</small></button>
-        <button class="nav-item" data-view="feedback" type="button"><span>↗</span> 方法论迭代 <small>04</small></button>
+        <button class="nav-item active" data-view="launcher" type="button"><span>◫</span> 项目启动器 <small>01</small></button>
+        <button class="nav-item" data-view="workflow" type="button"><span>⌗</span> 工作流浏览器 <small>02</small></button>
+        <button class="nav-item" data-view="skills" type="button"><span>◇</span> Skills 能力库 <small>03</small></button>
+        <button class="nav-item" data-view="workspace" type="button"><span>▤</span> 项目工作区 <small>04</small></button>
+        <button class="nav-item" data-view="evidence" type="button"><span>◉</span> 证据与改进 <small>05</small></button>
       </nav>
-      <div class="side-label side-label-second">SOURCE OF TRUTH</div>
+      <div class="side-label side-label-second">OWNERSHIP</div>
       <div class="source-tile">
-        <span class="tiny-dot"></span><strong>Engineering OS</strong>
-        <p>规范与 Skills 的唯一权威源。当前为手工整理的公开元数据快照。</p>
-        <a href="https://github.com/Xander-Xai/X-SuperPlay-AI-Engineering-OS" target="_blank" rel="noopener noreferrer">查看源仓库（需权限） ↗</a>
+        <span class="tiny-dot"></span><strong>Workbench 0.2.0</strong>
+        <p>本仓库是当前工程运行时所有者。旧 Engineering OS 仅为历史来源，运行时不依赖它。</p>
+        <a href="https://github.com/Xander-Xai/X-SuperPlay-Dev-Workbench" target="_blank" rel="noopener noreferrer">当前工程所有者 ↗</a>
       </div>
       <div class="sidebar-bottom">
-        <span class="status-dot"></span> MVP · Local first
-        <p>不会连接你的本地项目、执行安装或自动部署。</p>
+        <span class="status-dot"></span> LOCAL FIRST · NO NETWORK
+        <p>不连接你的本地项目、不执行安装、不自动部署。所有证据默认 NOT_RUN。</p>
       </div>
     </aside>
     <div class="workspace">
       <header class="topbar">
-        <div class="breadcrumb">X-SUPERPLAY <span>/</span> ENGINEERING <span>/</span> <strong id="breadcrumb">WORKBENCH</strong></div>
-        <div class="top-actions"><span class="build-marker">SOURCE PINNED</span><a href="https://github.com/Xander-Xai/X-SuperPlay-Dev-Workbench" target="_blank" rel="noopener noreferrer" class="github-link">GitHub ↗</a></div>
+        <div class="breadcrumb">X-SUPERPLAY <span>/</span> ENGINEERING <span>/</span> <strong id="breadcrumb">LAUNCHER</strong></div>
+        <div class="top-actions"><span class="build-marker">RUNTIME 0.2.0</span><a href="https://github.com/Xander-Xai/X-SuperPlay-Dev-Workbench" target="_blank" rel="noopener noreferrer" class="github-link">GitHub ↗</a></div>
       </header>
       <main>
-        <section class="view active" id="view-planner">
+        <!-- 01 · PROJECT LAUNCHER -->
+        <section class="view active" id="view-launcher">
           <div class="hero">
             <div class="eyebrow"><span class="pulse"></span> AI-NATIVE SOFTWARE DELIVERY SYSTEM</div>
-            <h1>把开发方法论，变成<br /><em>真正可以执行的流程。</em></h1>
-            <p>选定项目类型，组合工程 Profiles 与候选 Skills，按十一阶段生成路线、验收门禁和开发方案。先验证，再交付。</p>
-            <div class="hero-meta"><span>4 种开发路线</span><i></i><span>11 个工程阶段</span><i></i><span>8 个候选 Skills</span></div>
+            <h1>从项目类型到可执行路线，<br /><em>一次装配完成。</em></h1>
+            <p>选择项目类型、项目状态与任务类型，组合工程 Profiles 与候选 Skills，生成十一阶段路线、工作区资产和 Agent 交接。先验证，再交付。</p>
+            <div class="hero-meta"><span>4 类交付对象</span><i></i><span>11 个工程阶段</span><i></i><span>13 种任务路由</span><i></i><span>8 个候选 Skills</span></div>
             <div class="hero-decoration" aria-hidden="true"><div class="globe">◈</div><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div></div>
           </div>
           <div class="content-inner">
-            <div class="section-heading"><span class="index">01 / CONFIGURE</span><h2>新建开发方案</h2><p>根据交付对象组合规范，而不是套一份通用模板。</p></div>
+            <div class="section-heading"><span class="index">01 / CONFIGURE</span><h2>新建开发方案</h2><p>根据交付对象与任务性质组合规范，而不是套一份通用模板。</p></div>
             <div class="section-subtitle">选择项目类型 <span>REQUIRED</span></div>
             <div class="route-grid" id="route-grid"></div>
             <div class="config-layout">
@@ -60,13 +63,16 @@
                 <div class="form-field"><label for="project-description">需求描述</label><textarea id="project-description" rows="4" maxlength="2000" placeholder="谁在什么场景下，需要解决什么问题？">用户登录、选择服务时间段、提交预约并在管理后台查询记录；需校验重复预约和越权访问。</textarea></div>
                 <div class="form-row">
                   <div class="form-field"><label for="project-mode">项目状态</label><select id="project-mode"><option value="new">从零开发</option><option value="existing">接手 / 继续迭代</option></select></div>
-                  <div class="form-field"><label for="project-agent">AI Coding Agent</label><select id="project-agent"></select></div>
+                  <div class="form-field"><label for="project-task">任务类型</label><select id="project-task"></select></div>
                 </div>
                 <div class="form-row">
-                  <div class="form-field"><label for="project-tier">工程等级</label><select id="project-tier"><option value="A">A · 生产级</option><option value="B" selected>B · 实验与交付验证</option><option value="C">C · 学习实验</option></select></div>
-                  <div class="form-field" id="app-stack-field" hidden><label for="project-stack">APP 技术路线</label><select id="project-stack"></select></div>
+                  <div class="form-field"><label for="project-agent">AI Coding Agent</label><select id="project-agent"></select></div>
+                  <div class="form-field"><label for="project-tier">工程等级</label><select id="project-tier"><option value="A">A · 生产级</option><option value="B" selected>B · 实验与交付验证</option><option value="C">C · 学习实验</option><option value="D">D · 探索 / 一次性</option></select></div>
                 </div>
-                <div class="form-field"><label>扩展工程能力 <small>可选 · 叠加 Profile</small></label><div class="addon-list" id="addon-list"></div></div>
+                <div class="form-row">
+                  <div class="form-field" id="app-stack-field" hidden><label for="project-stack">APP / 小程序技术路线</label><select id="project-stack"></select></div>
+                  <div class="form-field"><label>扩展工程能力 <small>可选 · 叠加 Profile</small></label><div class="addon-list" id="addon-list"></div></div>
+                </div>
                 <div class="form-field"><label for="baseline-file">导入本地工程基线（可选） <small>已有项目 · 纯浏览器解析，不上传</small></label><input id="baseline-file" type="file" accept=".json,application/json" /><p id="baseline-state" class="install-disclaimer">先在本地执行 project-probe.mjs，选择 JSON 报告导入。未导入时所有运行证据保持 NOT_RUN。</p></div>
                 <div class="config-foot"><span>默认仅生成方案，任何本地写入与安装都需另外确认。</span><button class="primary-button" id="generate" type="button">生成开发方案 <span>↗</span></button></div>
               </section>
@@ -74,29 +80,76 @@
                 <div class="card-title"><strong>工程装配摘要</strong><span>LIVE PREVIEW</span></div>
                 <div class="summary-type" id="summary-type">微信小程序</div>
                 <p class="summary-acceptance" id="summary-acceptance"></p>
+                <div class="result-kicker">TASK ROUTE</div><p class="route-line" id="summary-task"></p>
                 <div class="result-kicker">SELECTED PROFILES</div><div class="chips" id="profile-chips"></div>
-                <div class="result-kicker">REQUIRED EVIDENCE</div><ul class="check-list" id="type-checks"></ul>
+                <div class="result-kicker">PROFILE OBLIGATIONS</div><ul class="check-list" id="obligation-list"></ul>
                 <div class="note-block"><span>!</span><p>候选 Skill ≠ 已安装 Skill，生成方案 ≠ 已完成真实项目。所有证据默认 NOT_RUN。</p></div>
               </section>
             </div>
-            <div class="section-heading pipeline-heading"><span class="index">02 / EXECUTE</span><h2>十一阶段工程路线</h2><p>点击任一阶段，查看目标、交付物、Skills 和验收 Gate。</p></div>
+            <div class="section-heading pipeline-heading"><span class="index">02 / EXECUTE</span><h2>任务路线与工程阶段</h2><p>点击任一阶段，查看角色、目标、交付物、Skills 与验收 Gate。</p></div>
             <div class="pipeline-layout">
               <div class="stage-list" id="stage-list"></div>
               <section class="card stage-inspector" id="stage-inspector" aria-live="polite"></section>
             </div>
-            <div class="section-heading export-heading"><span class="index">03 / HANDOFF</span><h2>生成可移交的工程资产</h2><p>将方案交给 Claude Code / Codex / OpenCode 进一步执行；不自动越权安装。</p></div>
+            <div class="section-heading">
+              <span class="index">03 / HANDOFF</span><h2>生成可移交的工程资产</h2><p>交给 Claude Code / Codex / OpenCode 继续执行；不自动越权安装。</p>
+            </div>
             <section class="card export-card">
-              <div class="export-heading"><div><strong>工程初始化命令</strong><p>只读 dry-run 预览，需在获授权的 Engineering OS 本地克隆目录执行。</p></div><span class="code-status">SAFE PREVIEW</span></div>
+              <div class="export-heading"><div><strong>工程初始化命令（Workbench 自带 CLI）</strong><p>只读 dry-run 预览；无需私有仓本地克隆。</p></div><span class="code-status">SAFE PREVIEW</span></div>
               <div class="code-bar"><code id="init-command"></code><button id="copy-command" type="button">复制</button></div>
-              <div class="install-preview"><div class="export-heading"><div><strong>项目级 Skills 安装（本地 CLI）</strong><p>必须有已获授权的私有 Engineering OS 本地克隆和真实目标项目路径。</p></div><span class="code-status">DRY RUN</span></div><p class="install-disclaimer"><strong id="selected-install-stage">当前阶段：项目接入</strong> · <span id="selected-install-skills">按需候选：project-discovery</span></p>
-              <div class="code-bar"><code id="install-command"></code><button id="copy-install" type="button">复制</button></div><p class="install-disclaimer">此命令仅检查来源固定 SHA、Skills 内容和目标冲突，不写入文件。确认目标仓库私有性、许可证和权限后，手动添加 --apply --confirm-reviewed 才执行文件复制；若源文档包含跨目录引用，需额外审查其依赖。</p></div>
+              <div class="install-preview"><div class="export-heading"><div><strong>项目级 Skills 安装（本地 CLI）</strong><p>Skills 随 Workbench 发布为自包含 bundle，不读取旧仓。</p></div><span class="code-status">DRY RUN</span></div><p class="install-disclaimer"><strong id="selected-install-stage">当前阶段：项目接入</strong> · <span id="selected-install-skills">按需候选：project-discovery</span></p>
+              <div class="code-bar"><code id="install-command"></code><button id="copy-install" type="button">复制</button></div><p class="install-disclaimer">此命令只校验 bundle 内容与目标冲突，不写入文件。确认目标仓库可见性与权限后，手动添加 --apply --confirm-reviewed 才执行复制；安装后仍需在真实项目验证。</p></div>
               <div class="export-row"><span id="export-state">编辑配置后生成最新方案。</span><div class="export-buttons"><button class="outline-button" id="download-starter" type="button">↓ Spec / Tickets 草案</button><button class="outline-button" id="download-json" type="button">↓ JSON Manifest</button><button class="outline-button" id="download-md" type="button">↓ Markdown 方案</button></div></div>
             </section>
           </div>
         </section>
-        <section class="view" id="view-skills"><div class="plain-hero"><span class="index">02 / SKILLS REGISTRY</span><h1>Skills 能力库</h1><p>根据工程阶段使用最小必要技能。当前 8 项均为 Candidate，不提供未经审核的远程一键安装。</p></div><div class="content-inner"><div class="search-row"><input id="skill-search" aria-label="搜索 Skills" placeholder="搜索 Skill 名称、用途或阶段..." /><span>8 CANDIDATES</span></div><div class="skills-grid" id="skills-grid"></div><div class="info-panel"><strong>安装与供应链边界</strong><p>先审查 Skill 源代码、许可证、来源 commit、脚本副作用、权限与依赖，再在项目本地按需安装。公开仓库不存储任何私有 Skills 正文或凭证，也不会在浏览器中运行本地安装命令。</p></div></div></section>
-        <section class="view" id="view-quality"><div class="plain-hero"><span class="index">03 / QUALITY GATES</span><h1>工程验收门禁</h1><p>把“文档准备好”和“真实系统已验证”区分开。网站不把未执行状态标记为 PASS。</p></div><div class="content-inner" id="quality-body"></div></section>
-        <section class="view" id="view-feedback"><div class="plain-hero"><span class="index">04 / CONTINUOUS IMPROVEMENT</span><h1>让方法论随项目进化</h1><p>从实际开发发现的重复问题中抽象模板、测试或 Skills，而不是不断复制文档。</p></div><div class="content-inner" id="feedback-body"></div></section>
+
+        <!-- 02 · WORKFLOW EXPLORER -->
+        <section class="view" id="view-workflow">
+          <div class="plain-hero"><span class="index">02 / WORKFLOW EXPLORER</span><h1>工作流浏览器</h1><p>查看 11 个唯一阶段、13 种任务路由和 17 个 Profile 的组合规则。路线由任务与项目状态共同决定。</p></div>
+          <div class="content-inner">
+            <div class="tabs" id="workflow-tabs" role="tablist">
+              <button class="tab active" data-tab="stages" type="button" role="tab">阶段 · 11</button>
+              <button class="tab" data-tab="tasks" type="button" role="tab">任务 · 13</button>
+              <button class="tab" data-tab="profiles" type="button" role="tab">Profiles · 17</button>
+              <button class="tab" data-tab="tiers" type="button" role="tab">等级 · A/B/C/D</button>
+            </div>
+            <div id="workflow-body" class="workflow-body" aria-live="polite"></div>
+          </div>
+        </section>
+
+        <!-- 03 · SKILL CENTER -->
+        <section class="view" id="view-skills">
+          <div class="plain-hero"><span class="index">03 / SKILL CENTER</span><h1>Skills 能力库</h1><p>8 项自包含候选 Skill，按工程阶段使用最小必要技能。无远程一键安装，无 Skill 执行。</p></div>
+          <div class="content-inner">
+            <div class="search-row"><input id="skill-search" aria-label="搜索 Skills" placeholder="搜索 Skill 名称、用途或阶段..." /><span>8 CANDIDATES</span></div>
+            <div class="skill-toolbar">
+              <div class="form-field inline"><label for="skill-agent">目标 Agent</label><select id="skill-agent"></select></div>
+              <button class="outline-button" id="skill-install-preview" type="button">生成安装预览命令</button>
+            </div>
+            <div class="code-bar"><code id="skill-install-command">选择 Skill 后生成 dry-run 安装命令</code><button id="copy-skill-install" type="button">复制</button></div>
+            <div class="skills-grid" id="skills-grid"></div>
+            <div class="info-panel"><strong>安装与供应链边界</strong><p>每个 Skill 是一个自包含目录（SKILL.md + references/），安装时整包复制。目标位置已有文件时拒绝覆盖；卸载与更新只处理未修改的受管文件，并写入 SHA-256 回执。</p></div>
+          </div>
+        </section>
+
+        <!-- 04 · PROJECT WORKSPACE -->
+        <section class="view" id="view-workspace">
+          <div class="plain-hero"><span class="index">04 / PROJECT WORKSPACE</span><h1>项目工作区资产</h1><p>根据当前方案生成 7 份可审查的工作区草案：清单、工程 Profile、Spec/Tickets、ADR、验证计划、发布清单与 Agent 交接。</p></div>
+          <div class="content-inner">
+            <div class="workspace-layout">
+              <div class="file-list" id="workspace-files"></div>
+              <section class="card workspace-preview"><div class="card-title"><strong id="workspace-file-name">选择文件</strong><span>PREVIEW</span></div><pre id="workspace-preview">从左侧选择一份工作区文件。</pre><div class="export-row"><span>生成内容默认为草案，不代表已执行。</span><button class="outline-button" id="download-workspace-file" type="button">↓ 下载当前文件</button></div></section>
+            </div>
+            <div class="info-panel"><strong>工作区不等于已安装</strong><p>这些文件是供项目仓库审查后提交的草案。它们不会自动写入磁盘，也不会把任何证据提升为 VERIFIED。</p></div>
+          </div>
+        </section>
+
+        <!-- 05 · EVIDENCE & IMPROVEMENT -->
+        <section class="view" id="view-evidence">
+          <div class="plain-hero"><span class="index">05 / EVIDENCE &amp; IMPROVEMENT</span><h1>证据与改进</h1><p>把“文档准备好”和“真实系统已验证”区分开。导入的本地报告默认 IMPORTED_NOT_TRUSTED，不会自动升级任何阶段。</p></div>
+          <div class="content-inner" id="evidence-body"></div>
+        </section>
       </main>
       <footer class="footer"><span>© X-SuperPlay · Dev Workbench</span><span>Generated is not verified · No private source content bundled</span></footer>
     </div>

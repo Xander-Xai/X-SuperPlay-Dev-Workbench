@@ -1,283 +1,604 @@
-import {TYPES,STACKS,AGENTS,ADDONS,SKILLS,STAGES,SOURCE} from "./catalog.mjs";
-import {assemble,xengDryRun,toMarkdown,toManifest} from "./engine.mjs";
-import {skillKitCommand,skillsForStage} from "./install-contract.mjs";
-import {starterMarkdown} from "./starter.mjs";
-import {normalizeBaseline} from "./baseline.mjs";
-import {stageHandoff} from "./handoff.mjs";
+import {
+  TYPES, STACKS, AGENTS, ADDONS, SKILLS, STAGES, TASKS, PROFILES, TIERS,
+  EVIDENCE_STATES, EVIDENCE_LAYERS, EVIDENCE_KINDS, OWNER, PROVENANCE, RUNTIME
+} from "./catalog.mjs";
+import { assemble, xengDryRun, toMarkdown, toManifest } from "./engine.mjs";
+import { skillKitCommand, skillsForStage, resolveSkillDependencies, discoverSkills } from "./install-contract.mjs";
+import { starterMarkdown } from "./starter.mjs";
+import { normalizeBaseline } from "./baseline.mjs";
+import { stageHandoff } from "./handoff.mjs";
+import { workspaceBundle } from "./workspace.mjs";
+import { normalizeEvidenceReport, evidenceSummary, emptyEvidenceReport } from "./evidence.mjs";
 
-const one=(selector)=>document.querySelector(selector);
-const all=(selector)=>[...document.querySelectorAll(selector)];
-const newElement=(tag,cls,text)=>{
-  const el=document.createElement(tag);
-  if(cls) el.className=cls;
-  if(text!==undefined) el.textContent=text;
+const one = selector => document.querySelector(selector);
+const all = selector => [...document.querySelectorAll(selector)];
+const newElement = (tag, cls, text) => {
+  const el = document.createElement(tag);
+  if (cls) el.className = cls;
+  if (text !== undefined) el.textContent = text;
   return el;
 };
-let kind="mini-program", activeStage=0, activeView="planner";
-let generatedAt=""; let toastTimeout; let localBaseline=null;
-const names={saas:"SaaS 应用",enterprise:"企业内部系统","mini-program":"微信预约服务小程序",app:"移动端应用"};
+
+let kind = "mini-program";
+let activeStage = 0;
+let activeView = "launcher";
+let generatedAt = "";
+let toastTimeout;
+let localBaseline = null;
+let evidenceReport = emptyEvidenceReport();
+let activeWorkspaceFile = null;
+let activeSkillId = SKILLS[0]?.id ?? null;
+let activeWorkflowTab = "stages";
+
+const names = { saas: "SaaS 应用", enterprise: "企业内部系统", "mini-program": "微信预约服务小程序", app: "移动端应用" };
+const stackOptions = type => STACKS.filter(s => s.appliesTo.includes(type));
 
 function toast(message) {
-  const el=one("#toast");el.textContent=message;el.classList.add("show");
-  clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>el.classList.remove("show"),3000);
+  const el = one("#toast");
+  el.textContent = message;
+  el.classList.add("show");
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => el.classList.remove("show"), 3200);
 }
+
 function readConfig() {
   return {
-    type:kind,stack:one("#project-stack").value,agent:one("#project-agent").value,
-    addons:all("#addon-list input:checked").map(x=>x.value),
-    name:one("#project-name").value,description:one("#project-description").value,
-    tier:one("#project-tier").value,mode:one("#project-mode").value,
-    baseline:localBaseline && localBaseline.projectType===kind && one("#project-mode").value==="existing"?localBaseline:null
+    type: kind,
+    stack: one("#project-stack").value,
+    agent: one("#project-agent").value,
+    addons: all("#addon-list input:checked").map(x => x.value),
+    name: one("#project-name").value,
+    description: one("#project-description").value,
+    tier: one("#project-tier").value,
+    mode: one("#project-mode").value,
+    task: one("#project-task").value,
+    baseline: localBaseline && localBaseline.projectType === kind && one("#project-mode").value === "existing" ? localBaseline : null
   };
 }
-function plan() {return assemble(readConfig());}
 
-function renderRoutes(){
-  const grid=one("#route-grid");grid.replaceChildren();
-  for(const [id,item] of Object.entries(TYPES)){
-    const btn=newElement("button","route-card"+(id===kind?" selected":""));
-    btn.type="button";btn.setAttribute("aria-pressed",String(id===kind));
-    btn.append(newElement("span","route-icon",item.icon));
-    btn.append(newElement("strong","route-title",item.name));
-    btn.append(newElement("span","route-subtitle",item.tagline));
-    btn.append(newElement("span","route-selection",id===kind?"已选择 ●":"选择路线 ↗"));
-    btn.addEventListener("click",()=>{
-      const oldName=one("#project-name").value;
-      if(Object.values(names).includes(oldName)) one("#project-name").value=names[id];
-      kind=id;activeStage=0;render();
+function plan() {
+  const p = assemble(readConfig());
+  p.manifest = toManifest(p);
+  return p;
+}
+
+function download(name, body, mime) {
+  const blob = new Blob([body], { type: mime });
+  const url = URL.createObjectURL(blob), a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+// ------------------------------------------------------------ launcher
+
+function renderRoutes() {
+  const grid = one("#route-grid");
+  grid.replaceChildren();
+  for (const [id, item] of Object.entries(TYPES)) {
+    const btn = newElement("button", "route-card" + (id === kind ? " selected" : ""));
+    btn.type = "button";
+    btn.setAttribute("aria-pressed", String(id === kind));
+    btn.append(newElement("span", "route-icon", item.icon));
+    btn.append(newElement("strong", "route-title", item.name));
+    btn.append(newElement("span", "route-subtitle", item.tagline));
+    btn.append(newElement("span", "route-selection", id === kind ? "已选择 ●" : "选择路线 ↗"));
+    btn.addEventListener("click", () => {
+      const oldName = one("#project-name").value;
+      if (Object.values(names).includes(oldName)) one("#project-name").value = names[id];
+      kind = id;
+      activeStage = 0;
+      if (localBaseline && localBaseline.projectType !== id) localBaseline = null;
+      renderStackSelect();
+      render();
     });
     grid.append(btn);
   }
 }
-function renderSelects(){
-  for(const [selector,options] of [["#project-agent",AGENTS],["#project-stack",STACKS]]){
-    const select=one(selector);select.replaceChildren();
-    for(const option of options){
-      const node=document.createElement("option");
-      node.value=option.id;node.textContent=option.name;select.append(node);
-    }
+
+function renderStackSelect() {
+  const options = stackOptions(kind);
+  const select = one("#project-stack");
+  select.replaceChildren();
+  for (const option of options) {
+    const node = document.createElement("option");
+    node.value = option.id;
+    node.textContent = option.name;
+    select.append(node);
   }
-  one("#project-agent").value="claude-code";
-  one("#project-stack").value="flutter";
+  if (options.length) select.value = options[0].id;
+  one("#app-stack-field").hidden = options.length === 0;
 }
-function renderAddons(){
-  const root=one("#addon-list");root.replaceChildren();
-  for(const addon of ADDONS){
-    const label=newElement("label","addon");
-    const cb=document.createElement("input");cb.type="checkbox";cb.value=addon.id;
-    const content=newElement("span","addon-text");
-    content.append(newElement("strong","",addon.name),newElement("small","",addon.note));
-    label.append(cb,content);
-    cb.addEventListener("change",render);
+
+function renderSelects() {
+  const taskSelect = one("#project-task");
+  taskSelect.replaceChildren();
+  for (const task of TASKS) {
+    const node = document.createElement("option");
+    node.value = task.id;
+    node.textContent = task.name + " · " + task.id;
+    taskSelect.append(node);
+  }
+  taskSelect.value = "feature";
+  const agentSelect = one("#project-agent");
+  agentSelect.replaceChildren();
+  for (const agent of AGENTS) {
+    const node = document.createElement("option");
+    node.value = agent.id;
+    node.textContent = agent.name;
+    agentSelect.append(node);
+  }
+  agentSelect.value = "claude-code";
+  renderStackSelect();
+}
+
+function renderAddons() {
+  const root = one("#addon-list");
+  root.replaceChildren();
+  for (const addon of ADDONS) {
+    const label = newElement("label", "addon");
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.value = addon.id;
+    if (addon.appliesTo && !addon.appliesTo.includes(kind)) cb.disabled = true;
+    const content = newElement("span", "addon-text");
+    content.append(newElement("strong", "", addon.name), newElement("small", "", addon.note));
+    label.append(cb, content);
+    cb.addEventListener("change", render);
     root.append(label);
   }
 }
-function renderSummary(p){
-  one("#summary-type").textContent=p.type.name+" · "+p.profiles.length+" Profiles";
-  one("#summary-acceptance").textContent=p.type.acceptance;
-  const chipRoot=one("#profile-chips");chipRoot.replaceChildren();
-  p.profiles.forEach(id=>chipRoot.append(newElement("span","chip",id)));
-  const checks=one("#type-checks");checks.replaceChildren();
-  p.type.checks.forEach(x=>{
-    const li=newElement("li");li.append(newElement("span","check-marker","○"),newElement("span","",x));checks.append(li);
-  });
-  one("#app-stack-field").hidden=kind!=="app";
-  one("#baseline-state").textContent=p.config.baseline
-    ? "已导入只读基线："+p.config.baseline.name+" · HEAD "+p.config.baseline.headSha.slice(0,12)+" · 测试 NOT_RUN"
+
+function renderSummary(p) {
+  one("#summary-type").textContent = p.type.name + " · " + p.profiles.length + " Profiles";
+  one("#summary-acceptance").textContent = p.type.acceptance;
+  one("#summary-task").textContent = p.task.name + "（" + p.task.id + "） · " + p.stages.length + " 阶段 · " + p.mode + " · Tier " + p.tier.id;
+  const chipRoot = one("#profile-chips");
+  chipRoot.replaceChildren();
+  p.profiles.forEach(id => chipRoot.append(newElement("span", "chip", id)));
+  const list = one("#obligation-list");
+  list.replaceChildren();
+  const rows = [
+    ["产物", p.profileObligations.artifacts],
+    ["测试", p.profileObligations.tests],
+    ["验证面", p.profileObligations.verification],
+    ["安全", p.profileObligations.security]
+  ];
+  for (const [label, values] of rows) {
+    const li = newElement("li");
+    li.append(newElement("span", "check-marker", "○"), newElement("span", "", label + "：" + (values.join("；") || "无")));
+    list.append(li);
+  }
+  one("#baseline-state").textContent = p.config.baseline
+    ? "已导入只读基线：" + p.config.baseline.name + " · HEAD " + p.config.baseline.headSha.slice(0, 12) + " · 测试 NOT_RUN"
     : "未导入基线。可本地运行 project-probe.mjs 并选择 JSON；不会上传。";
 }
-function renderStages(p){
-  const list=one("#stage-list");list.replaceChildren();
-  p.stages.forEach((stage,i)=>{
-    const btn=newElement("button","stage-row"+(i===activeStage?" active":""));
-    btn.type="button";btn.setAttribute("aria-pressed",String(i===activeStage));
-    btn.append(newElement("span","stage-n",String(i+1).padStart(2,"0")));
-    const mid=newElement("span","stage-main");
-    mid.append(newElement("strong","",stage.name),newElement("small","",stage.en));
-    btn.append(mid,newElement("span","stage-chevron","↗"));
-    btn.addEventListener("click",()=>{activeStage=i;const current=plan();renderStages(current);renderOutput(current);});
+
+function renderStages(p) {
+  const list = one("#stage-list");
+  list.replaceChildren();
+  p.stages.forEach((stage, i) => {
+    const btn = newElement("button", "stage-row" + (i === activeStage ? " active" : ""));
+    btn.type = "button";
+    btn.setAttribute("aria-pressed", String(i === activeStage));
+    btn.append(newElement("span", "stage-n", String(stage.index).padStart(2, "0")));
+    const mid = newElement("span", "stage-main");
+    mid.append(newElement("strong", "", stage.name), newElement("small", "", stage.en + " · " + stage.focus));
+    btn.append(mid, newElement("span", "stage-chevron", stage.role === "optional" ? "◇" : "↗"));
+    btn.addEventListener("click", () => {
+      activeStage = i;
+      const current = plan();
+      renderStages(current);
+      renderOutput(current);
+    });
     list.append(btn);
   });
-  const s=p.stages[activeStage], ins=one("#stage-inspector");
+
+  const s = p.stages[activeStage];
+  const ins = one("#stage-inspector");
   ins.replaceChildren();
-  const eyebrow=newElement("div","inspector-eyebrow","STAGE "+String(s.index).padStart(2,"0")+" / "+s.en.toUpperCase());
-  const heading=newElement("h3","",s.name);
-  const status=newElement("span","pending-label","NOT_RUN");
-  ins.append(eyebrow,heading,status,newElement("p","inspector-goal",s.goal));
-  const sections=[
-    {title:"预期交付物",value:s.deliverable},
-    {title:"阶段验收 Gate",value:s.gate}
-  ];
-  for(const field of sections){
-    const block=newElement("div","inspector-block");
-    block.append(newElement("small","",field.title),newElement("p","",field.value));ins.append(block);
+  ins.append(newElement("div", "inspector-eyebrow", "STAGE " + String(s.index).padStart(2, "0") + " / " + s.en.toUpperCase() + " / " + s.role.toUpperCase()));
+  ins.append(newElement("h3", "", s.name));
+  ins.append(newElement("span", "pending-label", "NOT_RUN"));
+  ins.append(newElement("p", "inspector-goal", s.focus));
+  if (s.optionalReason) ins.append(newElement("p", "install-disclaimer", "可裁剪：" + s.optionalReason));
+
+  for (const field of [
+    { title: "阶段目标", value: s.goal },
+    { title: "预期交付物", value: s.deliverable },
+    { title: "阶段验收 Gate", value: s.gate },
+    { title: "所需证据", value: s.evidence.join(", ") }
+  ]) {
+    const block = newElement("div", "inspector-block");
+    block.append(newElement("small", "", field.title), newElement("p", "", field.value));
+    ins.append(block);
   }
-  if(["architecture","verification","release"].includes(s.id)){
-    const block=newElement("div","inspector-block");
-    block.append(newElement("small","","本项目特别关注"));
-    const ul=newElement("ul","inline-points");
-    p.type.checks.forEach(v=>ul.append(newElement("li","",v)));
-    block.append(ul);ins.append(block);
-  }
-  const skillArea=newElement("div","inspector-skillarea");
-  skillArea.append(newElement("small","","关联候选 Skills"));
-  const row=newElement("div","chips");
-  if(!s.skills.length)row.append(newElement("span","muted","本阶段不强制调用 Skill"));
-  s.skills.forEach(skill=>row.append(newElement("span","chip muted-chip",skill.id)));
-  skillArea.append(row);ins.append(skillArea);
-  const handoffButton=newElement("button","outline-button stage-handoff","复制本阶段 Agent 任务提示词 ↗");
-  handoffButton.type="button";
-  handoffButton.addEventListener("click",async()=>{
-    const text=stageHandoff(plan(),s.id);
-    try{await navigator.clipboard.writeText(text);toast("已复制本阶段交接提示词。请在真实项目仓库核实并执行。");}
-    catch{toast("复制失败，请检查浏览器剪贴板权限或在本地方案中人工编辑。");}
+
+  const ops = newElement("div", "inspector-block");
+  ops.append(newElement("small", "", "Agent 操作"));
+  const opList = newElement("ul", "inline-points");
+  s.agentOps.forEach(v => opList.append(newElement("li", "", v)));
+  ops.append(opList);
+  ins.append(ops);
+
+  const skillArea = newElement("div", "inspector-skillarea");
+  skillArea.append(newElement("small", "", "本阶段关联候选 Skills"));
+  const row = newElement("div", "chips");
+  if (!s.skills.length) row.append(newElement("span", "muted", "本阶段不强制调用 Skill"));
+  s.skills.forEach(skill => row.append(newElement("span", "chip muted-chip", skill.id)));
+  skillArea.append(row);
+  ins.append(skillArea);
+
+  const handoffButton = newElement("button", "outline-button stage-handoff", "复制本阶段 Agent 任务交接 ↗");
+  handoffButton.type = "button";
+  handoffButton.addEventListener("click", async () => {
+    const text = stageHandoff(plan(), s.id);
+    try {
+      await navigator.clipboard.writeText(text);
+      toast("已复制本阶段交接。请在真实项目仓库核实并执行。");
+    } catch {
+      toast("复制失败，请检查剪贴板权限或人工编辑。");
+    }
   });
   ins.append(handoffButton);
-  const note=newElement("div","inspector-note","阶段只有在目标项目产生真实测试与验收证据后，才能标为完成。");
-  ins.append(note);
+  ins.append(newElement("div", "inspector-note", "阶段只有在目标项目产生真实测试与验收证据后，才能标为完成。"));
 }
+
 function renderOutput(p) {
-  one("#init-command").textContent=xengDryRun(p);
-  const stage=p.stages[activeStage];
-  one("#selected-install-stage").textContent="当前阶段："+stage.name;
-  one("#selected-install-skills").textContent="按需候选："+skillsForStage(p,stage.id).join(", ");
-  one("#install-command").textContent=skillKitCommand(p,stage.id);
-  one("#export-state").textContent=generatedAt?"当前页面展示最新装配预览；上次生成："+generatedAt:"尚未导出。所有结果默认为 NOT_RUN。";
+  one("#init-command").textContent = xengDryRun(p);
+  const stage = p.stages[activeStage] ?? p.stages[0];
+  one("#selected-install-stage").textContent = "当前阶段：" + stage.name;
+  one("#selected-install-skills").textContent = "按需候选：" + skillsForStage(p, stage.id).join(", ");
+  one("#install-command").textContent = skillKitCommand(p, stage.id);
+  one("#export-state").textContent = generatedAt
+    ? "当前页面展示最新装配预览；上次生成：" + generatedAt
+    : "尚未导出。所有结果默认为 NOT_RUN。";
 }
-function render(){
-  const p=plan();
-  renderRoutes();renderSummary(p);renderStages(p);renderOutput(p);
+
+function render() {
+  const p = plan();
+  renderRoutes();
+  renderSummary(p);
+  renderStages(p);
+  renderOutput(p);
+  if (activeView === "workspace") renderWorkspace(p);
 }
-function download(name,body,mime) {
-  const blob=new Blob([body],{type:mime});
-  const url=URL.createObjectURL(blob),a=document.createElement("a");
-  a.href=url;a.download=name;document.body.append(a);a.click();a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
+
+// ------------------------------------------------------------ workflow explorer
+
+function table(headers, rows) {
+  const el = newElement("table", "data-table");
+  const thead = document.createElement("thead");
+  const tr = document.createElement("tr");
+  headers.forEach(h => tr.append(newElement("th", "", h)));
+  thead.append(tr);
+  const tbody = document.createElement("tbody");
+  for (const row of rows) {
+    const r = document.createElement("tr");
+    for (const cell of row) {
+      const td = document.createElement("td");
+      if (cell instanceof Node) td.append(cell);
+      else td.textContent = cell;
+      r.append(td);
+    }
+    tbody.append(r);
+  }
+  el.append(thead, tbody);
+  return el;
 }
-function exportArtifact(format){
-  const p=plan(),str=format==="md"?toMarkdown(p):JSON.stringify(toManifest(p),null,2)+"\n";
-  download(p.slug+(format==="md"?"-engineering-plan.md":"-manifest.json"),str,
-    format==="md"?"text/markdown;charset=utf-8":"application/json;charset=utf-8");
-  generatedAt=new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"});
-  renderOutput(p);toast("已生成本地方案文件。未执行任何安装或部署。");
+
+function renderWorkflow() {
+  all("#workflow-tabs .tab").forEach(t => t.classList.toggle("active", t.dataset.tab === activeWorkflowTab));
+  const body = one("#workflow-body");
+  body.replaceChildren();
+  if (activeWorkflowTab === "stages") {
+    body.append(newElement("p", "muted", "11 个唯一阶段。任务路线选择其中若干阶段；未选择的阶段被明确跳过，不视为完成。"));
+    body.append(table(
+      ["#", "阶段", "目标", "交付物", "Gate", "证据"],
+      STAGES.map((s, i) => [String(i + 1).padStart(2, "0"), s.name + " · " + s.en, s.goal, s.deliverable, s.gate, s.evidence.join(", ")])
+    ));
+  } else if (activeWorkflowTab === "tasks") {
+    body.append(newElement("p", "muted", "13 种任务路由。路线会按任务性质裁剪阶段，并追加必需证据。"));
+    body.append(table(
+      ["任务", "名称", "阶段数", "阶段序列", "必需证据"],
+      TASKS.map(t => [t.id, t.name, String(t.stages.length), t.stages.join(" → "), t.evidence.join(", ")])
+    ));
+  } else if (activeWorkflowTab === "profiles") {
+    body.append(newElement("p", "muted", "17 个 Profile（14 个基础 + 3 个叠加）。叠加 Profile 只作用于适用项目类型。"));
+    body.append(table(
+      ["Profile", "适用", "类型", "必需产物", "必需测试"],
+      PROFILES.map(p => [p.id, p.appliesWhen, p.overlay ? "OVERLAY" : "BASE", p.required.artifacts.join("；"), p.required.tests.join("；")])
+    ));
+  } else {
+    body.append(newElement("p", "muted", "Tier 决定 spec / plan / ADR / review / e2e / rollback / evidence 的最低义务。Tier C/D 可裁剪部分阶段，但必须记录理由。"));
+    body.append(table(
+      ["Tier", "名称", "Spec", "Plan", "ADR", "Review", "E2E", "Rollback", "证据"],
+      Object.entries(TIERS).map(([id, t]) => [id, t.name, t.spec, t.plan, t.adr, t.review, t.e2e, t.rollback, t.evidence])
+    ));
+  }
 }
-function renderSkills(){
-  const q=one("#skill-search").value.trim().toLowerCase();
-  const grid=one("#skills-grid");grid.replaceChildren();
-  const items=SKILLS.filter(s=>[s.id,s.name,s.description,...s.stages].join(" ").toLowerCase().includes(q));
-  for(const skill of items){
-    const card=newElement("article","skill-card");
-    const header=newElement("div","skill-head");
-    header.append(newElement("span","skill-logo","◇"),newElement("span","candidate-label","CANDIDATE"));
-    card.append(header,newElement("strong","skill-name",skill.id),
-      newElement("p","",skill.description));
-    card.append(newElement("div","skill-stage","用于："+skill.stages.map(x=>STAGES.find(s=>s.id===x).name).join(" / ")));
-    const link=document.createElement("a");link.className="skill-link";
-    link.href=SOURCE.url+"/blob/"+SOURCE.commit+"/05-skills/"+skill.id+"/SKILL.md";
-    link.target="_blank";link.rel="noopener noreferrer";
-    link.textContent="查看权威源（需权限） ↗";card.append(link);
+
+// ------------------------------------------------------------ skill center
+
+function installCommandFor(skillId, agent) {
+  const ids = resolveSkillDependencies(skillId);
+  return RUNTIME.skillCli + " install --target ../<project> --agent " + agent + " --skills " + ids.join(",");
+}
+
+function renderSkillAgentSelect() {
+  const select = one("#skill-agent");
+  select.replaceChildren();
+  for (const agent of AGENTS) {
+    const node = document.createElement("option");
+    node.value = agent.id;
+    node.textContent = agent.name + " · " + agent.skillsDir;
+    select.append(node);
+  }
+  select.value = "claude-code";
+  select.addEventListener("change", renderSkills);
+}
+
+function renderSkills() {
+  const q = one("#skill-search").value.trim().toLowerCase();
+  const agent = one("#skill-agent").value || "claude-code";
+  const grid = one("#skills-grid");
+  grid.replaceChildren();
+  const items = discoverSkills().filter(s =>
+    [s.id, s.version, s.status, s.dependencies.join(" ")].join(" ").toLowerCase().includes(q));
+  for (const skill of items) {
+    const card = newElement("article", "skill-card" + (skill.id === activeSkillId ? " selected" : ""));
+    const header = newElement("div", "skill-head");
+    header.append(newElement("span", "skill-logo", "◇"), newElement("span", "candidate-label", "CANDIDATE"));
+    card.append(header, newElement("strong", "skill-name", skill.id), newElement("p", "", skill.description));
+    card.append(newElement("div", "skill-stage", "用于：" + skill.stages.map(x => STAGES.find(s => s.id === x).name).join(" / ")));
+    card.append(newElement("div", "skill-meta", "v" + skill.version + " · 自包含 · 依赖：" + (skill.dependencies.join(", ") || "无")));
+    card.append(newElement("code", "skill-path", skill.bundle + "/SKILL.md + references/"));
+    card.addEventListener("click", () => {
+      activeSkillId = skill.id;
+      one("#skill-install-command").textContent = installCommandFor(skill.id, agent);
+      renderSkills();
+    });
     grid.append(card);
   }
-  if(!items.length)grid.append(newElement("p","muted","没有匹配结果"));
+  if (!items.length) grid.append(newElement("p", "muted", "没有匹配结果"));
+  if (activeSkillId) one("#skill-install-command").textContent = installCommandFor(activeSkillId, agent);
 }
-function renderQuality(){
-  const root=one("#quality-body");
-  const levels=[
-    ["NOT_RUN","未执行","仅有模板、计划、任务描述或待执行命令。"],
-    ["LOCAL_TESTED","本地已测","对最终代码真实执行测试，有命令、环境和结果。"],
-    ["CI_VERIFIED","CI 已验证","目标 SHA 对应的远端必需检查结束且成功。"],
-    ["RELEASED","已发布","实际部署或应用商店发布有环境与平台回执。"],
-    ["ACCEPTED","已验收","真实消费者/客户按约定 AC 完成验证。"]
-  ];
-  root.replaceChildren();
-  const intro=newElement("div","info-panel");intro.append(newElement("strong","", "证据阶梯：越往下要求越高"),newElement("p","", "不同状态不能互相替代；任何无法验证的步骤应保持 UNKNOWN / NOT_RUN。"));root.append(intro);
-  const ladder=newElement("div","quality-ladder");
-  levels.forEach((l,i)=>{
-    const card=newElement("div","quality-step");
-    card.append(newElement("span","quality-number",String(i+1).padStart(2,"0")));
-    const middle=newElement("div");middle.append(newElement("strong","",l[1]),newElement("p","",l[2]));
-    card.append(middle,newElement("code","",l[0]));ladder.append(card);
-  });root.append(ladder);
-  const legal=newElement("div","info-panel");legal.append(newElement("strong","","上线前的不可跳过项"),
-    newElement("p","", "生产凭证、密钥、商户交易、用户数据及任何不可逆的外部动作，均需要授权和适用安全审查。浏览器计划生成器不会替你进行这些操作。"));
-  root.append(legal);
-}
-function renderFeedback(){
-  const root=one("#feedback-body");root.replaceChildren();
-  const steps=[
-    ["01","在项目仓库记录真实问题","保留输入、复现命令、代码 SHA、期望/实际结果和已授权范围。"],
-    ["02","诊断重复失效模式","判断是需求、代码、测试、权限、文档还是平台约束。"],
-    ["03","提出可复用的最小修复","优先补测试或 CI Gate；仅重复出现的通用过程考虑提炼为 Skill。"],
-    ["04","在第二个真实场景验证","观察能否减少同类错误，记录负例和维护成本。"],
-    ["05","向 Engineering OS 发起改进 PR","权威仓审核通过后更新 Registry；本网站随后采用新固定版本。"]
-  ];
-  for(const [num,title,detail] of steps){
-    const card=newElement("article","feedback-step");
-    card.append(newElement("span","feedback-number",num));
-    const c=newElement("div");c.append(newElement("strong","",title),newElement("p","",detail));card.append(c);root.append(card);
+
+// ------------------------------------------------------------ workspace
+
+function renderWorkspace(p) {
+  const bundle = workspaceBundle(p);
+  const names = Object.keys(bundle);
+  if (!activeWorkspaceFile || !bundle[activeWorkspaceFile]) activeWorkspaceFile = names[0];
+  const list = one("#workspace-files");
+  list.replaceChildren();
+  for (const name of names) {
+    const btn = newElement("button", "file-row" + (name === activeWorkspaceFile ? " active" : ""), name);
+    btn.type = "button";
+    btn.addEventListener("click", () => {
+      activeWorkspaceFile = name;
+      renderWorkspace(p);
+    });
+    list.append(btn);
   }
-  const note=newElement("div","info-panel");
-  note.append(newElement("strong","","双仓职责，避免第二份真相"),
-    newElement("p","", "产品代码、运行回执和客户数据保留在各项目仓或受控环境。Engineering OS 负责规范与候选 Skills 的晋级；Workbench 只负责入口、组合及生成。"));
-  root.append(note);
+  one("#workspace-file-name").textContent = activeWorkspaceFile;
+  one("#workspace-preview").textContent = bundle[activeWorkspaceFile] ?? "";
 }
-function switchView(view){
-  if(!["planner","skills","quality","feedback"].includes(view))view="planner";
-  activeView=view;
-  all(".nav-item").forEach(x=>x.classList.toggle("active",x.dataset.view===view));
-  all(".view").forEach(x=>x.classList.toggle("active",x.id==="view-"+view));
-  one("#breadcrumb").textContent=view.toUpperCase();
-  if(view==="skills")renderSkills();
-  window.scrollTo({top:0,behavior:"smooth"});
+
+// ------------------------------------------------------------ evidence
+
+function statePill(state) {
+  return newElement("span", "state-pill state-" + state.toLowerCase(), state);
 }
+
+function renderEvidence() {
+  const root = one("#evidence-body");
+  root.replaceChildren();
+
+  const intro = newElement("div", "info-panel");
+  intro.append(newElement("strong", "", "证据阶梯：越往下要求越高"),
+    newElement("p", "", "代码检查、真实环境、消费者验收是三个独立层。任何无法验证的步骤保持 UNKNOWN / NOT_RUN；导入的报告只是声明，不是事实。"));
+  root.append(intro);
+
+  const ladder = newElement("div", "quality-ladder");
+  for (const [i, layer] of EVIDENCE_LAYERS.entries()) {
+    const card = newElement("div", "quality-step");
+    card.append(newElement("span", "quality-number", String(i + 1).padStart(2, "0")));
+    const middle = newElement("div");
+    middle.append(newElement("strong", "", layer.name + " · " + layer.id), newElement("p", "", layer.meaning));
+    card.append(middle, newElement("code", "", layer.id));
+    ladder.append(card);
+  }
+  root.append(ladder);
+
+  const importPanel = newElement("section", "card evidence-import");
+  const importTitle = newElement("div", "card-title");
+  importTitle.append(newElement("strong", "", "导入本地证据报告"), newElement("span", "", "LOCAL ONLY"));
+  importPanel.append(importTitle);
+  importPanel.append(newElement("p", "install-disclaimer",
+    "报告格式：schemaVersion=1, kind=LOCAL_EVIDENCE_REPORT, status=IMPORTED_NOT_TRUSTED, items[]。纯浏览器解析，不上传、不执行。"));
+  const input = document.createElement("input");
+  input.type = "file";
+  input.id = "evidence-file";
+  input.accept = ".json,application/json";
+  input.addEventListener("change", async () => {
+    const file = input.files?.[0];
+    if (!file) return;
+    try {
+      if (file.size > 65536) throw new Error("文件过大：证据报告最多 64KB");
+      evidenceReport = normalizeEvidenceReport(JSON.parse(await file.text()));
+      renderEvidence();
+      toast("已本地导入证据报告；状态为 IMPORTED_NOT_TRUSTED，未提升任何阶段。");
+    } catch (e) {
+      toast("证据导入失败：" + e.message);
+    } finally {
+      input.value = "";
+    }
+  });
+  importPanel.append(input);
+  root.append(importPanel);
+
+  const summary = evidenceSummary(evidenceReport);
+  const panel = newElement("section", "card");
+  const panelTitle = newElement("div", "card-title");
+  panelTitle.append(newElement("strong", "", "证据摘要"), newElement("span", "", summary.trusted ? "TRUSTED" : "NOT_TRUSTED"));
+  panel.append(panelTitle);
+  const counts = {};
+  for (const item of summary.items) counts[item.state] = (counts[item.state] ?? 0) + 1;
+  const statRow = newElement("div", "stat-row");
+  for (const state of EVIDENCE_STATES) {
+    const stat = newElement("div", "stat");
+    stat.append(newElement("strong", "", String(counts[state] ?? 0)), newElement("small", "", state));
+    statRow.append(stat);
+  }
+  panel.append(statRow);
+  const stageTable = newElement("div", "table-scroll");
+  stageTable.append(table(
+    ["阶段", "状态", "证据数"],
+    STAGES.map(s => [s.name, statePill(summary.stages[s.id].state), String(summary.stages[s.id].items.length)])
+  ));
+  panel.append(stageTable);
+  root.append(panel);
+
+  const improve = newElement("div", "info-panel");
+  improve.append(newElement("strong", "", "从证据到改进"),
+    newElement("p", "", "真实失败模式 → 补测试或 Gate → 在第二个项目复现 → 才考虑提炼 Skill。没有证据的“经验”不进入候选 Skill。"));
+  root.append(improve);
+}
+
+// ------------------------------------------------------------ views
+
+const VIEWS = ["launcher", "workflow", "skills", "workspace", "evidence"];
+const LABELS = { launcher: "LAUNCHER", workflow: "WORKFLOW", skills: "SKILLS", workspace: "WORKSPACE", evidence: "EVIDENCE" };
+
+function switchView(view) {
+  if (!VIEWS.includes(view)) view = "launcher";
+  activeView = view;
+  all(".nav-item").forEach(x => x.classList.toggle("active", x.dataset.view === view));
+  all(".view").forEach(x => x.classList.toggle("active", x.id === "view-" + view));
+  one("#breadcrumb").textContent = LABELS[view];
+  if (view === "workflow") renderWorkflow();
+  if (view === "skills") renderSkills();
+  if (view === "workspace") renderWorkspace(plan());
+  if (view === "evidence") renderEvidence();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
 function init() {
-  renderSelects();renderAddons();renderQuality();renderFeedback();
-  all("[data-view]").forEach(btn=>btn.addEventListener("click",()=>{
-    switchView(btn.dataset.view);location.hash=btn.dataset.view;
+  renderSelects();
+  renderAddons();
+  renderSkillAgentSelect();
+
+  all("[data-view]").forEach(btn => btn.addEventListener("click", () => {
+    switchView(btn.dataset.view);
+    location.hash = btn.dataset.view;
   }));
-  one("#baseline-file").addEventListener("change",async()=>{
-    const input=one("#baseline-file");
-    const file=input.files?.[0];if(!file)return;
-    try{
-      if(file.size>65536)throw Error("文件过大：基线报告最多 64KB");
-      const normalized=normalizeBaseline(JSON.parse(await file.text()));
-      localBaseline=normalized;
-      kind=normalized.projectType;
-      one("#project-mode").value="existing";
-      if(Object.values(names).includes(one("#project-name").value))
-        one("#project-name").value=normalized.name;
-      activeStage=0;render();
+
+  one("#baseline-file").addEventListener("change", async () => {
+    const input = one("#baseline-file");
+    const file = input.files?.[0];
+    if (!file) return;
+    try {
+      if (file.size > 65536) throw new Error("文件过大：基线报告最多 64KB");
+      const normalized = normalizeBaseline(JSON.parse(await file.text()));
+      localBaseline = normalized;
+      kind = normalized.projectType;
+      one("#project-mode").value = "existing";
+      if (Object.values(names).includes(one("#project-name").value))
+        one("#project-name").value = normalized.name;
+      activeStage = 0;
+      renderStackSelect();
+      render();
       toast("已本地导入只读基线；并未运行测试或上传数据。");
-    }catch(e){localBaseline=null;render();toast("基线导入失败："+e.message);}
-    finally{input.value="";}
+    } catch (e) {
+      localBaseline = null;
+      render();
+      toast("基线导入失败：" + e.message);
+    } finally {
+      input.value = "";
+    }
   });
-  one("#project-name").addEventListener("input",render);
-  one("#project-description").addEventListener("input",render);
-  for(const id of ["#project-mode","#project-agent","#project-tier","#project-stack"])
-    one(id).addEventListener("change",render);
-  one("#generate").addEventListener("click",()=>{
-    generatedAt=new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"});
-    render();one(".pipeline-heading").scrollIntoView({behavior:"smooth",block:"start"});
-    toast("方案已装配。下一步可查看每阶段门禁并导出。");
+
+  one("#project-name").addEventListener("input", render);
+  one("#project-description").addEventListener("input", render);
+  for (const id of ["#project-mode", "#project-agent", "#project-tier", "#project-task", "#project-stack"])
+    one(id).addEventListener("change", render);
+  one("#project-mode").addEventListener("change", () => { renderAddons(); render(); });
+
+  one("#generate").addEventListener("click", () => {
+    generatedAt = new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
+    render();
+    one(".pipeline-heading").scrollIntoView({ behavior: "smooth", block: "start" });
+    toast("方案已装配。下一步可查看阶段门禁并导出工作区资产。");
   });
-  one("#download-starter").addEventListener("click",()=>{
-    const p=plan();
-    download(p.slug+"-spec-and-tickets-draft.md",starterMarkdown(p),"text/markdown;charset=utf-8");
-    toast("已导出 Spec + 3 张待审批任务卡；尚未执行或验收。");
+
+  one("#download-starter").addEventListener("click", () => {
+    const p = plan();
+    download(p.slug + "-spec-and-tickets-draft.md", starterMarkdown(p), "text/markdown;charset=utf-8");
+    toast("已导出 Spec + 待审批任务卡；尚未执行或验收。");
   });
-  one("#download-json").addEventListener("click",()=>exportArtifact("json"));
-  one("#download-md").addEventListener("click",()=>exportArtifact("md"));
-  one("#copy-install").addEventListener("click",async()=>{
-    try{await navigator.clipboard.writeText(one("#install-command").textContent);toast("已复制本地 Skills 只读预览命令。");}
-    catch{toast("请手动选择并复制安装预览命令。");}
+  one("#download-json").addEventListener("click", () => exportArtifact("json"));
+  one("#download-md").addEventListener("click", () => exportArtifact("md"));
+  one("#copy-install").addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(one("#install-command").textContent);
+      toast("已复制本地 Skills 安装预览命令。");
+    } catch {
+      toast("请手动选择并复制安装预览命令。");
+    }
   });
-  one("#copy-command").addEventListener("click",async()=>{
-    const text=one("#init-command").textContent;
-    try{await navigator.clipboard.writeText(text);toast("已复制只读初始化预览命令。");}
-    catch{toast("浏览器无法复制，请选中命令手动复制。");}
+  one("#copy-command").addEventListener("click", async () => {
+    const text = one("#init-command").textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+      toast("已复制只读初始化预览命令。");
+    } catch {
+      toast("浏览器无法复制，请选中命令手动复制。");
+    }
   });
-  one("#skill-search").addEventListener("input",renderSkills);
-  window.addEventListener("hashchange",()=>switchView(location.hash.slice(1)));
-  render();switchView(location.hash.slice(1)||"planner");
+  one("#skill-search").addEventListener("input", renderSkills);
+  one("#skill-install-preview").addEventListener("click", () => {
+    if (activeSkillId) {
+      one("#skill-install-command").textContent = installCommandFor(activeSkillId, one("#skill-agent").value);
+      toast("已生成 dry-run 安装预览命令。");
+    }
+  });
+  one("#copy-skill-install").addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(one("#skill-install-command").textContent);
+      toast("已复制 Skills 安装预览命令。");
+    } catch {
+      toast("请手动复制命令。");
+    }
+  });
+  one("#download-workspace-file").addEventListener("click", () => {
+    const bundle = workspaceBundle(plan());
+    if (!activeWorkspaceFile || !bundle[activeWorkspaceFile]) return;
+    const isJson = activeWorkspaceFile.endsWith(".json");
+    download(activeWorkspaceFile, bundle[activeWorkspaceFile], isJson ? "application/json;charset=utf-8" : "text/markdown;charset=utf-8");
+    toast("已下载工作区草案文件；未执行任何安装或部署。");
+  });
+  all("#workflow-tabs .tab").forEach(tab => tab.addEventListener("click", () => {
+    activeWorkflowTab = tab.dataset.tab;
+    renderWorkflow();
+  }));
+  window.addEventListener("hashchange", () => switchView(location.hash.slice(1)));
+
+  render();
+  switchView(location.hash.slice(1) || "launcher");
 }
+
+function exportArtifact(format) {
+  const p = plan();
+  const str = format === "md" ? toMarkdown(p) : JSON.stringify(p.manifest, null, 2) + "\n";
+  download(p.slug + (format === "md" ? "-engineering-plan.md" : "-manifest.json"), str,
+    format === "md" ? "text/markdown;charset=utf-8" : "application/json;charset=utf-8");
+  generatedAt = new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
+  renderOutput(p);
+  toast("已生成本地方案文件。未执行任何安装或部署。");
+}
+
 init();
