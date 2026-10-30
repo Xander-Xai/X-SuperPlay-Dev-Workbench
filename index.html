@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'none'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a121b" />
+  <meta name="description" content="选择 SaaS、企业自研、小程序或 APP 项目，装配分阶段工程流程、Profiles 与候选 Skills，生成可审查的开发方案。" />
+  <title>X-SuperPlay · Dev Workbench</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <script type="module" src="./src/app.mjs"></script>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar" aria-label="主导航">
+      <a class="brand" href="#planner">
+        <span class="brand-mark">X<span>·</span></span>
+        <span><strong>SUPERPLAY</strong><small>DEV WORKBENCH / LAB</small></span>
+      </a>
+      <div class="side-label">WORKSPACE</div>
+      <nav class="nav" id="nav">
+        <button class="nav-item active" data-view="planner" type="button"><span>◫</span> 开发工作台 <small>01</small></button>
+        <button class="nav-item" data-view="skills" type="button"><span>◇</span> Skills 能力库 <small>02</small></button>
+        <button class="nav-item" data-view="quality" type="button"><span>◉</span> 工程验收 <small>03</small></button>
+        <button class="nav-item" data-view="feedback" type="button"><span>↗</span> 方法论迭代 <small>04</small></button>
+      </nav>
+      <div class="side-label side-label-second">SOURCE OF TRUTH</div>
+      <div class="source-tile">
+        <span class="tiny-dot"></span><strong>Engineering OS</strong>
+        <p>规范与 Skills 的唯一权威源。当前为手工整理的公开元数据快照。</p>
+        <a href="https://github.com/Xander-Xai/X-SuperPlay-AI-Engineering-OS" target="_blank" rel="noopener noreferrer">查看源仓库（需权限） ↗</a>
+      </div>
+      <div class="sidebar-bottom">
+        <span class="status-dot"></span> MVP · Local first
+        <p>不会连接你的本地项目、执行安装或自动部署。</p>
+      </div>
+    </aside>
+    <div class="workspace">
+      <header class="topbar">
+        <div class="breadcrumb">X-SUPERPLAY <span>/</span> ENGINEERING <span>/</span> <strong id="breadcrumb">WORKBENCH</strong></div>
+        <div class="top-actions"><span class="build-marker">SOURCE PINNED</span><a href="https://github.com/Xander-Xai/X-SuperPlay-Dev-Workbench" target="_blank" rel="noopener noreferrer" class="github-link">GitHub ↗</a></div>
+      </header>
+      <main>
+        <section class="view active" id="view-planner">
+          <div class="hero">
+            <div class="eyebrow"><span class="pulse"></span> AI-NATIVE SOFTWARE DELIVERY SYSTEM</div>
+            <h1>把开发方法论，变成<br /><em>真正可以执行的流程。</em></h1>
+            <p>选定项目类型，组合工程 Profiles 与候选 Skills，按十一阶段生成路线、验收门禁和开发方案。先验证，再交付。</p>
+            <div class="hero-meta"><span>4 种开发路线</span><i></i><span>11 个工程阶段</span><i></i><span>8 个候选 Skills</span></div>
+            <div class="hero-decoration" aria-hidden="true"><div class="globe">◈</div><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div></div>
+          </div>
+          <div class="content-inner">
+            <div class="section-heading"><span class="index">01 / CONFIGURE</span><h2>新建开发方案</h2><p>根据交付对象组合规范，而不是套一份通用模板。</p></div>
+            <div class="section-subtitle">选择项目类型 <span>REQUIRED</span></div>
+            <div class="route-grid" id="route-grid"></div>
+            <div class="config-layout">
+              <section class="card config-card" aria-label="项目配置">
+                <div class="card-title"><strong>项目配置</strong><span>PROJECT SETUP</span></div>
+                <div class="form-field"><label for="project-name">项目名称</label><input id="project-name" maxlength="100" value="微信预约服务小程序" placeholder="输入项目名称" /></div>
+                <div class="form-field"><label for="project-description">需求描述</label><textarea id="project-description" rows="4" maxlength="2000" placeholder="谁在什么场景下，需要解决什么问题？">用户登录、选择服务时间段、提交预约并在管理后台查询记录；需校验重复预约和越权访问。</textarea></div>
+                <div class="form-row">
+                  <div class="form-field"><label for="project-mode">项目状态</label><select id="project-mode"><option value="new">从零开发</option><option value="existing">接手 / 继续迭代</option></select></div>
+                  <div class="form-field"><label for="project-agent">AI Coding Agent</label><select id="project-agent"></select></div>
+                </div>
+                <div class="form-row">
+                  <div class="form-field"><label for="project-tier">工程等级</label><select id="project-tier"><option value="A">A · 生产级</option><option value="B" selected>B · 实验与交付验证</option><option value="C">C · 学习实验</option></select></div>
+                  <div class="form-field" id="app-stack-field" hidden><label for="project-stack">APP 技术路线</label><select id="project-stack"></select></div>
+                </div>
+                <div class="form-field"><label>扩展工程能力 <small>可选 · 叠加 Profile</small></label><div class="addon-list" id="addon-list"></div></div>
+                <div class="config-foot"><span>默认仅生成方案，任何本地写入与安装都需另外确认。</span><button class="primary-button" id="generate" type="button">生成开发方案 <span>↗</span></button></div>
+              </section>
+              <section class="card result-card" aria-label="项目装配摘要">
+                <div class="card-title"><strong>工程装配摘要</strong><span>LIVE PREVIEW</span></div>
+                <div class="summary-type" id="summary-type">微信小程序</div>
+                <p class="summary-acceptance" id="summary-acceptance"></p>
+                <div class="result-kicker">SELECTED PROFILES</div><div class="chips" id="profile-chips"></div>
+                <div class="result-kicker">REQUIRED EVIDENCE</div><ul class="check-list" id="type-checks"></ul>
+                <div class="note-block"><span>!</span><p>候选 Skill ≠ 已安装 Skill，生成方案 ≠ 已完成真实项目。所有证据默认 NOT_RUN。</p></div>
+              </section>
+            </div>
+            <div class="section-heading pipeline-heading"><span class="index">02 / EXECUTE</span><h2>十一阶段工程路线</h2><p>点击任一阶段，查看目标、交付物、Skills 和验收 Gate。</p></div>
+            <div class="pipeline-layout">
+              <div class="stage-list" id="stage-list"></div>
+              <section class="card stage-inspector" id="stage-inspector" aria-live="polite"></section>
+            </div>
+            <div class="section-heading export-heading"><span class="index">03 / HANDOFF</span><h2>生成可移交的工程资产</h2><p>将方案交给 Claude Code / Codex / OpenCode 进一步执行；不自动越权安装。</p></div>
+            <section class="card export-card">
+              <div class="export-heading"><div><strong>工程初始化命令</strong><p>只读 dry-run 预览，需在获授权的 Engineering OS 本地克隆目录执行。</p></div><span class="code-status">SAFE PREVIEW</span></div>
+              <div class="code-bar"><code id="init-command"></code><button id="copy-command" type="button">复制</button></div>
+              <div class="export-row"><span id="export-state">编辑配置后生成最新方案。</span><div class="export-buttons"><button class="outline-button" id="download-json" type="button">↓ JSON Manifest</button><button class="outline-button" id="download-md" type="button">↓ Markdown 方案</button></div></div>
+            </section>
+          </div>
+        </section>
+        <section class="view" id="view-skills"><div class="plain-hero"><span class="index">02 / SKILLS REGISTRY</span><h1>Skills 能力库</h1><p>根据工程阶段使用最小必要技能。当前 8 项均为 Candidate，不提供未经审核的远程一键安装。</p></div><div class="content-inner"><div class="search-row"><input id="skill-search" aria-label="搜索 Skills" placeholder="搜索 Skill 名称、用途或阶段..." /><span>8 CANDIDATES</span></div><div class="skills-grid" id="skills-grid"></div><div class="info-panel"><strong>安装与供应链边界</strong><p>先审查 Skill 源代码、许可证、来源 commit、脚本副作用、权限与依赖，再在项目本地按需安装。公开仓库不存储任何私有 Skills 正文或凭证，也不会在浏览器中运行本地安装命令。</p></div></div></section>
+        <section class="view" id="view-quality"><div class="plain-hero"><span class="index">03 / QUALITY GATES</span><h1>工程验收门禁</h1><p>把“文档准备好”和“真实系统已验证”区分开。网站不把未执行状态标记为 PASS。</p></div><div class="content-inner" id="quality-body"></div></section>
+        <section class="view" id="view-feedback"><div class="plain-hero"><span class="index">04 / CONTINUOUS IMPROVEMENT</span><h1>让方法论随项目进化</h1><p>从实际开发发现的重复问题中抽象模板、测试或 Skills，而不是不断复制文档。</p></div><div class="content-inner" id="feedback-body"></div></section>
+      </main>
+      <footer class="footer"><span>© X-SuperPlay · Dev Workbench</span><span>Generated is not verified · No private source content bundled</span></footer>
+    </div>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
