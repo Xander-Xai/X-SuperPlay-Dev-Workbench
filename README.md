@@ -88,3 +88,7 @@ CI 在 PR 和 main push 时运行目录检查、逻辑测试、站点 HTTP 冒�
 - 来源固定版本更新需审查差异并同步元数据，不以公网网页直接 fetch 私有仓库。
 
 本仓库尚无明确第三方再分发许可证；在做商业分发或开放贡献前应由仓库所有者确定许可。
+
+## 已有工程：只读项目基线
+
+在 Workbench 目录执行 `npm run probe -- --target ../your-project --type saas --output project-baseline.json`，将本地生成的 JSON 文件从网页「导入本地工程基线」选择。脚本只查询 Git HEAD/dirty 状态和常见工程文件是否存在；**不读凭证、不读业务代码、不运行测试、不发送数据**。导入后 Spec / Tracer Tickets 带上真实本地 SHA，并继续保持 `NOT_RUN`；任何文件上传或公开提交需由你自行审查。首次采用现有项目时优先执行此步骤，不要直接覆盖项目内的 AGENTS/CLAUDE 配置。

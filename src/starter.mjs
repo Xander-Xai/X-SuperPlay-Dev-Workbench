@@ -33,7 +33,7 @@ export function makeStarter(plan){
       id:"T"+String(i+1).padStart(2,"0"),title,outcome,negative,testIdea,
       blockedBy:i?["T"+String(i).padStart(2,"0")]:[],status:"PROPOSED_NOT_READY",
       acceptance:"业务方待确认可执行的 Given/When/Then",
-      testCommand:"NOT_YET_IDENTIFIED",evidence:"NOT_RUN",baseSha:"UNKNOWN",
+      testCommand:"NOT_YET_IDENTIFIED",evidence:"NOT_RUN",baseSha:plan.config.baseline?.headSha||"UNKNOWN",
       agent:plan.config.agent,permission:"READ_ONLY_DISCOVERY_FIRST"
     }))
   };

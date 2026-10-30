@@ -1,4 +1,5 @@
 import {SOURCE,TYPES,STACKS,AGENTS,ADDONS,SKILLS,STAGES} from "./catalog.mjs";
+import {normalizeBaseline,baselineSummary} from "./baseline.mjs";
 
 const hasId=(arr,id)=>arr.some(x=>x.id===id);
 const clean=(value,max)=>String(value ?? "").replace(/\0/g,"").trim().slice(0,max);
@@ -9,7 +10,7 @@ export function slugify(value) {
     .replace(/\s+/g,"-").replace(/-+/g,"-").slice(0,64) || "new-project";
 }
 export function normalizeConfig(config={}) {
-  return {
+  const normalized={
     type: Object.hasOwn(TYPES,config.type)?config.type:"mini-program",
     stack: hasId(STACKS,config.stack)?config.stack:"flutter",
     agent: hasId(AGENTS,config.agent)?config.agent:"claude-code",
@@ -19,6 +20,12 @@ export function normalizeConfig(config={}) {
     name:clean(config.name,100)||"我的新项目",
     description:clean(config.description,2000)
   };
+  if(config.baseline){
+    const baseline=normalizeBaseline(config.baseline);
+    if(baseline.projectType!==normalized.type)throw new Error("Baseline project type does not match selected route");
+    normalized.baseline=baseline;
+  }
+  return normalized;
 }
 export function assemble(input={}) {
   const config=normalizeConfig(input), type=TYPES[config.type];
@@ -52,6 +59,13 @@ export function toMarkdown(plan) {
     "- Tier："+config.tier,
     "- Profiles："+profiles.join(", "),
     "- AI 扩展："+(config.addons.join(", ")||"无"),"",
+    ...(config.baseline?[
+      "## 现有工程只读基线","",
+      "- Git HEAD："+config.baseline.headSha,
+      "- 工作树有变更："+(config.baseline.dirty===null?"UNKNOWN":String(config.baseline.dirty)),
+      "- 检测到："+config.baseline.detected.join(", "),
+      "- 验证状态：NOT_RUN（只读文件扫描不代表测试通过）",""
+    ]:[]),
     "## 工程初始化（先预览）","",
     "在已授权的 Engineering OS 克隆目录执行：","",
     "~~~bash",xengDryRun(plan),"~~~","",
@@ -84,6 +98,7 @@ export function toManifest(plan) {
     project:{name:config.name,slug,type:config.type,mode:config.mode,tier:config.tier,
       description:config.description,stack:config.stack},
     agent:config.agent,addons:config.addons,profiles,
+    baseline:config.baseline?baselineSummary(config.baseline):null,
     stages:stages.map(s=>({id:s.id,deliverable:s.deliverable,gate:s.gate,
       skills:s.skills.map(x=>x.id),evidence:"NOT_RUN"})),
     skills:plan.skills.map(x=>({id:x.id,status:x.status,installed:false})),
