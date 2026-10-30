@@ -9,7 +9,7 @@ const essential=["route-grid","project-name","project-description","project-agen
   "addon-list","stage-list","stage-inspector","init-command","download-md","download-json",
   "skills-grid","quality-body","feedback-body","install-command","copy-install","download-starter","baseline-file","baseline-state"];
 for(const id of essential) if(!html.includes('id="'+id+'"'))failures.push("missing DOM id "+id);
-const required=["styles.css","src/catalog.mjs","src/engine.mjs","src/app.mjs","src/install-contract.mjs","src/starter.mjs","src/baseline.mjs","tools/project-probe.mjs","tools/skill-kit.mjs","README.md"];
+const required=["styles.css","src/catalog.mjs","src/engine.mjs","src/app.mjs","src/install-contract.mjs","src/starter.mjs","src/baseline.mjs","src/handoff.mjs","tools/project-probe.mjs","tools/skill-kit.mjs","README.md"];
 for(const file of required){
   try{if(!(await stat(resolve(base,file))).isFile())failures.push("missing "+file);}
   catch{failures.push("missing "+file);}

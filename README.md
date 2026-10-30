@@ -1,5 +1,7 @@
 # X-SuperPlay Dev Workbench
 
+**已部署网站**：[X-SuperPlay Dev Workbench](https://xander-xai.github.io/X-SuperPlay-Dev-Workbench/)。GitHub Pages 已取得部署回执；浏览器实际操作和产品验收需另行测试。
+
 **让开发者针对一个真实项目，直接获得开发路线、工程 Profile 与候选 Skill 的组合方案。**
 
 一个真正可运行的、零运行时依赖的静态 Web MVP。面向 SaaS、企业自研系统、微信小程序和移动 APP。核心是把方法论变成可以使用的项目引导，而不是复制第二份方法论仓库。
@@ -9,7 +11,7 @@
 - 在四种项目类型之间切换；APP 支持 Flutter、React Native、Android、iOS 技术路线。
 - 输入项目名称、需求、既有工程状态、Tier、Claude Code / Codex / OpenCode。
 - 叠加 AI Application、RAG、Agent Profiles（去重组合）。
-- 浏览 11 个完整工程阶段、每阶段 Gate、交付物、候选 Skills。
+- 浏览 11 个完整工程阶段、每阶段 Gate、交付物、候选 Skills；可复制本阶段 Agent 任务交接提示词（包含只读发现、权限边界、证据格式和阻断条件）。
 - 查看 8 个候选 Skills 的适用场景和已固定的私有权威源链接。
 - 生成本地 Markdown 工程执行计划、JSON Manifest、四路线专属 Spec + 三张 Tracer Tickets 草案（所有 AC、测试证据均待实际确认），附安全的 xeng --dry-run 初始化命令。
 - 查看真实证据五层门禁及工程复盘/Skill 晋级机制。
@@ -78,7 +80,7 @@ CI 在 PR 和 main push 时运行目录检查、逻辑测试、站点 HTTP 冒�
 在部署运行和匿名 URL 检查真正通过前，一律标注 NOT_DEPLOYED。
 ## 发布
 
-静态文件入口位于仓库根目录的 index.html。合并 PR 并完成 CI 后，可在 GitHub Settings → Pages 选择从 main / root 进行静态发布；发布需要仓库所有者操作与 GitHub Pages 实际成功回执。当前仓库没有默认发布或远程执行动作。
+静态文件入口位于仓库根目录的 index.html。合并 PR 并完成 CI 后，可在 GitHub Settings → Pages 选择从 main / root 进行静态发布；发布需要仓库所有者操作与 GitHub Pages 实际成功回执。当前 GitHub Pages 已经由 GitHub Actions 自动发布；发布动作仅上传静态 Workbench 文件，不会对用户的产品代码或生产系统执行任何写操作。
 
 ## 隐私与安全
 
