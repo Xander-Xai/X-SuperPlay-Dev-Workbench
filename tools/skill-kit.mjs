@@ -15,6 +15,8 @@ function usage(){
     "Install preview:",
     "  node tools/skill-kit.mjs --source ../X-SuperPlay-AI-Engineering-OS --target ../project --agent codex --skills verification",
     "Install after source/license/target review: add --apply --confirm-reviewed",
+    "When source SKILL.md has cross-directory references, resolve them before use.",
+    "To explicitly accept unresolved references: add --acknowledge-relative-links",
     "Uninstall preview:",
     "  node tools/skill-kit.mjs --target ../project --agent codex --skills verification --uninstall",
     "Uninstall only matching managed files: add --apply --confirm-reviewed",
@@ -23,12 +25,13 @@ function usage(){
 }
 function parse(args){
   if(args.includes("--help")||args.includes("-h"))return {help:true};
-  const flags={apply:false,uninstall:false,confirmReviewed:false};
+  const flags={apply:false,uninstall:false,confirmReviewed:false,acknowledgeLinks:false};
   for(let i=0;i<args.length;i++){
     const arg=args[i];
     if(arg==="--apply"){flags.apply=true;continue;}
     if(arg==="--uninstall"){flags.uninstall=true;continue;}
     if(arg==="--confirm-reviewed"){flags.confirmReviewed=true;continue;}
+    if(arg==="--acknowledge-relative-links"){flags.acknowledgeLinks=true;continue;}
     if(!["--source","--target","--agent","--skills"].includes(arg))throw Error("Unknown option: "+arg);
     if(!args[i+1]||args[i+1].startsWith("--"))throw Error("Missing value for "+arg);
     const key=arg.slice(2);
@@ -154,6 +157,8 @@ export function run(args=process.argv.slice(2),internal={}){
     skills:records.map(r=>({name:r.name,path:r.rel,sha256:r.sha256,warnings:r.warnings||[]}))
   };
   if(!flags.apply){if(!internal.silent)console.log(JSON.stringify(summary,null,2));return summary;}
+  if(!flags.uninstall && records.some(r=>(r.warnings||[]).length) && !flags.acknowledgeLinks)
+    throw Error("Source Skill has cross-directory references that are NOT installed. Review/resolve dependencies; if explicitly accepted add --acknowledge-relative-links.");
   const completed=[];
   try{
     for(const record of records){

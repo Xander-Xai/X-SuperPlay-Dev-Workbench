@@ -87,7 +87,8 @@
             <section class="card export-card">
               <div class="export-heading"><div><strong>工程初始化命令</strong><p>只读 dry-run 预览，需在获授权的 Engineering OS 本地克隆目录执行。</p></div><span class="code-status">SAFE PREVIEW</span></div>
               <div class="code-bar"><code id="init-command"></code><button id="copy-command" type="button">复制</button></div>
-              <div class="install-preview"><div class="export-heading"><div><strong>项目级 Skills 安装（本地 CLI）</strong><p>必须有已获授权的私有 Engineering OS 本地克隆和真实目标项目路径。</p></div><span class="code-status">DRY RUN</span></div><div class="code-bar"><code id="install-command"></code><button id="copy-install" type="button">复制</button></div><p class="install-disclaimer">此命令仅检查来源固定 SHA、Skills 内容和目标冲突，不写入文件。确认目标仓库私有性、许可证和权限后，手动添加 --apply 才执行文件复制。</p></div>
+              <div class="install-preview"><div class="export-heading"><div><strong>项目级 Skills 安装（本地 CLI）</strong><p>必须有已获授权的私有 Engineering OS 本地克隆和真实目标项目路径。</p></div><span class="code-status">DRY RUN</span></div><p class="install-disclaimer"><strong id="selected-install-stage">当前阶段：项目接入</strong> · <span id="selected-install-skills">按需候选：project-discovery</span></p>
+              <div class="code-bar"><code id="install-command"></code><button id="copy-install" type="button">复制</button></div><p class="install-disclaimer">此命令仅检查来源固定 SHA、Skills 内容和目标冲突，不写入文件。确认目标仓库私有性、许可证和权限后，手动添加 --apply --confirm-reviewed 才执行文件复制；若源文档包含跨目录引用，需额外审查其依赖。</p></div>
               <div class="export-row"><span id="export-state">编辑配置后生成最新方案。</span><div class="export-buttons"><button class="outline-button" id="download-starter" type="button">↓ Spec / Tickets 草案</button><button class="outline-button" id="download-json" type="button">↓ JSON Manifest</button><button class="outline-button" id="download-md" type="button">↓ Markdown 方案</button></div></div>
             </section>
           </div>

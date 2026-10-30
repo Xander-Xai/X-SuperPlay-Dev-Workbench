@@ -27,3 +27,7 @@ The explicit confirmation flag means the operator personally checked source lice
 - On a failed installation, newly copied files are rolled back to the extent possible; no claim is made of transaction safety under hostile concurrent filesystem modifications.
 - Copying a candidate Skill is not execution, a successful runtime discovery, or production validation.
 - Real Windows 11 and WSL2 integration, target repo public visibility checks, bundle dependencies, supply-chain/license scanning and real Agent discovery remain NOT_VERIFIED.
+
+## Cross-directory reference audit
+
+A 2026-10-31 read-only scan of the eight pinned candidate SKILL.md files found **7/8** linking to documentation outside their own Skill folder. A copied SKILL.md is not a self-contained portable bundle. The default dry-run reports relative-link warnings; installation (`--apply`) now rejects such Skills unless the operator has checked the source docs and explicitly adds `--acknowledge-relative-links`. That flag only acknowledges risk; it does **not** copy missing files or repair links. `project-discovery` was the only candidate without links of this form in the pinned snapshot. A source-authorized, dependency-aware bundle is a separate future feature; never publish private reference contents accidentally.
