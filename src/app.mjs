@@ -1,6 +1,6 @@
 import {TYPES,STACKS,AGENTS,ADDONS,SKILLS,STAGES,SOURCE} from "./catalog.mjs";
 import {assemble,xengDryRun,toMarkdown,toManifest} from "./engine.mjs";
-import {skillKitCommand} from "./install-contract.mjs";
+import {skillKitCommand,skillsForStage} from "./install-contract.mjs";
 import {starterMarkdown} from "./starter.mjs";
 
 const one=(selector)=>document.querySelector(selector);
@@ -89,7 +89,7 @@ function renderStages(p){
     const mid=newElement("span","stage-main");
     mid.append(newElement("strong","",stage.name),newElement("small","",stage.en));
     btn.append(mid,newElement("span","stage-chevron","↗"));
-    btn.addEventListener("click",()=>{activeStage=i;renderStages(plan());});
+    btn.addEventListener("click",()=>{activeStage=i;const current=plan();renderStages(current);renderOutput(current);});
     list.append(btn);
   });
   const s=p.stages[activeStage], ins=one("#stage-inspector");
@@ -124,7 +124,10 @@ function renderStages(p){
 }
 function renderOutput(p) {
   one("#init-command").textContent=xengDryRun(p);
-  one("#install-command").textContent=skillKitCommand(p);
+  const stage=p.stages[activeStage];
+  one("#selected-install-stage").textContent="当前阶段："+stage.name;
+  one("#selected-install-skills").textContent="按需候选："+skillsForStage(p,stage.id).join(", ");
+  one("#install-command").textContent=skillKitCommand(p,stage.id);
   one("#export-state").textContent=generatedAt?"当前页面展示最新装配预览；上次生成："+generatedAt:"尚未导出。所有结果默认为 NOT_RUN。";
 }
 function render(){

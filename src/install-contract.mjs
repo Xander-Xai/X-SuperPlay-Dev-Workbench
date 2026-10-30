@@ -19,8 +19,18 @@ export function skillInstallContract({agent,skills}) {
     sourceRepository:SOURCE.repository,sourceCommit:SOURCE.commit,
     installState:"DRY_RUN_ONLY"};
 }
-export function skillKitCommand(plan) {
+export function skillsForStage(plan,stageId) {
+  if (!plan || !Array.isArray(plan.stages)) throw new TypeError("Invalid plan");
+  const stage=plan.stages.find(s=>s.id===stageId);
+  if (!stage) throw new Error("Unknown lifecycle stage: "+stageId);
+  const names=[...new Set(stage.skills.map(s=>s.id))];
+  if (!names.length || !names.every(id=>SKILLS.some(s=>s.id===id)))
+    throw new Error("Stage has no approved candidate Skill mapping");
+  return names;
+}
+export function skillKitCommand(plan,stageId="intake") {
+  const ids=skillsForStage(plan,stageId);
   return "node tools/skill-kit.mjs --source ../X-SuperPlay-AI-Engineering-OS"+
     " --target ../"+plan.slug+" --agent "+plan.config.agent+
-    " --skills "+plan.skills.map(s=>s.id).join(",");
+    " --skills "+ids.join(",");
 }

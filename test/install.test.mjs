@@ -88,6 +88,15 @@ test("extra dependency assets are rejected until reviewed",()=>withFixture(f=>{
 test("invalid frontmatter is rejected",()=>withFixture(f=>{
   assert.throws(()=>run(f.args,{sourceCommit:f.sha,silent:true}),/Invalid SKILL.md/);
 },{content:"plain text"}));
+test("cross-directory references block apply unless explicitly acknowledged",()=>withFixture(f=>{
+  const args=[...f.args,"--apply","--confirm-reviewed"];
+  assert.throws(()=>run(args,{sourceCommit:f.sha,silent:true}),/cross-directory references/);
+  assert.equal(existsSync(f.installed),false);
+  assert.equal(existsSync(f.lock),false);
+  const applied=run([...args,"--acknowledge-relative-links"],{sourceCommit:f.sha,silent:true});
+  assert.equal(applied.status,"FILES_INSTALLED_NOT_TESTED");
+  assert.equal(existsSync(f.installed),true);
+},{content:"---\nname: verification\ndescription: Verify.\n---\n[guide](../../02-standards/testing.md)\n"}));
 test("source relative links are reported",()=>withFixture(f=>{
   const p=run(f.args,{sourceCommit:f.sha,silent:true});
   assert.match(p.skills[0].warnings.join(" "),/Relative links/);

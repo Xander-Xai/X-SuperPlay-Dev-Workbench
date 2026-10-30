@@ -14,6 +14,7 @@
 - 生成本地 Markdown 工程执行计划、JSON Manifest、四路线专属 Spec + 三张 Tracer Tickets 草案（所有 AC、测试证据均待实际确认），附安全的 xeng --dry-run 初始化命令。
 - 查看真实证据五层门禁及工程复盘/Skill 晋级机制。
 - 使用 Node 内置测试和 CI 检查项目类型映射、输入安全、状态声明及网站资源。
+- 安装命令随选中的十一阶段实时切换：只选当前阶段需要的候选 Skills，不再一次性选择全部 8 项。
 - 附带本地离线 Skill Kit CLI：从已授权 Engineering OS 的固定 Git SHA 选择性复制候选 Skills 到项目级 Agent 路径；默认 dry-run，显式 --apply 才写入，不覆盖原文件。
 
 **当前不会做的事：** 网页直接安装 Skills、自动克隆私有源仓、调用模型、替用户部署、读取 GitHub 私有数据、宣称项目已验收。本地 CLI 可在获得授权后复制候选 Skill 文件，不会自动执行它们。所有生成的交付证据初始值是 NOT_RUN。
