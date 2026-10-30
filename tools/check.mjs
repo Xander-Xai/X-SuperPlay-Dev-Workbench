@@ -7,9 +7,9 @@ const failures=validateCatalog();
 const html=await readFile(resolve(base,"index.html"),"utf-8");
 const essential=["route-grid","project-name","project-description","project-agent","project-stack",
   "addon-list","stage-list","stage-inspector","init-command","download-md","download-json",
-  "skills-grid","quality-body","feedback-body","install-command","copy-install"];
+  "skills-grid","quality-body","feedback-body","install-command","copy-install","download-starter"];
 for(const id of essential) if(!html.includes('id="'+id+'"'))failures.push("missing DOM id "+id);
-const required=["styles.css","src/catalog.mjs","src/engine.mjs","src/app.mjs","src/install-contract.mjs","tools/skill-kit.mjs","README.md"];
+const required=["styles.css","src/catalog.mjs","src/engine.mjs","src/app.mjs","src/install-contract.mjs","src/starter.mjs","tools/skill-kit.mjs","README.md"];
 for(const file of required){
   try{if(!(await stat(resolve(base,file))).isFile())failures.push("missing "+file);}
   catch{failures.push("missing "+file);}
