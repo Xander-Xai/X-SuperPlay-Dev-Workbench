@@ -3,6 +3,7 @@ import {assemble,xengDryRun,toMarkdown,toManifest} from "./engine.mjs";
 import {skillKitCommand,skillsForStage} from "./install-contract.mjs";
 import {starterMarkdown} from "./starter.mjs";
 import {normalizeBaseline} from "./baseline.mjs";
+import {stageHandoff} from "./handoff.mjs";
 
 const one=(selector)=>document.querySelector(selector);
 const all=(selector)=>[...document.querySelectorAll(selector)];
@@ -124,6 +125,14 @@ function renderStages(p){
   if(!s.skills.length)row.append(newElement("span","muted","本阶段不强制调用 Skill"));
   s.skills.forEach(skill=>row.append(newElement("span","chip muted-chip",skill.id)));
   skillArea.append(row);ins.append(skillArea);
+  const handoffButton=newElement("button","outline-button stage-handoff","复制本阶段 Agent 任务提示词 ↗");
+  handoffButton.type="button";
+  handoffButton.addEventListener("click",async()=>{
+    const text=stageHandoff(plan(),s.id);
+    try{await navigator.clipboard.writeText(text);toast("已复制本阶段交接提示词。请在真实项目仓库核实并执行。");}
+    catch{toast("复制失败，请检查浏览器剪贴板权限或在本地方案中人工编辑。");}
+  });
+  ins.append(handoffButton);
   const note=newElement("div","inspector-note","阶段只有在目标项目产生真实测试与验收证据后，才能标为完成。");
   ins.append(note);
 }

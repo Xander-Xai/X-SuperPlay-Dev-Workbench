@@ -3,7 +3,7 @@ import {dirname,resolve,join} from "node:path";
 import {fileURLToPath} from "node:url";
 const root=resolve(dirname(fileURLToPath(import.meta.url)),"..");
 const output=resolve(root,"dist");
-export const FILES=["index.html","styles.css","src/app.mjs","src/catalog.mjs","src/engine.mjs","src/install-contract.mjs","src/starter.mjs","src/baseline.mjs"];
+export const FILES=["index.html","styles.css","src/app.mjs","src/catalog.mjs","src/engine.mjs","src/install-contract.mjs","src/starter.mjs","src/baseline.mjs","src/handoff.mjs"];
 export async function build(){
   const html=await readFile(resolve(root,"index.html"),"utf8");
   if(!html.includes('src="./src/app.mjs"'))throw Error("Unexpected runtime entrypoint");
