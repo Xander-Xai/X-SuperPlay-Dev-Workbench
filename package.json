@@ -1,16 +1,19 @@
 {
   "name": "x-superplay-dev-workbench",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "Zero-dependency engineering workflow workbench",
+  "description": "AI-native software delivery workbench: task routing, profiles, bundled skills, xeng CLI",
   "scripts": {
     "dev": "node tools/serve.mjs",
     "test": "node --test",
     "check": "node tools/check.mjs",
-    "verify": "npm run check && npm test",
+    "scan": "node tools/dependency-scan.mjs",
+    "verify": "npm run check && npm run scan && npm test",
     "build": "node tools/build-site.mjs",
-    "probe": "node tools/project-probe.mjs"
+    "probe": "node tools/project-probe.mjs",
+    "xeng": "node tools/xeng.mjs",
+    "skills": "node tools/skill-kit.mjs"
   },
   "engines": {
     "node": ">=20"

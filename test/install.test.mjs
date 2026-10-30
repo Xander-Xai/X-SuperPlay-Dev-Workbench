@@ -1,32 +1,27 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {execFileSync,spawnSync} from "node:child_process";
+import {spawnSync} from "node:child_process";
 import {mkdtempSync,mkdirSync,writeFileSync,readFileSync,existsSync,rmSync,symlinkSync} from "node:fs";
+import {createHash} from "node:crypto";
 import {tmpdir} from "node:os";
-import {join,dirname} from "node:path";
-import {selectedSkills,skillInstallContract,skillKitCommand} from "../src/install-contract.mjs";
+import {join,dirname,resolve} from "node:path";
+import {fileURLToPath} from "node:url";
+import {selectedSkills,skillInstallContract,skillKitCommand,resolveSkillDependencies} from "../src/install-contract.mjs";
 import {run} from "../tools/skill-kit.mjs";
 import {assemble} from "../src/engine.mjs";
-const git=(cwd,...a)=>execFileSync("git",["-C",cwd,...a],{encoding:"utf8"});
-function fixture({extra=false,content=null}={}){
-  const workspace=mkdtempSync(join(tmpdir(),"workbench-kit-"));
-  const source=join(workspace,"os"),target=join(workspace,"project");
-  mkdirSync(source);mkdirSync(target);
-  const dir=join(source,"05-skills","verification");mkdirSync(dir,{recursive:true});
-  writeFileSync(join(dir,"SKILL.md"),content??"---\nname: verification\ndescription: Verify the project.\n---\n# Verification\n");
-  if(extra){mkdirSync(join(dir,"references"));writeFileSync(join(dir,"references","steps.md"),"extra");}
-  git(source,"init","-q");
-  git(source,"add",".");
-  git(source,"-c","user.name=Fixture","-c","user.email=fixture@example.test","commit","-qm","fixture");
-  const sha=git(source,"rev-parse","HEAD").trim();
-  const args=["--source",source,"--target",target,"--agent","codex","--skills","verification"];
-  return {workspace,source,target,sha,args,installed:join(target,".agents","skills","verification","SKILL.md"),
-    lock:join(target,".x-superplay","skill-kit.lock.json")};
+import {PROVENANCE} from "../src/catalog.mjs";
+
+const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),"..");
+const hash=b=>createHash("sha256").update(b).digest("hex");
+
+function withTarget(fn){
+  const target=mkdtempSync(join(tmpdir(),"workbench-kit-"));
+  try{return fn(target);}finally{rmSync(target,{recursive:true,force:true});}
 }
-function withFixture(callback,opts){
-  const f=fixture(opts);
-  try{return callback(f);}finally{rmSync(f.workspace,{recursive:true,force:true});}
-}
+const args=(target,skills="verification")=>["install","--target",target,"--agent","codex","--skills",skills];
+const installed=(target,skill="verification",file="SKILL.md")=>join(target,".agents","skills",skill,file);
+const lockPath=target=>join(target,".x-superplay","skill-kit.lock.json");
+
 test("restrict skill names and agent destinations",()=>{
   assert.deepEqual(selectedSkills("verification,code-review,verification"),["verification","code-review"]);
   assert.throws(()=>selectedSkills("verification,../../evil"),/Unknown skill/);
@@ -36,78 +31,114 @@ test("restrict skill names and agent destinations",()=>{
   assert.equal(skillInstallContract({agent:"opencode",skills:"verification"}).directory,".opencode/skills");
   assert.throws(()=>skillInstallContract({agent:"other",skills:"verification"}),/Unsupported/);
 });
+test("dependency closure installs prerequisites first",()=>{
+  assert.deepEqual(resolveSkillDependencies("implementation-plan"),["specification","implementation-plan"]);
+  assert.deepEqual(resolveSkillDependencies("code-review"),["verification","code-review"]);
+});
 test("CLI help and missing args cannot write",()=>{
   const help=spawnSync(process.execPath,["tools/skill-kit.mjs","--help"],{encoding:"utf8"});
   assert.equal(help.status,0,help.stderr);assert.match(help.stdout,/dry-run/i);
   const bad=spawnSync(process.execPath,["tools/skill-kit.mjs","--apply","--skills","verification"],{encoding:"utf8"});
   assert.equal(bad.status,1);assert.match(bad.stderr,/Missing --target/);
 });
-test("browser generated command is dry run",()=>{
+test("the legacy private-source flag is rejected",()=>withTarget(target=>{
+  const r=spawnSync(process.execPath,["tools/skill-kit.mjs","install","--target",target,"--agent","codex","--skills","verification","--source","../X-SuperPlay-AI-Engineering-OS"],{encoding:"utf8"});
+  assert.equal(r.status,1);
+  assert.match(r.stderr,/Unknown option: --source/);
+}));
+test("browser generated command is dry run and bundled",()=>{
   const cmd=skillKitCommand(assemble({type:"saas",agent:"codex"}));
+  assert.match(cmd,/node tools\/skill-kit\.mjs install --target \.\.\//);
   assert.match(cmd,/--agent codex/);assert.match(cmd,/--skills project-discovery/);
-  assert.ok(!cmd.includes("--apply"));
+  assert.ok(!cmd.includes("--apply"));assert.ok(!cmd.includes("--source"));
 });
-test("git fixture: dry-run, apply, lock receipt, uninstall",()=>withFixture(f=>{
-  const dry=run(f.args,{sourceCommit:f.sha,silent:true});
+test("dry-run, install, verify, update, uninstall and rollback",()=>withTarget(target=>{
+  const dry=run(args(target),{silent:true});
   assert.equal(dry.status,"DRY_RUN");
-  assert.equal(dry.visibility,"NOT_VERIFIED_USER_MUST_CONFIRM");
-  assert.equal(existsSync(f.installed),false);
-  assert.equal(existsSync(f.lock),false);
-  assert.throws(()=>run([...f.args,"--apply"],{sourceCommit:f.sha,silent:true}),/confirm-reviewed/);
-  const apply=run([...f.args,"--apply","--confirm-reviewed"],{sourceCommit:f.sha,silent:true});
+  assert.equal(dry.skills[0].skill,"verification");
+  assert.equal(existsSync(installed(target)),false);
+  assert.equal(existsSync(lockPath(target)),false);
+
+  assert.throws(()=>run([...args(target),"--apply"],{silent:true}),/confirm-reviewed/);
+  const apply=run([...args(target),"--apply","--confirm-reviewed"],{silent:true});
   assert.equal(apply.status,"FILES_INSTALLED_NOT_TESTED");
-  assert.equal(existsSync(f.installed),true);
-  const lock=JSON.parse(readFileSync(f.lock,"utf8"));
+  assert.ok(existsSync(installed(target)));
+  assert.ok(existsSync(installed(target,"verification","references/evidence-block.md")));
+  assert.ok(existsSync(join(target,apply.receipt)));
+  const lock=JSON.parse(readFileSync(lockPath(target),"utf8"));
+  assert.equal(lock.schemaVersion,2);
   assert.equal(lock.managed.length,1);
-  assert.equal(lock.managed[0].sourceCommit,f.sha);
-  assert.throws(()=>run(f.args,{sourceCommit:f.sha,silent:true}),/Already registered/);
-  const args=["--target",f.target,"--agent","codex","--skills","verification","--uninstall"];
-  assert.equal(run(args,{silent:true}).status,"UNINSTALL_DRY_RUN");
-  assert.equal(existsSync(f.installed),true);
-  assert.equal(run([...args,"--apply","--confirm-reviewed"],{silent:true}).status,"FILES_UNINSTALLED");
-  assert.equal(existsSync(f.installed),false);
-  assert.equal(JSON.parse(readFileSync(f.lock,"utf8")).managed.length,0);
+  assert.equal(lock.managed[0].files.length,2);
+  assert.equal(lock.managed[0].bundleSha256.length,64);
+  assert.equal(lock.historicalProvenance.repository,PROVENANCE.repository);
+
+  assert.equal(run(["verify","--target",target],{silent:true}).status,"VERIFIED_UNCHANGED");
+  assert.equal(run(["update","--target",target],{silent:true}).status,"UP_TO_DATE");
+  assert.equal(run(args(target),{silent:true}).skills[0].alreadyManaged,true);
+  assert.throws(()=>run([...args(target),"--apply","--confirm-reviewed"],{silent:true}),/Already managed/);
+
+  const uninstall=["uninstall","--target",target,"--agent","codex","--skills","verification","--apply","--confirm-reviewed"];
+  const removed=run(uninstall,{silent:true});
+  assert.equal(removed.status,"FILES_UNINSTALLED");
+  assert.equal(existsSync(installed(target)),false);
+  assert.equal(JSON.parse(readFileSync(lockPath(target),"utf8")).managed.length,0);
+
+  const rolled=run(["rollback","--target",target,"--receipt",removed.receipt,"--apply","--confirm-reviewed"],{silent:true});
+  assert.equal(rolled.status,"ROLLED_BACK");
+  assert.ok(existsSync(installed(target)));
+  assert.equal(JSON.parse(readFileSync(lockPath(target),"utf8")).managed.length,1);
 }));
-test("modified files cannot be silently uninstalled",()=>withFixture(f=>{
-  run([...f.args,"--apply","--confirm-reviewed"],{sourceCommit:f.sha,silent:true});
-  writeFileSync(f.installed,"user edit");
-  const args=["--target",f.target,"--agent","codex","--skills","verification","--uninstall","--apply","--confirm-reviewed"];
-  assert.throws(()=>run(args,{silent:true}),/Modified file/);
-  assert.equal(readFileSync(f.installed,"utf8"),"user edit");
+test("installing a dependent skill installs its prerequisite",()=>withTarget(target=>{
+  const out=run(args(target,"implementation-plan"),{silent:true});
+  assert.deepEqual(out.skills.map(s=>s.skill).sort(),["implementation-plan","specification"]);
+  run([...args(target,"implementation-plan"),"--apply","--confirm-reviewed"],{silent:true});
+  assert.ok(existsSync(installed(target,"specification")));
+  assert.ok(existsSync(installed(target,"implementation-plan")));
 }));
-test("preexisting file cannot be overwritten",()=>withFixture(f=>{
-  mkdirSync(dirname(f.installed),{recursive:true});writeFileSync(f.installed,"original");
-  assert.throws(()=>run([...f.args,"--apply","--confirm-reviewed"],{sourceCommit:f.sha,silent:true}),/overwrite forbidden/);
-  assert.equal(readFileSync(f.installed,"utf8"),"original");
-  assert.equal(existsSync(f.lock),false);
+test("modified managed files block update and uninstall",()=>withTarget(target=>{
+  run([...args(target),"--apply","--confirm-reviewed"],{silent:true});
+  writeFileSync(installed(target),"user edit");
+  assert.equal(run(["verify","--target",target],{silent:true}).status,"DRIFT_DETECTED");
+  assert.throws(()=>run(["update","--target",target,"--apply","--confirm-reviewed"],{silent:true}),/Refuse to update modified/);
+  assert.throws(()=>run(["uninstall","--target",target,"--apply","--confirm-reviewed"],{silent:true}),/Refuse to uninstall modified/);
+  assert.equal(readFileSync(installed(target),"utf8"),"user edit");
 }));
-test("extra dependency assets are rejected until reviewed",()=>withFixture(f=>{
-  assert.throws(()=>run(f.args,{sourceCommit:f.sha,silent:true}),/unsupported bundle layout/);
-  assert.equal(existsSync(f.installed),false);
-},{extra:true}));
-test("invalid frontmatter is rejected",()=>withFixture(f=>{
-  assert.throws(()=>run(f.args,{sourceCommit:f.sha,silent:true}),/Invalid SKILL.md/);
-},{content:"plain text"}));
-test("cross-directory references block apply unless explicitly acknowledged",()=>withFixture(f=>{
-  const args=[...f.args,"--apply","--confirm-reviewed"];
-  assert.throws(()=>run(args,{sourceCommit:f.sha,silent:true}),/cross-directory references/);
-  assert.equal(existsSync(f.installed),false);
-  assert.equal(existsSync(f.lock),false);
-  const applied=run([...args,"--acknowledge-relative-links"],{sourceCommit:f.sha,silent:true});
-  assert.equal(applied.status,"FILES_INSTALLED_NOT_TESTED");
-  assert.equal(existsSync(f.installed),true);
-},{content:"---\nname: verification\ndescription: Verify.\n---\n[guide](../../02-standards/testing.md)\n"}));
-test("source relative links are reported",()=>withFixture(f=>{
-  const p=run(f.args,{sourceCommit:f.sha,silent:true});
-  assert.match(p.skills[0].warnings.join(" "),/Relative links/);
-},{content:"---\nname: verification\ndescription: Verify.\n---\n[policy](../../00-governance/example.md)\n"}));
-test("target symlink is rejected", {skip:process.platform==="win32"},()=>withFixture(f=>{
-  mkdirSync(join(f.target,".agents"),{recursive:true});
-  const external=join(f.workspace,"outside");mkdirSync(external);
-  symlinkSync(external,join(f.target,".agents","skills"));
-  assert.throws(()=>run(f.args,{sourceCommit:f.sha,silent:true}),/Symlink destination/);
+test("preexisting files cannot be overwritten",()=>withTarget(target=>{
+  mkdirSync(dirname(installed(target)),{recursive:true});
+  writeFileSync(installed(target),"original");
+  assert.throws(()=>run([...args(target),"--apply","--confirm-reviewed"],{silent:true}),/Overwrite forbidden/);
+  assert.equal(readFileSync(installed(target),"utf8"),"original");
+  assert.equal(existsSync(lockPath(target)),false);
 }));
-test("missing source commit never writes",()=>withFixture(f=>{
-  assert.throws(()=>run(f.args,{sourceCommit:"a".repeat(40),silent:true}),/Command failed/);
-  assert.equal(existsSync(f.installed),false);
+test("schemaVersion 1 locks are read, verified and upgraded without losing provenance",()=>withTarget(target=>{
+  const content=readFileSync(join(ROOT,"skills","verification","SKILL.md"));
+  mkdirSync(dirname(installed(target)),{recursive:true});
+  writeFileSync(installed(target),content);
+  mkdirSync(join(target,".x-superplay"),{recursive:true});
+  writeFileSync(lockPath(target),JSON.stringify({
+    schemaVersion:1,source:PROVENANCE.repository,
+    managed:[{agent:"codex",skill:"verification",path:".agents/skills/verification/SKILL.md",
+      sha256:hash(content),sourceCommit:PROVENANCE.commit}]
+  },null,2));
+  assert.equal(run(["verify","--target",target],{silent:true}).status,"VERIFIED_UNCHANGED");
+  const out=run(["uninstall","--target",target,"--apply","--confirm-reviewed"],{silent:true});
+  assert.equal(out.status,"FILES_UNINSTALLED");
+  const lock=JSON.parse(readFileSync(lockPath(target),"utf8"));
+  assert.equal(lock.schemaVersion,2);
+  assert.equal(lock.managed.length,0);
+}));
+test("target symlink is rejected",{skip:process.platform==="win32"},()=>withTarget(target=>{
+  mkdirSync(join(target,".agents"),{recursive:true});
+  const external=mkdtempSync(join(tmpdir(),"workbench-outside-"));
+  try{
+    symlinkSync(external,join(target,".agents","skills"));
+    assert.throws(()=>run([...args(target),"--apply","--confirm-reviewed"],{silent:true}),/Symlink destination/);
+  }finally{rmSync(external,{recursive:true,force:true});}
+}));
+test("rollback refuses when a file changed after the receipt",()=>withTarget(target=>{
+  run([...args(target),"--apply","--confirm-reviewed"],{silent:true});
+  const removed=run(["uninstall","--target",target,"--apply","--confirm-reviewed"],{silent:true});
+  mkdirSync(dirname(installed(target)),{recursive:true});
+  writeFileSync(installed(target),"someone else's file");
+  assert.throws(()=>run(["rollback","--target",target,"--receipt",removed.receipt,"--apply","--confirm-reviewed"],{silent:true}),/Rollback refused/);
 }));

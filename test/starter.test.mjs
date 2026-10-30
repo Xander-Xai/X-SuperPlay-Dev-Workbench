@@ -9,7 +9,7 @@ test("all development routes produce 3 scoped, dependent and unexecuted tickets"
     const plan=assemble({type,name:"Example",description:"Original user request",agent:"codex"});
     const pack=makeStarter(plan);
     assert.equal(pack.status,"DRAFT_REQUIRES_OWNER_APPROVAL");
-    assert.equal(pack.sourceCommit,plan.source.commit);
+    assert.equal(pack.sourceCommit,plan.ownership.historical.commit);
     assert.equal(pack.originalRequest,"Original user request");
     assert.equal(pack.tickets.length,3);
     assert.deepEqual(pack.tickets.map(t=>t.id),["T01","T02","T03"]);

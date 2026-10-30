@@ -4,7 +4,7 @@ import {execFileSync} from "node:child_process";
 import {existsSync,lstatSync,writeFileSync} from "node:fs";
 import {basename,join,resolve} from "node:path";
 import {fileURLToPath} from "node:url";
-import {TYPES} from "../src/catalog.mjs";
+import {TYPES,PROFILE_IDS,TASK_IDS} from "../src/catalog.mjs";
 import {normalizeBaseline} from "../src/baseline.mjs";
 function args(argv){
   const x={};for(let i=0;i<argv.length;i++){
@@ -27,6 +27,50 @@ function check(root,path){
   }
   return true;
 }
+const all=(root,paths)=>paths.every(p=>check(root,p));
+const any=(root,paths)=>paths.some(p=>check(root,p));
+
+const STACK_MARKERS=[
+  ["flutter",["pubspec.yaml"],["app"]],
+  ["react-native",["metro.config.js"],["app"]],
+  ["android",["settings.gradle"],["app"]],
+  ["ios",["Podfile"],["app"]],
+  ["mini-native",["project.config.json"],["mini-program"]],
+  ["mini-taro",["taro.config.js"],["mini-program"]],
+  ["mini-taro",["config/index.js"],["mini-program"]],
+  ["mini-uniapp",["manifest.json","pages.json"],["mini-program"]],
+  ["mini-cloud",["cloudfunctions"],["mini-program"]]
+];
+
+function suggest(root,type,detected){
+  const notes=[];
+  let stack=null;
+  for(const [id,paths,types] of STACK_MARKERS){
+    if(!types.includes(type))continue;
+    if(all(root,paths)){stack=id;break;}
+  }
+  if(type==="app"&&!stack&&any(root,["android","ios"]))stack="react-native";
+  if(type==="mini-program"&&!stack&&check(root,"miniprogram"))stack="mini-native";
+  if(type==="app"&&!stack)notes.push("未识别到 Flutter / React Native / Android / iOS 工程标记；技术路线需人工确认。");
+  if(type==="mini-program"&&!stack)notes.push("未识别到原生 / Taro / uni-app / 云开发标记；技术路线需人工确认。");
+
+  const profiles=new Set(TYPES[type].profiles);
+  if(check(root,"backend"))profiles.add("backend");
+  if(check(root,"frontend"))profiles.add("web");
+  if(check(root,"evals"))profiles.add("ai-application");
+  if(check(root,"migrations")||check(root,"alembic.ini"))profiles.add("saas");
+  const suggestedProfiles=[...profiles].filter(p=>PROFILE_IDS.includes(p));
+
+  const tasks=new Set(["feature"]);
+  if(detected.includes("migrations"))tasks.add("migration");
+  if(detected.includes("ci")&&!detected.includes("tests"))notes.push("检测到 CI 但没有测试目录；建议先 investigation，再补最小测试。");
+  if(!detected.includes("tests"))notes.push("未检测到测试目录；任何“已完成”声明都缺少可复现证据。");
+  if(!detected.includes("agent-guidance"))notes.push("未检测到 AGENTS.md / CLAUDE.md；Agent 交接前应补项目边界说明。");
+  const suggestedTasks=[...tasks].filter(t=>TASK_IDS.includes(t));
+
+  return {stack,profiles:suggestedProfiles,tasks:suggestedTasks,notes};
+}
+
 export function probeProject({target,type}){
   if(!Object.hasOwn(TYPES,type))throw Error("Unknown project type: "+type);
   const root=resolve(target);
@@ -54,7 +98,8 @@ export function probeProject({target,type}){
   const detected=[...new Set(markers.filter(([,file])=>check(root,file)).map(([tag])=>tag))];
   return normalizeBaseline({
     schemaVersion:1,kind:"LOCAL_PROJECT_BASELINE",status:"READ_ONLY_DISCOVERY",
-    name:basename(root),projectType:type,headSha,dirty,detected
+    name:basename(root),projectType:type,headSha,dirty,detected,
+    suggestions:suggest(root,type,detected)
   });
 }
 export function main(argv=process.argv.slice(2)){
