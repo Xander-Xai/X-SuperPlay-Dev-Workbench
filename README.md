@@ -1,29 +1,14 @@
 # X-SuperPlay Dev Workbench
 
-**已部署网站**：[X-SuperPlay Dev Workbench](https://xander-xai.github.io/X-SuperPlay-Dev-Workbench/)。GitHub Pages 已取得部署回执；浏览器实际操作和产品验收需另行测试。
+**AI-Native 软件交付工作台。** 从一个真实项目出发，选择项目类型、项目状态与任务类型，组合工程 Profiles 与候选 Skills，得到可执行的十一阶段路线、工作区资产和 Agent 交接。
 
-**让开发者针对一个真实项目，直接获得开发路线、工程 Profile 与候选 Skill 的组合方案。**
+本仓库是这套工程运行时的**当前所有者**：生命周期、任务路由、Profiles、Skills、xeng CLI 与证据模型都在这里维护。旧私有 Engineering OS 只作为历史来源记录，不再是运行依赖。
 
-一个真正可运行的、零运行时依赖的静态 Web MVP。面向 SaaS、企业自研系统、微信小程序和移动 APP。核心是把方法论变成可以使用的项目引导，而不是复制第二份方法论仓库。
-
-## 目前已经可以做什么
-
-- 在四种项目类型之间切换；APP 支持 Flutter、React Native、Android、iOS 技术路线。
-- 输入项目名称、需求、既有工程状态、Tier、Claude Code / Codex / OpenCode。
-- 叠加 AI Application、RAG、Agent Profiles（去重组合）。
-- 浏览 11 个完整工程阶段、每阶段 Gate、交付物、候选 Skills；可复制本阶段 Agent 任务交接提示词（包含只读发现、权限边界、证据格式和阻断条件）。
-- 查看 8 个候选 Skills 的适用场景和已固定的私有权威源链接。
-- 生成本地 Markdown 工程执行计划、JSON Manifest、四路线专属 Spec + 三张 Tracer Tickets 草案（所有 AC、测试证据均待实际确认），附安全的 xeng --dry-run 初始化命令。
-- 查看真实证据五层门禁及工程复盘/Skill 晋级机制。
-- 使用 Node 内置测试和 CI 检查项目类型映射、输入安全、状态声明及网站资源。
-- 安装命令随选中的十一阶段实时切换：只选当前阶段需要的候选 Skills，不再一次性选择全部 8 项。
-- 附带本地离线 Skill Kit CLI：从已授权 Engineering OS 的固定 Git SHA 选择性复制候选 Skills 到项目级 Agent 路径；默认 dry-run，显式 --apply 才写入，不覆盖原文件。
-
-**当前不会做的事：** 网页直接安装 Skills、自动克隆私有源仓、调用模型、替用户部署、读取 GitHub 私有数据、宣称项目已验收。本地 CLI 可在获得授权后复制候选 Skill 文件，不会自动执行它们。所有生成的交付证据初始值是 NOT_RUN。
+> 生成 ≠ 已安装 ≠ 已测试 ≠ 已发布 ≠ 已验收。所有导出的证据状态默认 `NOT_RUN`。
 
 ## 三分钟运行
 
-需要 Node.js 20 或更新版本，无需 npm install、无需数据库，也无需 API Key。
+需要 Node.js 20+。零运行时依赖，无需 `npm install`，无需数据库或 API Key。
 
 ~~~bash
 git clone https://github.com/Xander-Xai/X-SuperPlay-Dev-Workbench.git
@@ -32,65 +17,111 @@ npm run verify
 npm run dev
 ~~~
 
-在浏览器打开 http://127.0.0.1:4173 。这个地址只监听本机 127.0.0.1。页面采用原生 JavaScript ES Modules，可部署到任意静态站点。
+打开 <http://127.0.0.1:4173>（仅监听本机）。
 
-## 用于一个实际小程序
+## 五个入口
 
-1. 网站选择「微信小程序」，填写原始需求；可叠加 AI Application / RAG / Agent。
-2. 点击「生成开发方案」，逐阶段查看目标、验收与候选 Skills。
-3. 下载 Markdown 和 JSON，将文件纳入**目标项目**，确认项目本地 AGENTS.md/CLAUDE.md 及真实运行环境。
-4. 在你已有权限的 Engineering OS 本地克隆中运行生成的 xeng dry-run 命令。审查变更后才决定是否实际初始化。
-5. 以 Spec → 可交付 Tracer Ticket → 实际编码 → 测试 → Review → 发布 → 真实验收推进。
-6. 真实代码和证据保留在产品仓；只在达到复用与实证要求后向 Engineering OS 提出方法改进。
+| 入口 | 作用 |
+|---|---|
+| **项目启动器** | 项目类型 → 新/旧项目 → 任务类型 → Tier / 技术栈 / 扩展 → 生成路线、阶段 Gate、导出 |
+| **工作流浏览器** | 11 个唯一阶段、13 种任务路由、17 个 Profile、A/B/C/D 等级义务 |
+| **Skills 能力库** | 8 个自包含候选 Skill、依赖闭包、按 Agent 生成 dry-run 安装命令 |
+| **项目工作区** | 生成 7 份可审查草案：Manifest、ENGINEERING_PROFILE、Spec/Tickets、ADR、验证计划、发布清单、Agent 交接 |
+| **证据与改进** | 证据状态机、本地报告导入（不上传）、阶段摘要与改进闭环 |
 
-## 仓库职责和资料来源
+## 支持范围
 
-- Canonical Owner: [X-SuperPlay-AI-Engineering-OS](https://github.com/Xander-Xai/X-SuperPlay-AI-Engineering-OS)（私有；需要访问权限）。
-- 当前公开元数据固定基准：commit 8553124f238ab463d4a50debad34e871ef8de060；Profile/Skill Registry 的 last_verified 为 2026-09-30。
-- 本仓库：静态展示、项目组合和安全导出逻辑。只含重写的公开摘要，不复制私有 SKILL.md、治理文件、客户项目证据或第三方受许可约束的代码。
-- Skills 状态全部为 candidate / installed=false；不因网站生成链接而升级。
-- Engineering OS PR #5 为待合并的方法适配；不得描述为已被 main 采纳或已完成真实试点。
+- 交付对象：SaaS、企业自研系统、微信小程序、移动 APP。
+- APP 技术栈：Flutter / React Native / Android / iOS，择一。
+- 小程序技术栈：原生 / Taro / uni-app / 微信云开发。
+- 可选叠加：AI Application、RAG、Agent、订阅与支付。
+- 任务路由：idea、feature、bug、refactor、architecture、investigation、performance、security、documentation、migration、dependency-update、release、incident。
+- 工程等级：A 生产级 / B 交付验证 / C 学习实验 / D 一次性试验。
 
-见 [架构与权限边界](docs/ARCHITECTURE.md)、[实际开发 SOP](docs/PLAYBOOK.md)、[演进路线](docs/ROADMAP.md)。
-
-## 在本地选择性安装 Skill
-
-在 Workbench 根目录运行（调整为你自己的绝对或相对路径）：
+## xeng CLI（Node，离线）
 
 ~~~bash
-node tools/skill-kit.mjs --source ../X-SuperPlay-AI-Engineering-OS --target ../your-project --agent codex --skills project-discovery,specification,verification
+node tools/xeng.mjs init ../your-project --profile saas,web,backend --tier B --task feature --mode new --dry-run
+node tools/xeng.mjs audit ../your-project --json
+node tools/xeng.mjs doctor ../your-project
+node tools/xeng.mjs validate-registry
+node tools/xeng.mjs task bug --type=saas --tier=B
 ~~~
 
-默认只读预览，输出路径和 SHA-256。审查实际目标路径、许可证和公开/私有边界后，再显式添加 --apply --confirm-reviewed，复制到 Codex 的 .agents/skills/、Claude Code 的 .claude/skills/ 或 OpenCode 的 .opencode/skills/。安装记录写入目标项目的 .x-superplay/skill-kit.lock.json，已安装文件可按收据及 SHA-256 受控卸载。不存在文件覆盖；已安装同名 Skill、非预期文件或缺少固定来源 commit 都会拒绝。详细命令见 [Skill Kit 安全契约](docs/SKILL_KIT.md)。**FILE_INSTALLED 不代表该 Skill 已经过运行或业务验收。**
+`init` 默认不覆盖任何已有文件；冲突时写入 `*.suggested.md` 供人工合并。`audit` 检查 README、Agent 规则、工程 Profile、测试、CI、密钥、env 配对、迁移、回滚与例外有效期。`doctor` 检查坏链接、失效脚本路径、过期当前事实和 env 漂移。
 
-## 测试
+## Skills：自包含 bundle
+
+8 个候选 Skill 均位于 `skills/<id>/`，包含 `SKILL.md` 与 `references/`，不再依赖旧仓目录结构。
 
 ~~~bash
-npm run check
-npm test
-npm run verify
+node tools/skill-kit.mjs list
+node tools/skill-kit.mjs plan    --target ../your-project --agent codex --skills verification
+node tools/skill-kit.mjs install --target ../your-project --agent codex --skills verification --apply --confirm-reviewed
+node tools/skill-kit.mjs verify  --target ../your-project
+node tools/skill-kit.mjs update  --target ../your-project
+node tools/skill-kit.mjs uninstall --target ../your-project --apply --confirm-reviewed
+node tools/skill-kit.mjs rollback  --target ../your-project --receipt <receipt.json> --apply --confirm-reviewed
 ~~~
 
-CI 在 PR 和 main push 时运行目录检查、逻辑测试、站点 HTTP 冒烟检查。**CI 通过仅说明 Workbench 代码检查通过，不证明源 Skills、安全审查、用户项目或外部部署已经完成。**
+- 默认 dry-run；`--apply` 必须搭配 `--confirm-reviewed`。
+- 整包复制，目标已存在文件则拒绝覆盖。
+- 更新/卸载只处理受管且未修改的文件，修改过就拒绝。
+- 锁文件 `.x-superplay/skill-kit.lock.json`（schemaVersion 2，兼容读取 v1）。
+- 每次写入生成 SHA-256 回执，可按回执回滚。
+- 安装文件不等于 Skill 已执行或已验证。
 
-## 发布管线
+## 已有工程：只读基线
 
-网站由 `npm run build` 生成仅包含站点文件的 `dist/`；不会发布 tools、test、docs 或仓库配置。
-`.github/workflows/pages.yml` 在 main 推送后尝试部署，要求 Pages 的发布源选为 GitHub Actions。
-在部署运行和匿名 URL 检查真正通过前，一律标注 NOT_DEPLOYED。
-## 发布
+~~~bash
+npm run probe -- --target ../your-project --type saas --output project-baseline.json
+~~~
 
-静态文件入口位于仓库根目录的 index.html。合并 PR 并完成 CI 后，可在 GitHub Settings → Pages 选择从 main / root 进行静态发布；发布需要仓库所有者操作与 GitHub Pages 实际成功回执。当前 GitHub Pages 已经由 GitHub Actions 自动发布；发布动作仅上传静态 Workbench 文件，不会对用户的产品代码或生产系统执行任何写操作。
+只读检查 Git HEAD / dirty 状态、常见工程标记，并给出 stack / profile / task 建议；**不读取业务代码、`.env`、凭证，不运行测试，不上传**。网页可本地导入该 JSON，导入后仍为 `NOT_RUN`。
 
-## 隐私与安全
+## 证据模型
 
-- 运行时不调用 GitHub API 或外部模型，不持久保存用户填写的需求，也不会发送到服务端。
-- 只有用户主动下载时，浏览器才在本机生成 Markdown/JSON 文件。业务数据请勿提交到公开仓库。
-- 凡涉及私有 Repo、企业数据、支付、真机发布、外部写入的动作，必须在获授权环境按最小权限执行。
-- 来源固定版本更新需审查差异并同步元数据，不以公网网页直接 fetch 私有仓库。
+状态：`NOT_RUN → IN_PROGRESS / BLOCKED → UNKNOWN / VERIFIED`。`VERIFIED` 必须带 command、result、artifact；状态只能按允许的迁移前进，`VERIFIED` 不可回退，禁止静默升级。
 
-本仓库尚无明确第三方再分发许可证；在做商业分发或开放贡献前应由仓库所有者确定许可。
+层：代码检查 / 真实环境 / 消费者验收，三层不可互相替代。
 
-## 已有工程：只读项目基线
+网页“证据与改进”可导入 `LOCAL_EVIDENCE_REPORT`（schemaVersion 1），导入结果为 `IMPORTED_NOT_TRUSTED`，只做摘要，不提升任何阶段。
 
-在 Workbench 目录执行 `npm run probe -- --target ../your-project --type saas --output project-baseline.json`，将本地生成的 JSON 文件从网页「导入本地工程基线」选择。脚本只查询 Git HEAD/dirty 状态和常见工程文件是否存在；**不读凭证、不读业务代码、不运行测试、不发送数据**。导入后 Spec / Tracer Tickets 带上真实本地 SHA，并继续保持 `NOT_RUN`；任何文件上传或公开提交需由你自行审查。首次采用现有项目时优先执行此步骤，不要直接覆盖项目内的 AGENTS/CLAUDE 配置。
+## 仓库边界
+
+- 本仓库拥有：生命周期、路由、Profiles、标准摘要、Skills bundle、CLI、证据模型、网站。
+- 产品代码、真实测试回执、客户数据、发布凭证留在各项目仓或受控环境。
+- 不包含私有 SKILL.md 正文、私有治理文档、客户证据、凭证或第三方受限代码。
+- 不提供浏览器端 GitHub Token、远程脚本安装器或自动部署动作。
+
+## 历史来源与迁移
+
+- 历史来源（只读溯源，不是运行依赖）：`Xander-Xai/X-SuperPlay-AI-Engineering-OS@8553124f238ab463d4a50debad34e871ef8de060`
+- 通用治理参考（未复制正文）：`Xander-Xai/AI-Native-Work-Learning-OS@f1289d685c95c7fac6f1d50068527a60f080ee1b`
+- 迁移清单：[migration/eng-os-split-20261031.json](migration/eng-os-split-20261031.json)
+- 迁移说明：[docs/MIGRATION.md](docs/MIGRATION.md)
+
+旧仓未归档、未删除。退役需要仓库所有者单独确认，并完成真实项目验证。
+
+## 验证状态
+
+| 项 | 状态 |
+|---|---|
+| `npm run check` / `npm test` / `npm run verify` / `npm run build` | 由本机执行结果决定，见 PR 与终端输出 |
+| 浏览器交互与移动端布局 | 需实际运行 `npm run dev` 并截图检查，不能仅凭代码推断 |
+| 真实项目 Dogfood / 真机 / 生产发布 | `NOT_RUN` |
+| Windows 11 / WSL2 / 三个 Agent 的真实加载 | 未全部验证 |
+
+**CI 通过只说明本仓库代码检查通过，不代表用户项目、真实设备或生产交付已验收。**
+
+## 文档
+
+- [架构与所有权](docs/ARCHITECTURE.md)
+- [迁移与兼容表](docs/MIGRATION.md)
+- [实际开发 SOP](docs/PLAYBOOK.md)
+- [Skill Kit 契约](docs/SKILL_KIT.md)
+- [演进路线](docs/ROADMAP.md)
+
+## 许可
+
+本仓库尚未声明开源再分发许可（Skills 标记为 `UNLICENSED-PROPRIETARY`）。商业分发或接受外部贡献前，需仓库所有者确定许可。
