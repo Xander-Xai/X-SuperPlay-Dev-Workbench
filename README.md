@@ -58,7 +58,7 @@ npm run dev
 node tools/skill-kit.mjs --source ../X-SuperPlay-AI-Engineering-OS --target ../your-project --agent codex --skills project-discovery,specification,verification
 ~~~
 
-默认只读预览，输出路径和 SHA-256。审查实际目标路径、许可证和公开/私有边界后，再显式添加 --apply，复制到 Codex 的 .agents/skills/、Claude Code 的 .claude/skills/ 或 OpenCode 的 .opencode/skills/。不存在文件覆盖；已安装同名 Skill、非预期文件或缺少固定来源 commit 都会拒绝。**FILE_INSTALLED 不代表该 Skill 已经过运行或业务验收。**
+默认只读预览，输出路径和 SHA-256。审查实际目标路径、许可证和公开/私有边界后，再显式添加 --apply --confirm-reviewed，复制到 Codex 的 .agents/skills/、Claude Code 的 .claude/skills/ 或 OpenCode 的 .opencode/skills/。安装记录写入目标项目的 .x-superplay/skill-kit.lock.json，已安装文件可按收据及 SHA-256 受控卸载。不存在文件覆盖；已安装同名 Skill、非预期文件或缺少固定来源 commit 都会拒绝。详细命令见 [Skill Kit 安全契约](docs/SKILL_KIT.md)。**FILE_INSTALLED 不代表该 Skill 已经过运行或业务验收。**
 
 ## 测试
 

@@ -17,6 +17,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Explain Pages setup when not enabled
+        if: github.event.repository.has_pages != true
+        run: echo '::warning::Pages not enabled. Repository admin must set Settings → Pages → Source = GitHub Actions; deployment will be skipped.'
       - name: Validate and test Workbench
         run: npm run verify
       - name: Generate public-only bundle
@@ -26,6 +29,7 @@ jobs:
         with:
           path: dist
   deploy:
+    if: github.event.repository.has_pages == true
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: build
