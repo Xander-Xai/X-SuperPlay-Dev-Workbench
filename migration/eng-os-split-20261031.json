@@ -144,7 +144,7 @@
     { "id": "U-04", "item": "real project dogfood, device and production release", "status": "NOT_RUN" },
     { "id": "U-05", "item": "old repository PR #5 and #6 merge state", "status": "NOT_DEPENDED_ON" },
     { "id": "U-06", "item": "license for redistribution", "status": "UNLICENSED_PROPRIETARY" },
-    { "id": "U-07", "item": "CI and Pages receipts for this branch", "status": "NOT_RUN" }
+    { "id": "U-07", "item": "CI and Pages receipts for this branch", "status": "CI_PASS_RUN_41107653209_PAGES_PENDING_MERGE" }
   ],  "verification_status": "NOT_RUN",
   "decommission_status": "DECOMMISSION_NOT_VERIFIED",
   "decommission_authorized": false,
