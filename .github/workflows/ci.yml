@@ -22,6 +22,8 @@ jobs:
         run: npm run check
       - name: Test planning, injection safety and evidence claims
         run: npm test
+      - name: Build audited Pages artifact
+        run: npm run build
       - name: Smoke-test the static site
         shell: bash
         run: |

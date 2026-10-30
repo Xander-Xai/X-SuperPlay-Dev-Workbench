@@ -70,6 +70,11 @@ npm run verify
 
 CI 在 PR 和 main push 时运行目录检查、逻辑测试、站点 HTTP 冒烟检查。**CI 通过仅说明 Workbench 代码检查通过，不证明源 Skills、安全审查、用户项目或外部部署已经完成。**
 
+## 发布管线
+
+网站由 `npm run build` 生成仅包含站点文件的 `dist/`；不会发布 tools、test、docs 或仓库配置。
+`.github/workflows/pages.yml` 在 main 推送后尝试部署，要求 Pages 的发布源选为 GitHub Actions。
+在部署运行和匿名 URL 检查真正通过前，一律标注 NOT_DEPLOYED。
 ## 发布
 
 静态文件入口位于仓库根目录的 index.html。合并 PR 并完成 CI 后，可在 GitHub Settings → Pages 选择从 main / root 进行静态发布；发布需要仓库所有者操作与 GitHub Pages 实际成功回执。当前仓库没有默认发布或远程执行动作。

@@ -8,7 +8,10 @@
     "dev": "node tools/serve.mjs",
     "test": "node --test",
     "check": "node tools/check.mjs",
-    "verify": "npm run check && npm test"
+    "verify": "npm run check && npm test",
+    "build": "node tools/build-site.mjs"
   },
-  "engines": {"node": ">=20"}
+  "engines": {
+    "node": ">=20"
+  }
 }
