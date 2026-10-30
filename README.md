@@ -11,7 +11,7 @@
 - 叠加 AI Application、RAG、Agent Profiles（去重组合）。
 - 浏览 11 个完整工程阶段、每阶段 Gate、交付物、候选 Skills。
 - 查看 8 个候选 Skills 的适用场景和已固定的私有权威源链接。
-- 生成本地 Markdown 工程执行计划和 JSON Manifest，附安全的 xeng --dry-run 初始化命令。
+- 生成本地 Markdown 工程执行计划、JSON Manifest、四路线专属 Spec + 三张 Tracer Tickets 草案（所有 AC、测试证据均待实际确认），附安全的 xeng --dry-run 初始化命令。
 - 查看真实证据五层门禁及工程复盘/Skill 晋级机制。
 - 使用 Node 内置测试和 CI 检查项目类型映射、输入安全、状态声明及网站资源。
 - 附带本地离线 Skill Kit CLI：从已授权 Engineering OS 的固定 Git SHA 选择性复制候选 Skills 到项目级 Agent 路径；默认 dry-run，显式 --apply 才写入，不覆盖原文件。

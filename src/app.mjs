@@ -1,6 +1,7 @@
 import {TYPES,STACKS,AGENTS,ADDONS,SKILLS,STAGES,SOURCE} from "./catalog.mjs";
 import {assemble,xengDryRun,toMarkdown,toManifest} from "./engine.mjs";
 import {skillKitCommand} from "./install-contract.mjs";
+import {starterMarkdown} from "./starter.mjs";
 
 const one=(selector)=>document.querySelector(selector);
 const all=(selector)=>[...document.querySelectorAll(selector)];
@@ -225,6 +226,11 @@ function init() {
     generatedAt=new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"});
     render();one(".pipeline-heading").scrollIntoView({behavior:"smooth",block:"start"});
     toast("方案已装配。下一步可查看每阶段门禁并导出。");
+  });
+  one("#download-starter").addEventListener("click",()=>{
+    const p=plan();
+    download(p.slug+"-spec-and-tickets-draft.md",starterMarkdown(p),"text/markdown;charset=utf-8");
+    toast("已导出 Spec + 3 张待审批任务卡；尚未执行或验收。");
   });
   one("#download-json").addEventListener("click",()=>exportArtifact("json"));
   one("#download-md").addEventListener("click",()=>exportArtifact("md"));
