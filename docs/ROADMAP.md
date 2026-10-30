@@ -18,8 +18,9 @@
 
 ## v0.3：可安装能力包（需设计与批准）
 
-- [ ] Local installer / skill adapter：来源版本 SHA、license、allowlist 和权限检查。
-- [ ] 不执行任意网上脚本；先 dry-run 差异，获授权后选择性安装，支持回退。
+- [x] Local dry-run Skill copier：固定来源 SHA、Skill allowlist、无覆盖和按 Agent 路径的受控文件复制（不执行 Skill）。
+- [ ] 完整 Skill 资产包：references/scripts 递归审查、License 及目标仓库公开性自动检查。
+- [ ] 补充安装收据锁文件、冲突诊断和受控卸载/回滚；当前仅会在复制失败时删除当次创建的文件。
 - [ ] Claude Code / Codex / OpenCode 的实际消费路径及负例测试。
 - [ ] 可导出的项目 starter bundle，兼容原项目本地规则。
 

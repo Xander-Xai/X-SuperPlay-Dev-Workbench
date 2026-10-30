@@ -1,5 +1,6 @@
 import {TYPES,STACKS,AGENTS,ADDONS,SKILLS,STAGES,SOURCE} from "./catalog.mjs";
 import {assemble,xengDryRun,toMarkdown,toManifest} from "./engine.mjs";
+import {skillKitCommand} from "./install-contract.mjs";
 
 const one=(selector)=>document.querySelector(selector);
 const all=(selector)=>[...document.querySelectorAll(selector)];
@@ -122,6 +123,7 @@ function renderStages(p){
 }
 function renderOutput(p) {
   one("#init-command").textContent=xengDryRun(p);
+  one("#install-command").textContent=skillKitCommand(p);
   one("#export-state").textContent=generatedAt?"当前页面展示最新装配预览；上次生成："+generatedAt:"尚未导出。所有结果默认为 NOT_RUN。";
 }
 function render(){
@@ -226,6 +228,10 @@ function init() {
   });
   one("#download-json").addEventListener("click",()=>exportArtifact("json"));
   one("#download-md").addEventListener("click",()=>exportArtifact("md"));
+  one("#copy-install").addEventListener("click",async()=>{
+    try{await navigator.clipboard.writeText(one("#install-command").textContent);toast("已复制本地 Skills 只读预览命令。");}
+    catch{toast("请手动选择并复制安装预览命令。");}
+  });
   one("#copy-command").addEventListener("click",async()=>{
     const text=one("#init-command").textContent;
     try{await navigator.clipboard.writeText(text);toast("已复制只读初始化预览命令。");}

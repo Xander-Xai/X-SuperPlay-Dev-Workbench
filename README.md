@@ -14,8 +14,9 @@
 - 生成本地 Markdown 工程执行计划和 JSON Manifest，附安全的 xeng --dry-run 初始化命令。
 - 查看真实证据五层门禁及工程复盘/Skill 晋级机制。
 - 使用 Node 内置测试和 CI 检查项目类型映射、输入安全、状态声明及网站资源。
+- 附带本地离线 Skill Kit CLI：从已授权 Engineering OS 的固定 Git SHA 选择性复制候选 Skills 到项目级 Agent 路径；默认 dry-run，显式 --apply 才写入，不覆盖原文件。
 
-**当前不会做的事：** 自动克隆私有源仓、安装 Skills、操作本地项目、调用模型、替用户部署、读取 GitHub 私有数据、宣称项目已验收。所有生成的交付证据初始值是 NOT_RUN。
+**当前不会做的事：** 网页直接安装 Skills、自动克隆私有源仓、调用模型、替用户部署、读取 GitHub 私有数据、宣称项目已验收。本地 CLI 可在获得授权后复制候选 Skill 文件，不会自动执行它们。所有生成的交付证据初始值是 NOT_RUN。
 
 ## 三分钟运行
 
@@ -48,6 +49,16 @@ npm run dev
 - Engineering OS PR #5 为待合并的方法适配；不得描述为已被 main 采纳或已完成真实试点。
 
 见 [架构与权限边界](docs/ARCHITECTURE.md)、[实际开发 SOP](docs/PLAYBOOK.md)、[演进路线](docs/ROADMAP.md)。
+
+## 在本地选择性安装 Skill
+
+在 Workbench 根目录运行（调整为你自己的绝对或相对路径）：
+
+~~~bash
+node tools/skill-kit.mjs --source ../X-SuperPlay-AI-Engineering-OS --target ../your-project --agent codex --skills project-discovery,specification,verification
+~~~
+
+默认只读预览，输出路径和 SHA-256。审查实际目标路径、许可证和公开/私有边界后，再显式添加 --apply，复制到 Codex 的 .agents/skills/、Claude Code 的 .claude/skills/ 或 OpenCode 的 .opencode/skills/。不存在文件覆盖；已安装同名 Skill、非预期文件或缺少固定来源 commit 都会拒绝。**FILE_INSTALLED 不代表该 Skill 已经过运行或业务验收。**
 
 ## 测试
 

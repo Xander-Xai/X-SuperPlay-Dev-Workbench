@@ -52,4 +52,4 @@ GENERATED_NOT_EXECUTED, NOT_RUN and candidate are hardcoded safe defaults of thi
 
 ## Future installer
 
-Phase 2 may add an explicit local CLI bridge for selective installation, provided it checks SHA/license/permissions/path, uses dry-run, allows rollback, and never receives a user token through a public front end. Do not describe a hypothetical installer as currently functional.
+Current MVP includes tools/skill-kit.mjs: an explicitly local-only, offline, default dry-run copier for a fixed Git SHA of the authorized source. It verifies skill frontmatter, exact path, duplicate targets, and prints SHA-256 receipts. It never executes a Skill or fetches credentials, and --apply is required for copying. Supported direct SKILL.md only; directories with extra assets are rejected until reviewed. It does not automatically verify licensing or the privacy of the target project; the operator must review both. Future iterations may add signed bundles, lockfiles and proven rollback.
