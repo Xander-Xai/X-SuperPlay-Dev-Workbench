@@ -1,0 +1,14 @@
+{
+  "name": "x-superplay-dev-workbench",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Zero-dependency engineering workflow workbench",
+  "scripts": {
+    "dev": "node tools/serve.mjs",
+    "test": "node --test",
+    "check": "node tools/check.mjs",
+    "verify": "npm run check && npm test"
+  },
+  "engines": {"node": ">=20"}
+}

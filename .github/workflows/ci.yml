@@ -1,0 +1,41 @@
+name: Workbench checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate catalog and DOM
+        run: npm run check
+      - name: Test planning, injection safety and evidence claims
+        run: npm test
+      - name: Smoke-test the static site
+        shell: bash
+        run: |
+          npm run dev > /tmp/workbench-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill $server_pid 2>/dev/null || true' EXIT
+          for i in {1..20}; do
+            if curl -fsS http://127.0.0.1:4173/ -o /tmp/workbench-index.html; then break; fi
+            sleep 1
+          done
+          grep -q 'X-SuperPlay' /tmp/workbench-index.html
+          curl -fsS http://127.0.0.1:4173/src/app.mjs -o /dev/null
+          curl -fsS http://127.0.0.1:4173/styles.css -o /dev/null
+          if curl -fsS http://127.0.0.1:4173/tools/check.mjs -o /dev/null; then
+            echo 'Dev-only tooling must not be served' >&2
+            exit 1
+          fi
