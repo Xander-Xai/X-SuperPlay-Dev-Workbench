@@ -12,7 +12,7 @@
   "destination": {
     "repository": "Xander-Xai/X-SuperPlay-Dev-Workbench",
     "branch": "feat/engineering-os-runtime-consolidation",
-    "commit": "UNKNOWN_UNTIL_COMMIT",
+    "commit": "527499f1ab3befdf5e87af042e746853cbbcf665",
     "runtime_version": "0.2.0"
   },
   "governance_reference": {
@@ -138,7 +138,7 @@
     "private repository as the catalog source of truth"
   ],
   "unresolved": [
-    { "id": "U-01", "item": "destination commit SHA", "status": "UNKNOWN_UNTIL_COMMIT" },
+    { "id": "U-01", "item": "destination commit SHA", "status": "PINNED_527499F1AB3BEFDF5E87AF042E746853CBBCF665" },
     { "id": "U-02", "item": "browser interaction and mobile screenshot review", "status": "VERIFIED_HEADLESS_CHROME_1440_AND_390", "note": "Desktop 1440px and mobile 390px screenshots plus scripted interactions; no real-device review." },
     { "id": "U-03", "item": "Windows 11 / WSL2 / Claude Code / Codex / OpenCode real loading", "status": "NOT_VERIFIED" },
     { "id": "U-04", "item": "real project dogfood, device and production release", "status": "NOT_RUN" },

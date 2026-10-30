@@ -61,7 +61,7 @@ Workbench 现在是工程运行时的所有者。旧私有 Engineering OS 只保
 
 | ID | 项 | 状态 |
 |---|---|---|
-| U-01 | 目标提交 SHA | `UNKNOWN_UNTIL_COMMIT`，合并前无法固定 |
+| U-01 | 目标提交 SHA | 已固定为 `527499f1ab3befdf5e87af042e746853cbbcf665`（本迁移记录提交） |
 | U-02 | 浏览器真实交互与移动端截图 | 已用无头 Chrome 在 1440px / 390px 完成截图与脚本化交互；真机复核仍未执行 |
 | U-03 | Windows 11 / WSL2 / Claude Code / Codex / OpenCode 真实加载 | 未全部验证 |
 | U-04 | 真实项目 Dogfood、真机、生产发布 | `NOT_RUN` |
