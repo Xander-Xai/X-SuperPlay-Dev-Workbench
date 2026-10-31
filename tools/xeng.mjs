@@ -724,13 +724,15 @@ function cmdPlaybook(argv) {
 const METHOD_DOCUMENTS = Object.freeze({
   overview: "docs/methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md",
   sources: "docs/methods/UPSTREAM-SOURCES.md",
-  pilot: "docs/methods/PROJECT-PILOT.md"
+  pilot: "docs/methods/PROJECT-PILOT.md",
+  design: "docs/methods/AI-NATIVE-PRODUCT-AGENT-DESIGN.md",
+  skills: "docs/methods/SKILL-ENGINEERING-FACTORY.md"
 });
 
 function cmdMethod(argv) {
-  const allowed = new Set(["--json", "overview", "sources", "pilot"]);
+  const allowed = new Set(["--json", "overview", "sources", "pilot", "design", "skills"]);
   if (argv.some(a => !allowed.has(a)) || argv.filter(a => a !== "--json").length > 1) {
-    console.error("Usage: xeng method [overview|sources|pilot] [--json]");
+    console.error("Usage: xeng method [overview|sources|pilot|design|skills] [--json]");
     return 2;
   }
   const id = argv.find(a => !a.startsWith("--")) ?? "overview";
@@ -1047,7 +1049,7 @@ function usage() {
     "  xeng doctor [path]",
     "  xeng maturity [path] [--json]",
     "  xeng playbook [id] [--json]",
-    "  xeng method [overview|sources|pilot] [--json]",
+    "  xeng method [overview|sources|pilot|design|skills] [--json]",
     "  xeng validate-registry",
     "  xeng selftest",
     "  xeng task <type> [--tier=A] [--mode=new] [--type=saas]",
