@@ -2,6 +2,8 @@
 
 > 参考 [完整方法定义](AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md) 与 [固定上游来源](UPSTREAM-SOURCES.md)。这是**可复制的执行协议和练习模板**，不是已完成的真实交付案例。默认单人、单 Agent、单任务和最低权限；支持 Claude Code / Codex / OpenCode。真实运行证据必须留在产品仓，不要写入公开 Workbench。
 
+> 设计侧先填写 [AI 原生产品与 Agent 架构设计模板](AI-NATIVE-PRODUCT-AGENT-DESIGN.md)，复用能力的沉淀按 [Skill Engineering Factory](SKILL-ENGINEERING-FACTORY.md) 处理。这里的试点不自动证明真实产品已可用。
+
 ## 0. 选择试点：一个能够运行的完整纵切片
 
 **样例：知识库问答小型灯塔项目（合成场景，无客户数据）**
