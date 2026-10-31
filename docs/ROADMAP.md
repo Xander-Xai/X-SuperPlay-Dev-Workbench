@@ -44,7 +44,7 @@
 - [x] L0–L6 保留为 `xeng maturity` 缺口诊断；L6 不由静态审计宣称。
 - [ ] 独立第三方复核（`INDEPENDENT_REVIEW_NOT_RUN`）。
 
-## AI-Native Spec–Skills–Harness–Loop 方法完整落盘（2026-10-31，分支 PR 进行中）
+## AI-Native Spec–Skills–Harness–Loop 方法完整落盘（2026-10-31；按提交、CI 与 PR 验证）
 
 - [x] 将原方法名称、五组件定义、全流程及 Workbench 唯一模块映射写入 `docs/methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md`。
 - [x] 建立带原始 SHA 的 Matt Pocock Skills / Ralph / OpenAI Harness 来源清单和许可证边界；不 Vendor 任何第三方代码。
@@ -59,7 +59,7 @@
 - [ ] Code Expert Skill 自动生成器与跨项目行为评测工具（此次仅落盘生成 SOP、模板和评测契约）。
 - [ ] 真实全栈 Demo、用户验收、跨项目模式晋级；不得使用 Workbench 的 CI 代替。
 
-状态：`METHOD_DOCUMENTED_AND_ROUTED`（待 PR CI/合并）；`HARNESS_LOOP_RUNTIME_NOT_IMPLEMENTED`；`REAL_PROJECT_DOGFOOD_NOT_RUN`。详情见[方法定义](methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md)。
+状态：`METHOD_DOCUMENTED_AND_ROUTED`（仓库方法与入口层；与真实执行分层）；`HARNESS_LOOP_RUNTIME_NOT_IMPLEMENTED`；`REAL_PROJECT_DOGFOOD_NOT_RUN`。详情见[方法定义](methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md)。
 
 ## v0.3：真实项目 Dogfood
 
