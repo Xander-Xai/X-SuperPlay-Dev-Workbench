@@ -1,5 +1,7 @@
 # 真项目工程开发 SOP（从需求到复盘）
 
+> 本 SOP 的开发范式总览为 [AI-Native Spec-Driven Harness & Loop Engineering](methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md)；[上游出处及 Skill 对应关系](methods/UPSTREAM-SOURCES.md)；[一张任务卡的全栈试点、Harness 和 Loop 模板](methods/PROJECT-PILOT.md)。它们仅提供导航与方法，不建立第二条生命周期或授予 Agent 自动部署权限。
+
 ## 项目开始：明确交付边界
 
 确定用户是谁、解决什么问题、业务/安全底线、现状、哪些条件仍未知。需求来自 JD 或面经时必须标记“工程场景假设”，不能当作已签客户。新项目和现有项目分别处理；已有代码先运行只读 baseline（`npm run probe`）。

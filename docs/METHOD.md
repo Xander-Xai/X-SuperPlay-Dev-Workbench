@@ -2,6 +2,8 @@
 
 本文件是 `src/delivery.mjs` 的人类可读导航。它**不是**第二套生命周期：11 阶段、任务路由、Profiles 与证据模型仍是唯一权威（见 [ARCHITECTURE.md](ARCHITECTURE.md)）。
 
+本文件与 `docs/methods/` 的关系：`docs/methods/` 是完整方法文档（范式、上游来源、灯塔试点、AI 产品/Agent 设计、Skill 工厂）；本文件是其上的**机器可读兼容视图**（8 宏阶段 / 18 活动 / 交付 Gate）。`xeng method` 同时服务两者。
+
 ## 三层关系
 
 ~~~text
@@ -24,11 +26,13 @@
 ## CLI
 
 ~~~bash
-node tools/xeng.mjs method                 # 列出 8 宏阶段与 18 活动
+node tools/xeng.mjs method                 # 默认打印完整方法文档 overview
+node tools/xeng.mjs method activities      # 列出 8 宏阶段与 18 活动
+node tools/xeng.mjs method activities --json
 node tools/xeng.mjs method A04             # 查看单项活动全部字段
-node tools/xeng.mjs method --json          # 机器可读
+node tools/xeng.mjs method A04 --json
 node tools/xeng.mjs method --template      # 生成 Markdown 矩阵模板
-node tools/xeng.mjs matrix                 # 11 阶段 × 宏阶段 × 活动
+node tools/xeng.mjs method matrix          # 11 阶段 × 宏阶段 × 活动
 node tools/xeng.mjs matrix --json
 node tools/xeng.mjs delivery --json        # 交付状态、Loop、Ticket 契约、四路线、AI Overlay
 node tools/xeng.mjs skills-matrix --json   # 本地/外部 Skills 与验证层

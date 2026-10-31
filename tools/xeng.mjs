@@ -724,6 +724,107 @@ function cmdPlaybook(argv) {
   return 0;
 }
 
+// ---------------------------------------------------------------- method (read-only local entrypoint)
+//
+// Two complementary surfaces share one command:
+//   1. Fixed repository-owned method documents (overview/sources/pilot/design/skills).
+//   2. The 8 macro stage / 18 activity compatibility view (activities/matrix/A01..A18).
+// Never accept arbitrary paths or URLs.
+
+// Only these fixed repository-owned documents are readable; never accept arbitrary paths or URLs.
+const METHOD_DOCUMENTS = Object.freeze({
+  overview: "docs/methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md",
+  sources: "docs/methods/UPSTREAM-SOURCES.md",
+  pilot: "docs/methods/PROJECT-PILOT.md",
+  design: "docs/methods/AI-NATIVE-PRODUCT-AGENT-DESIGN.md",
+  skills: "docs/methods/SKILL-ENGINEERING-FACTORY.md"
+});
+
+const METHOD_ACTIVITY_IDS = new Set(ACTIVITIES.map(a => a.id));
+const METHOD_USAGE = "Usage: xeng method [overview|sources|pilot|design|skills|activities|matrix|A01..A18] [--json] [--template]";
+
+function cmdMethod(argv) {
+  const flags = new Set(["--json", "--template"]);
+  const selectors = argv.filter(a => !a.startsWith("--"));
+  const unknownFlags = argv.filter(a => a.startsWith("--") && !flags.has(a));
+  const json = argv.includes("--json");
+  const template = argv.includes("--template");
+  if (unknownFlags.length || selectors.length > 1 || (template && selectors.length)) {
+    console.error(METHOD_USAGE);
+    return 2;
+  }
+  const id = selectors[0] ?? "overview";
+
+  if (template) { console.log(methodTemplate()); return 0; }
+
+  if (id === "activities") {
+    if (json) { console.log(JSON.stringify({ macroStages: MACRO_STAGES, activities: ACTIVITIES }, null, 2)); return 0; }
+    console.log("AI-Native Full-Stack Delivery · 8 macro stages / 18 activities");
+    for (const m of MACRO_STAGES) console.log("  " + m.id + " " + m.name.padEnd(18) + m.canonicalStages.join(", "));
+    console.log("\nActivities:");
+    for (const a of ACTIVITIES) console.log("  " + a.id + " " + a.name.padEnd(22) + a.stages.join(", "));
+    console.log("\nUse: xeng method A01..A18 [--json] | xeng method matrix | xeng method --template");
+    return 0;
+  }
+
+  if (id === "matrix") {
+    const rows = deliveryMatrix();
+    if (json) { console.log(JSON.stringify(rows, null, 2)); return 0; }
+    console.log("Stage coverage matrix (canonical 11 stages)");
+    for (const [stage, info] of Object.entries(rows))
+      console.log("  " + stage.padEnd(16) + (info.macro ?? "—").padEnd(4) + info.activities.join(", "));
+    return 0;
+  }
+
+  if (METHOD_ACTIVITY_IDS.has(id)) {
+    const activity = activityById(id);
+    if (json) { console.log(JSON.stringify(activity, null, 2)); return 0; }
+    console.log(activity.id + " · " + activity.name);
+    console.log("stages: " + activity.stages.join(", "));
+    console.log("primary skill: " + activity.primarySkill + " | alternate: " + (activity.alternateSkills.join(", ") || "—"));
+    console.log("knowledge: " + activity.knowledge.join("；"));
+    console.log("inputs: " + activity.inputs.join("；"));
+    console.log("human decisions: " + activity.humanDecisions.join("；"));
+    console.log("agent operations: " + activity.agentOperations.join("；"));
+    console.log("tools: " + activity.tools.join("；"));
+    console.log("outputs: " + activity.outputs.join("；"));
+    console.log("happy path: " + activity.happyPath);
+    console.log("negative: " + activity.negative);
+    console.log("stop conditions: " + activity.stopConditions.join("；"));
+    console.log("deterministic controls: " + activity.deterministicControls.join("；"));
+    console.log("greenfield: " + activity.greenfield);
+    console.log("brownfield: " + activity.brownfield);
+    console.log("skill note: " + activity.skillNote);
+    return 0;
+  }
+
+  if (!Object.hasOwn(METHOD_DOCUMENTS, id)) {
+    console.error("FAIL: unknown method selector: " + id + "\n" + METHOD_USAGE);
+    return 2;
+  }
+  const doc = METHOD_DOCUMENTS[id];
+  const content = readText(join(ROOT, doc));
+  if (content === null) {
+    console.error("FAIL: method document missing: " + doc);
+    return 2;
+  }
+  if (json) {
+    console.log(JSON.stringify({
+      id, name: "AI-Native Spec-Driven Harness & Loop Engineering",
+      classification: "LOCAL_SYNTHESIS_NOT_INDUSTRY_STANDARD",
+      status: "METHOD_DOCUMENTED_AND_ROUTED",
+      pilot_status: "NOT_RUN",
+      harness_loop_runner_status: "NOT_IMPLEMENTED",
+      third_party_skills_installed: false,
+      document: doc,
+      content
+    }, null, 2));
+  } else {
+    console.log(content);
+  }
+  return 0;
+}
+
 // ---------------------------------------------------------------- doctor
 
 function cmdDoctor(argv) {
@@ -1025,42 +1126,6 @@ function methodTemplate() {
   return lines.join("\n");
 }
 
-function cmdMethod(argv) {
-  const json = argv.includes("--json");
-  const template = argv.includes("--template");
-  const id = argv.find(a => !a.startsWith("--"));
-  if (template) { console.log(methodTemplate()); return 0; }
-  if (!id) {
-    if (json) { console.log(JSON.stringify({ macroStages: MACRO_STAGES, activities: ACTIVITIES }, null, 2)); return 0; }
-    console.log("AI-Native Full-Stack Delivery · 8 macro stages / 18 activities");
-    for (const m of MACRO_STAGES) console.log("  " + m.id + " " + m.name.padEnd(18) + m.canonicalStages.join(", "));
-    console.log("\nActivities:");
-    for (const a of ACTIVITIES) console.log("  " + a.id + " " + a.name.padEnd(22) + a.stages.join(", "));
-    console.log("\nUse: xeng method <A01..A18> [--json] | xeng method --template | xeng matrix");
-    return 0;
-  }
-  const activity = activityById(id);
-  if (!activity) { console.error("FAIL: unknown activity: " + id + " (available: A01..A18)"); return 2; }
-  if (json) { console.log(JSON.stringify(activity, null, 2)); return 0; }
-  console.log(activity.id + " · " + activity.name);
-  console.log("stages: " + activity.stages.join(", "));
-  console.log("primary skill: " + activity.primarySkill + " | alternate: " + (activity.alternateSkills.join(", ") || "—"));
-  console.log("knowledge: " + activity.knowledge.join("；"));
-  console.log("inputs: " + activity.inputs.join("；"));
-  console.log("human decisions: " + activity.humanDecisions.join("；"));
-  console.log("agent operations: " + activity.agentOperations.join("；"));
-  console.log("tools: " + activity.tools.join("；"));
-  console.log("outputs: " + activity.outputs.join("；"));
-  console.log("happy path: " + activity.happyPath);
-  console.log("negative: " + activity.negative);
-  console.log("stop conditions: " + activity.stopConditions.join("；"));
-  console.log("deterministic controls: " + activity.deterministicControls.join("；"));
-  console.log("greenfield: " + activity.greenfield);
-  console.log("brownfield: " + activity.brownfield);
-  console.log("skill note: " + activity.skillNote);
-  return 0;
-}
-
 function cmdMatrix(argv) {
   const json = argv.includes("--json");
   const rows = deliveryMatrix();
@@ -1127,10 +1192,10 @@ function usage() {
     "  xeng doctor [path]",
     "  xeng maturity [path] [--json]",
     "  xeng playbook [id] [--json]",
+    "  xeng method [overview|sources|pilot|design|skills|activities|matrix|A01..A18] [--json] [--template]",
     "  xeng validate-registry",
     "  xeng selftest",
     "  xeng task <type> [--tier=A] [--mode=new] [--type=saas]",
-    "  xeng method [A01..A18] [--json] [--template]",
     "  xeng matrix [--json]",
     "  xeng delivery [--json]",
     "  xeng skills-matrix [--json]",
@@ -1151,10 +1216,10 @@ export function main(argv = process.argv.slice(2)) {
     case "doctor": return cmdDoctor(rest);
     case "maturity": return cmdMaturity(rest);
     case "playbook": return cmdPlaybook(rest);
+    case "method": return cmdMethod(rest);
     case "validate-registry": return cmdValidateRegistry(rest);
     case "selftest": return cmdSelftest(rest);
     case "task": return cmdTask(rest);
-    case "method": return cmdMethod(rest);
     case "matrix": return cmdMatrix(rest);
     case "delivery": return cmdDelivery(rest);
     case "skills-matrix": return cmdSkillsMatrix(rest);

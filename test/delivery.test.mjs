@@ -137,7 +137,7 @@ test("delivery matrix has a macro stage and activities for every canonical stage
 });
 
 test("xeng method/matrix/delivery/skills-matrix expose JSON and never claim execution",()=>{
-  const method=cli("method","--json");
+  const method=cli("method","activities","--json");
   assert.equal(method.status,0,method.stderr);
   const m=JSON.parse(method.stdout);
   assert.equal(m.macroStages.length,8);

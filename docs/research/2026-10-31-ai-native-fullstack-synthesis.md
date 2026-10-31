@@ -19,6 +19,7 @@
 
 - `D:\Projects\X-SuperPlay-AI-Engineering-OS\03-ai-coding\ai-native-spec-harness-loop.md` — 本地综合范式（非规范性）。
 - `D:\Projects\X-SuperPlay-AI-Engineering-OS\09-reference\ai-native-upstream-source-manifest.md` — 上游 pin 与许可证记录。
+- 合并进本仓库的 `docs/methods/`（来自 PR #28）：`AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md`、`UPSTREAM-SOURCES.md`、`PROJECT-PILOT.md`、`AI-NATIVE-PRODUCT-AGENT-DESIGN.md`、`SKILL-ENGINEERING-FACTORY.md`。
 - 任务简报本身对 R1/R2/R3 的结构化摘要（18 阶段、8 宏阶段、Skills 分级、30+60 天路线、灯塔项目等）。
 
 因此：**本文件不对 R1/R2/R3 做逐段比对**；只使用任务简报中可核验的结构性主张，并明确标注哪些主张无法核实。任何“报告原文说 X”的措辞都限定为“任务简报转述”。
@@ -76,7 +77,9 @@
 | Skills bundle | `skills/`、`src/catalog.mjs` `SKILLS` | 已实现（CANDIDATE） | 8 个自包含候选 |
 | 证据模型 | `src/evidence.mjs` | 已实现 | 状态机 + 本地导入不可信 |
 | 工作区资产 | `src/workspace.mjs` | 已实现 | 16 份草案 |
-| 8 宏阶段 / 18 活动 | `src/delivery.mjs`（新增） | **已实现（兼容视图）** | CLI：`xeng method` / `matrix` |
+| 8 宏阶段 / 18 活动 | `src/delivery.mjs`（新增） | **已实现（兼容视图）** | CLI：`xeng method activities` / `matrix` |
+| 方法文档入口 | `docs/methods/`（PR #28） | 已实现 | `xeng method overview/sources/pilot/design/skills` |
+| 方法论回归 | `test/methodology.test.mjs`（PR #28） | 已实现 | CLI 可发现性与来源 pin |
 | Harness Ticket 契约 | `src/delivery.mjs`、`src/starter.mjs` | **部分实现** | 字段已生成；工具层强制未实现 |
 | 有界 Loop 运行时 | `src/delivery.mjs` | **仅契约** | 无自动编排器；`LOOP_DEFAULT` 为保守参数 |
 | 商业交付 Gate | `src/delivery.mjs` `DELIVERY_STATES` | **已定义** | 与既有证据层对齐；未接入流水线 |
@@ -99,7 +102,7 @@ GitHub API 实测：
 | `Fission-AI/OpenSpec` | v1.16.0 = `27c0515724decc633818c735ee596481eec78a8b` | MIT | `REPO_METADATA_VERIFIED` |
 | `expo/skills` | HEAD `05754e71d02abe0d2d7a2fb5259ccac41f5ea59c` | MIT | `REPO_METADATA_VERIFIED` |
 
-**关键更正**：任务简报/报告称 Matt Pocock v1.3.1 为 `59db609`。实测 `59db609eb1e18aaf59b63284d0e52255aff0c63c` 是 2026-10-27 的另一个提交（“Close blank issues and route requests by kind (#1169)”），**不是 v1.3.1 tag**。旧 manifest 的 pin `5beb35b`（2026-10-19）比 v1.3.1 领先 47 个提交。`src/delivery.mjs` 已记录 `reportedClaimStatus: "MISMATCH"`。
+**关键更正**：任务简报/报告称 Matt Pocock v1.3.1 为 `59db609`。实测 `59db609eb1e18aaf59b63284d0e52255aff0c63c` 是 2026-10-27 的另一个提交（“Close blank issues and route requests by kind (#1169)”），**不是 v1.3.1 tag**。旧 manifest 与 `docs/methods/UPSTREAM-SOURCES.md` 使用的 `5beb35b`（2026-10-19）是研究用 pin，比 v1.3.1 领先 47 个提交；它不是 tag，也不应被误写成 v1.3.1。`src/delivery.mjs` 已记录 `reportedClaimStatus: "MISMATCH"`。
 
 重叠关系（`equivalent_to` / `conflicts_with`）：
 

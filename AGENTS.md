@@ -1,10 +1,10 @@
 # AGENTS.md
 
-This public repository owns the **website**, the curated public catalog and safe plan generation. It does not own engineering methodology, private Skills, production evidence, or customers.
+This public repository owns the **website, public engineering methodology/adaptation, runtime catalog, profiles, candidate Skills, offline CLI and safe plan generation**. It does **not** own third-party Skill implementations, private governance material, customer data, production evidence, or customer repositories. The method guide is navigation/advice; existing 11-stage lifecycle and project-local rules remain authoritative.
 
 ## Required workflow
 
-- Read README.md, docs/ARCHITECTURE.md, src/catalog.mjs, src/engine.mjs, tests before changes.
+- Read README.md, docs/ARCHITECTURE.md, src/catalog.mjs, src/engine.mjs, tests before changes. For AI-native methodology changes also read docs/methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md, docs/methods/UPSTREAM-SOURCES.md and docs/methods/PROJECT-PILOT.md.
 - For a catalog update, confirm the authoritative Engineering OS commit and registry via authorized access. Do NOT copy private normative documents or SKILL.md bodies.
 - Preserve 11 unique stages, 8 candidate skills, and the four original routes unless an authorized source change justifies migration.
 - Compatibility views (8 macro stages, 18 activities, delivery gates) must map back to the 11 canonical stages; never introduce a second lifecycle or state machine.

@@ -2,9 +2,28 @@
 
 **AI-Native 软件交付工作台。** 从一个真实项目出发，选择项目类型、项目状态与任务类型，组合工程 Profiles 与候选 Skills，得到可执行的十一阶段路线、工作区资产和 Agent 交接。
 
-本仓库是这套工程运行时的**当前所有者**：生命周期、任务路由、Profiles、Skills、xeng CLI 与证据模型都在这里维护。历史 Engineering OS 已被标记为 superseded 并归档，只作为来源记录，不再是运行时依赖。
+本仓库是这套工程运行时的**当前所有者**：生命周期、任务路由、Profiles、Skills、xeng CLI 与证据模型都在这里维护。历史 Engineering OS 已标记为 superseded 并退役，其 GitHub 仓库由所有者决定处置；它只作为来源记录，不再是运行时依赖。
 
 > 生成 ≠ 已安装 ≠ 已测试 ≠ 已发布 ≠ 已验收。所有导出的证据状态默认 `NOT_RUN`。
+
+## 完整开发范式：AI-Native Spec-Driven Harness & Loop Engineering
+
+**中文：AI 原生规格驱动的 Harness–Skills–Loop 全栈工程范式。** 本仓已维护完整的 [方法定义与 Workbench 映射](docs/methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md)、[Matt Pocock / Harness / Ralph 的固定版本上游参考](docs/methods/UPSTREAM-SOURCES.md)、[真实全栈灯塔项目试点 SOP 和模板](docs/methods/PROJECT-PILOT.md)、[AI 原生产品与 Agent 架构设计](docs/methods/AI-NATIVE-PRODUCT-AGENT-DESIGN.md)、[Skill Engineering Factory 与代码专家 Skill 生成方法](docs/methods/SKILL-ENGINEERING-FACTORY.md)。它不是原作者或招聘方的官方命名，也不是新的第二套生命周期。
+
+```text
+需求 → Discovery → Spec/AC → Tracer Tickets → Skills → Harness
+     → 单任务 Bounded Loop（实现→测试→双轴评审→证据）→ 全栈 Demo → 授权发布/复盘
+```
+
+```bash
+node tools/xeng.mjs method          # 完整范式（只读）
+node tools/xeng.mjs method sources  # 上游固定版本、许可与对应关系
+node tools/xeng.mjs method pilot    # 项目纵切 SOP、Harness/Loop 记录模板与启动提示词
+node tools/xeng.mjs method design   # AI 原生产品和 Agent 架构设计
+node tools/xeng.mjs method skills   # Skill 工厂/代码专家 Skill 创建与评测方法
+```
+
+**完成度边界**：方法文档与离线 CLI 已纳入本仓版本控制；Skill Factory 自动生成器、Harness/Loop 独立 Runner **未实现**；外部 Skills **未安装**；真实项目 Dogfood、Provider/设备与消费者验收仍为 `NOT_RUN`。文档和 CI 不证明产品已交付。
 
 ## 三分钟运行
 
@@ -88,6 +107,7 @@ node tools/xeng.mjs audit ../your-project --json
 node tools/xeng.mjs doctor ../your-project
 node tools/xeng.mjs maturity ../your-project --json
 node tools/xeng.mjs playbook rag
+node tools/xeng.mjs method
 node tools/xeng.mjs validate-registry
 node tools/xeng.mjs task bug --type=saas --tier=B
 ~~~
@@ -166,7 +186,7 @@ npm run probe -- --target ../your-project --type saas --output project-baseline.
 
 ## 历史来源与迁移
 
-- 历史来源（只读溯源，不是运行依赖）：`Xander-Xai/X-SuperPlay-AI-Engineering-OS@8553124f238ab463d4a50debad34e871ef8de060`。该仓已标记 superseded 并归档；归档状态不改变冻结快照。
+- 历史来源（只读溯源，不是运行依赖）：`Xander-Xai/X-SuperPlay-AI-Engineering-OS@8553124f238ab463d4a50debad34e871ef8de060`。该仓已标记 superseded 并退役；退役状态不改变冻结快照。
 - 来源当前 HEAD（仅观测）：`fa20126e93c57b1faab56d9c4cecc717b1eea46e`；早期 3 个提交见 [migration/eng-os-delta-audit-20261031.json](migration/eng-os-delta-audit-20261031.json)，安全与归档增量见 [migration/eng-os-post-freeze-increments-20261031.json](migration/eng-os-post-freeze-increments-20261031.json)。
 - 通用治理参考（未复制正文）：`Xander-Xai/AI-Native-Work-Learning-OS@15beebf955d1f2a515e2791dc8b375806598d36a`；PR #57 已于 2026-10-31 合并，契约正文未复制，采用状态仍为 `PARTIAL`。
 - 迁移清单：[migration/eng-os-split-20261031.json](migration/eng-os-split-20261031.json)
@@ -175,7 +195,7 @@ npm run probe -- --target ../your-project --type saas --output project-baseline.
 - 最终迁移审计：[FINAL_ENGINEERING_MIGRATION_AUDIT.md](FINAL_ENGINEERING_MIGRATION_AUDIT.md)
 - 安全与独立验收：[SECURITY_AND_MIGRATION_INDEPENDENT_ACCEPTANCE.md](SECURITY_AND_MIGRATION_INDEPENDENT_ACCEPTANCE.md)
 
-迁移 PR #12 已合并为 `74402bf`；Windows CRLF 修复 PR #13 已合并为 `32e0342`。两者 CI 通过，Pages 已部署。旧仓已由所有者标记 superseded 并归档；Workbench 不依赖其归档内容，删除或进一步处置仍需所有者单独确认。
+迁移 PR #12 已合并为 `74402bf`；Windows CRLF 修复 PR #13 已合并为 `32e0342`。两者 CI 通过，Pages 已部署。旧仓已由所有者标记 superseded 并批准退役；Workbench 不依赖其内容，GitHub 侧的具体处置以所有者决定为准。
 
 ## 验证状态
 
@@ -198,6 +218,11 @@ npm run probe -- --target ../your-project --type saas --output project-baseline.
 - [迁移与兼容表](docs/MIGRATION.md)
 - [跨仓治理契约对齐](docs/CONTRACT_ALIGNMENT.md)
 - [实际开发 SOP](docs/PLAYBOOK.md)
+- [AI 原生 Spec–Skills–Harness–Loop 完整开发范式](docs/methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md)
+- [Matt Pocock / Harness / Ralph 固定上游来源](docs/methods/UPSTREAM-SOURCES.md)
+- [灯塔项目全栈实战及验收模板](docs/methods/PROJECT-PILOT.md)
+- [AI 原生产品设计与 Agent 架构设计模板](docs/methods/AI-NATIVE-PRODUCT-AGENT-DESIGN.md)
+- [Skill Engineering Factory 与代码专家 Skill 示例](docs/methods/SKILL-ENGINEERING-FACTORY.md)
 - [工程 Playbook](docs/PLAYBOOKS.md)
 - [项目级 Git 工作流](docs/GIT_WORKFLOW.md)
 - [工程成熟度 L0–L6](docs/MATURITY.md)

@@ -1,5 +1,7 @@
 # Workbench 架构与所有权
 
+> 方法导航：[AI-Native Spec–Skills–Harness–Bounded Loop](methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md)、[AI 产品与 Agent 架构设计](methods/AI-NATIVE-PRODUCT-AGENT-DESIGN.md)、[Skill Factory](methods/SKILL-ENGINEERING-FACTORY.md)、[灯塔项目试点](methods/PROJECT-PILOT.md)。以上是本仓公开方法入口，复用原有生命周期/治理与权限模型，不是第二套运行时。
+
 ## 系统边界
 
 Workbench 是工程运行时的当前所有者。它拥有生命周期、任务路由、Profiles、标准摘要、Skills bundle、CLI 与证据模型。网站只是这些能力的本地可视化入口。
