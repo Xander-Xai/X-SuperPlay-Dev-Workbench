@@ -18,10 +18,14 @@ Workbench runtime (this repository)
   src/delivery.mjs       8 macro stages / 18 activities / delivery gates / skills matrix (compatibility view)
   src/identity.mjs       shared project_id / base_sha header for every artifact
   src/evidence.mjs       state machine + local report import
+  src/evidence-identity.mjs  sha256 identities for reports, artifacts and runtime receipts
+  src/starter.mjs        Spec + tracer tickets, including ticket-harness contract fields
+  src/handoff.mjs        per-stage Agent handoff and forbidden-action notes
+  src/baseline.mjs       browser-safe normalization of the read-only project baseline
   src/install-contract.mjs  agent destinations + skill dependency closure
   src/app.mjs            browser UI (no network, no filesystem)
         │
-        ├── tools/xeng.mjs          init / audit / doctor / maturity / playbook / method / matrix / delivery / skills-matrix / validate-registry / selftest / task
+        ├── tools/xeng.mjs          init / audit / doctor / maturity / playbook / method / matrix / delivery / skills-matrix / assemble / agent-check / validate-registry / selftest / task
         ├── tools/skill-kit.mjs     bundled install / verify / update / uninstall / rollback
         ├── tools/project-probe.mjs read-only local baseline
         └── tools/build-site.mjs    dist allowlist
@@ -58,6 +62,15 @@ Workbench runtime (this repository)
 5. Skills 通过依赖闭包解析；所有 Skill 初始 `CANDIDATE / installed=false`，晋级需要真实使用证据。
 6. 每个阶段初始 `state = NOT_RUN`，证据种类来自阶段定义与任务定义。
 7. 4 条产品路线各自带一份 `ROUTE_SOPS`：前置条件、平台不可替代环节、必须覆盖的负例、Gate、失败处理与回退；复用 11 阶段，不建立第二套生命周期。
+
+## 方法视图与学习文档
+
+在 11 阶段权威生命周期之上，仓库提供两层**只读兼容视图**，不建立第二套状态机：
+
+- `src/delivery.mjs`：8 宏阶段 G0–G7、18 活动 A01–A18、商业交付状态、有界 Loop、Ticket Harness 契约与 Skills 冲突矩阵。`validateDelivery()` 接入 `validateCatalog()` 与 `npm run check`。
+- `docs/METHOD.md`：上述机器可读视图的人类可读导航；`xeng method / matrix / delivery / skills-matrix` 输出同一份数据。
+
+学习材料位于 `docs/learning/`（START-HERE、18 活动知识、阶段到 Skill 矩阵、可复制提示词、产品指南、L1–L6 与 30+60 天路线、验收清单），完整方法文档位于 `docs/methods/`。两者都是文档层：不安装 Skill、不运行 Loop、不提升证据状态，也不进入 `dist/` 发布产物。8 宏阶段与 18 活动必须映射回 11 权威阶段；`npm run check` 会拒绝孤儿阶段、重复映射或活动缺少主用 Skill。
 
 ## 证据模型
 
@@ -111,10 +124,11 @@ catalog ──► routing ──► engine ──► workspace ──► playboo
    │
    ├──► baseline（浏览器安全）◄── project-probe（Node，只读）
    ├──► maturity（纯函数，复用 audit checks）
+   ├──► evidence-identity（sha256 身份，纯函数）
    └──► delivery（纯数据兼容视图：8 宏阶段 / 18 活动 / 交付 Gate / Skills 矩阵）
 ~~~
 
-`engine.mjs` 不导入 `workspace.mjs`；`workspace.mjs` 导入 `engine.mjs` 的 `toManifest`，保持单向依赖。`identity.mjs` 只依赖 `catalog.mjs`，被 starter / handoff / workspace 共享。`playbooks.mjs`、`git-workflow.mjs`、`maturity.mjs` 均为浏览器安全纯模块。CLI 工具导入 `src/`，反向不成立。
+`engine.mjs` 不导入 `workspace.mjs`；`workspace.mjs` 导入 `engine.mjs` 的 `toManifest`，保持单向依赖。`identity.mjs` 只依赖 `catalog.mjs`，被 starter / handoff / workspace 共享。`playbooks.mjs`、`git-workflow.mjs`、`maturity.mjs`、`delivery.mjs`、`evidence-identity.mjs` 均为浏览器安全纯模块。CLI 工具导入 `src/`，反向不成立。
 
 ## 版本与漂移
 

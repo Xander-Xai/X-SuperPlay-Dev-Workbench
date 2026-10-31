@@ -321,7 +321,8 @@ function renderWorkflow() {
       ])
     ));
   } else if (activeWorkflowTab === "profiles") {
-    body.append(newElement("p", "muted", "17 个 Profile（14 个基础 + 3 个叠加）。叠加 Profile 只作用于适用项目类型。"));
+    const overlayCount = PROFILES.filter(p => p.overlay).length;
+    body.append(newElement("p", "muted", PROFILES.length + " 个 Profile（" + (PROFILES.length - overlayCount) + " 个基础 + " + overlayCount + " 个叠加）。叠加 Profile 只作用于适用项目类型。"));
     body.append(table(
       ["Profile", "适用", "类型", "必需产物", "必需测试"],
       PROFILES.map(p => [p.id, p.appliesWhen, p.overlay ? "OVERLAY" : "BASE", p.required.artifacts.join("；"), p.required.tests.join("；")])

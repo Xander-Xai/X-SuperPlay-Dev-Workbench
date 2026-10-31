@@ -4,6 +4,8 @@
 
 本文件与 `docs/methods/` 的关系：`docs/methods/` 是完整方法文档（范式、上游来源、灯塔试点、AI 产品/Agent 设计、Skill 工厂）；本文件是其上的**机器可读兼容视图**（8 宏阶段 / 18 活动 / 交付 Gate）。`xeng method` 同时服务两者。
 
+完整学习体系（18 活动知识、阶段到 Skill 矩阵、可复制提示词、四类产品指南、L1–L6 学习路线）见 [docs/learning/START-HERE.md](learning/START-HERE.md)。
+
 ## 三层关系
 
 ~~~text

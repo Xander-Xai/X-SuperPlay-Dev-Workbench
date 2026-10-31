@@ -26,7 +26,7 @@ Workbench 现在是工程运行时的所有者。旧 Engineering OS 只保留为
 
 - 不复制私有 SKILL.md 正文；8 个 Skill 以公开、自包含的 bundle 重写。
 - 不复制私有治理文件、客户证据、内部路径或凭证。
-- 生命周期保留 11 个唯一阶段；任务路由 13 种；Profiles 14 个基础 + 3 个叠加；Skills 8 个候选；4 条路线各有独立 SOP。
+- 生命周期保留 11 个唯一阶段；任务路由 13 种；Profiles 17 个（13 个基础 + 4 个叠加：AI 应用、RAG、Agent、支付）；Skills 8 个候选；4 条路线各有独立 SOP。
 - 所有导出证据保持 `NOT_RUN`。
 
 ### 2026-10-31 最后一轮工程内容迁移
@@ -61,7 +61,7 @@ Workbench 现在是工程运行时的所有者。旧 Engineering OS 只保留为
 |---|---|---|---|
 | 生命周期阶段 | 私有 lifecycle 文档 | `src/catalog.mjs` `STAGES` | 11 个唯一阶段，公开语义重写 |
 | 任务路由 | `03-ai-coding/task-router.yaml` | `TASKS` + `src/routing.mjs` | 13 种任务，映射到 11 阶段 |
-| Profiles | `registry/profiles.yaml` + `04-profiles/*` | `PROFILES` | 14 基础 + 3 叠加 |
+| Profiles | `registry/profiles.yaml` + `04-profiles/*` | `PROFILES` | 17 个（13 基础 + 4 叠加） |
 | 路线 SOP | 分散在旧模板与检查单 | `ROUTE_SOPS` + `src/workspace.mjs#routeSopMarkdown` | 4 条路线的前置、平台限制、负例、Gate、失败处理与回退 |
 | Skills 注册表 | `registry/skills.yaml` | `SKILLS` | 8 个候选，完整元数据，`installed=false` |
 | 标准 | `registry/standards.yaml` | Profile 义务字段 + Git/PR 工作流 | 10 类标准语义并入 required/recommended；Git 细则结构化 |
@@ -101,7 +101,7 @@ Workbench 现在是工程运行时的所有者。旧 Engineering OS 只保留为
 | `01-lifecycle` | 12 | 11 个阶段迁入 `STAGES`；外部需求接入并入 `intake` 语义并新增需求简报模板 |
 | `02-standards` | 10 | Profile 义务字段 + `src/git-workflow.mjs`（分支/提交/PR/Git）+ PR 模板 |
 | `03-ai-coding` | 10 | 路由、验证、Agent 交接、停止条件、worktree 与逐 Agent 操作要点全部承接 |
-| `04-profiles` | 18 | 14 个基础 Profile 迁入；三份 Profile 手册重构为 `src/playbooks.mjs` |
+| `04-profiles` | 18 | 17 个 Profile（13 基础 + 4 叠加）迁入；三份 Profile 手册重构为 `src/playbooks.mjs` |
 | `05-skills` | 9 | 8 个 Skill 自包含重写；README 不迁入 |
 | `06-templates` | 8 | Spec、Tickets、ADR、Profile、验证、发布、postmortem、PR、review、外部需求全部承接；工作区 16 项 |
 | `07-checklists` | 4 | 发布与验证为专用产物；AI 与安全检查由 Profile 义务、Playbook 与 `xeng audit` 行为等效承接 |
@@ -127,12 +127,12 @@ Workbench 现在是工程运行时的所有者。旧 Engineering OS 只保留为
 
 ### 安全与归档增量（#10、#12–#17）
 
-来源仓随后继续前进到 `fa20126e93c57b1faab56d9c4cecc717b1eea46e`（`ahead_by: 10`）。这些增量单独记录在 [eng-os-post-freeze-increments-20261031.json](../migration/eng-os-post-freeze-increments-20261031.json)，不修改冻结快照 106 文件的任何 disposition：
+来源仓随后继续前进到 `fa20126e93c57b1faab56d9c4cecc717b1eea46e`（`ahead_by: 10`），之后又观测到 `34bce00cfc18db73bac59aa44c4df42ef9110ba9`；最新观测值记录在 `src/catalog.mjs` 的 `PROVENANCE.currentHeadObserved` 与上方事实表。这些增量单独记录在 [eng-os-post-freeze-increments-20261031.json](../migration/eng-os-post-freeze-increments-20261031.json)，不修改冻结快照 106 文件的任何 disposition：
 
 - **#10 安全加固**：密钥输出脱敏、fail-closed 门禁、扩展密钥形态、Agent 配置扫描、密钥文件扫描、symlink-safe `init`、密钥文件忽略、`SECURITY.md`、CI 最小权限/并发/超时/固定 action SHA、actions-only Dependabot，均已在 Workbench 实现并有负例测试。
 - **#12 / #13 依赖升级**：来源仓的 action 版本升级；Workbench 使用自己的固定 SHA 与 Dependabot 策略，不继承来源工作流；无 Python 运行时。
 - **#14 公开/私有分离**：Workbench 不复制私有仓库注册表、客户证据、审计细节或 `OPC-LINK.yaml`。来源改用 MIT，但 Workbench 许可证仍为 `UNLICENSED-PROPRIETARY`，需所有者单独决定。
-- **#15–#17 归档**：来源仓已标记 superseded 并新增归档索引。Workbench 仍为当前运行时所有者，不读取归档作为依赖。
+- **#15–#17 归档 / 退役**：来源仓随后被所有者标记 superseded 并批准退役；归档索引与退役状态不改变冻结快照。Workbench 仍为当前运行时所有者，不读取来源仓作为依赖。
 
 ### 缺口最终处置
 

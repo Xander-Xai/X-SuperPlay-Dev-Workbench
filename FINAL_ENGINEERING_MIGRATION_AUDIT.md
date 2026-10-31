@@ -29,7 +29,7 @@
 
 ## 1. 原仓全部源文件的语义去向
 
-机器可读清单：[migration/eng-os-semantic-reconciliation-20261031.json](../migration/eng-os-semantic-reconciliation-20261031.json)
+机器可读清单：[migration/eng-os-semantic-reconciliation-20261031.json](migration/eng-os-semantic-reconciliation-20261031.json)
 
 每条记录包含要求的八列：`source_path / source_sha / semantic_capability / destination / implementation / test / evidence / disposition`。
 
@@ -52,7 +52,7 @@
 | `01-lifecycle` | 12 | 11 阶段进入 `STAGES`；外部需求接入并入 `intake` 并新增简报模板 |
 | `02-standards` | 10 | Profile 义务 + `src/git-workflow.mjs` + PR 模板 |
 | `03-ai-coding` | 10 | 路由、验证、交接、停止条件、worktree、逐 Agent 操作全部承接 |
-| `04-profiles` | 18 | 14 个基础 Profile；三份手册重构为 Playbook |
+| `04-profiles` | 18 | 17 个 Profile（13 基础 + 4 叠加）；三份手册重构为 Playbook |
 | `05-skills` | 9 | 8 个 Skill 自包含重写；README 不迁入 |
 | `06-templates` | 8 | Spec/Tickets/ADR/验证/发布/复盘/PR/Review/外部需求全部承接 |
 | `07-checklists` | 4 | 发布与验证专用产物；AI 与安全检查行为等效 |
@@ -142,7 +142,7 @@ worktree 隔离与 Claude Code / Codex / OpenCode 的操作要点进入 `GIT_WOR
 | `npm run scan` | `PASS_NO_ACTIVE_DEPENDENCY`，`active_count=0` |
 | `src/catalog.mjs` | `PROVENANCE` / `OWNER` / `GOVERNANCE` / `RUNTIME` 显式分离；来源 HEAD 仅观测 |
 | Skill Kit | 只从本仓 `skills/` 读取；`--source` 被拒绝 |
-| `npm run build` | `dist` 仅含 `index.html`、`styles.css`、17 个 `src/*.mjs`、`.nojekyll`；不含 `tools/`、`docs/`、`skills/`、`migration/` |
+| `npm run build` | `dist` 仅含 `index.html`、`styles.css`、`src/*.mjs` 与 `.nojekyll`；不含 `tools/`、`docs/`、`skills/`、`migration/` |
 | 网站 CSP | `default-src 'self'`、`connect-src 'none'`、`form-action 'none'`；无 Token、无远程脚本、无上传 |
 | CLI | `tools/xeng.mjs` 本地 Node；`init` 默认 dry-run；`assemble` 需 `--apply --confirm-reviewed` |
 | 历史引用 | 仅出现在显式 allowlist 文件；不在运行时路径 |

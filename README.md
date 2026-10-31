@@ -10,6 +10,8 @@
 
 **中文：AI 原生规格驱动的 Harness–Skills–Loop 全栈工程范式。** 本仓已维护完整的 [方法定义与 Workbench 映射](docs/methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md)、[Matt Pocock / Harness / Ralph 的固定版本上游参考](docs/methods/UPSTREAM-SOURCES.md)、[真实全栈灯塔项目试点 SOP 和模板](docs/methods/PROJECT-PILOT.md)、[AI 原生产品与 Agent 架构设计](docs/methods/AI-NATIVE-PRODUCT-AGENT-DESIGN.md)、[Skill Engineering Factory 与代码专家 Skill 生成方法](docs/methods/SKILL-ENGINEERING-FACTORY.md)。它不是原作者或招聘方的官方命名，也不是新的第二套生命周期。
 
+**学习入口**：[完整开发流程与 Skills 学习体系](docs/learning/START-HERE.md) — 18 活动知识、阶段到 Skill 矩阵、可复制提示词、四类产品指南、L1–L6 学习路线、30+60 天路线与[文档验收清单](docs/learning/ACCEPTANCE-CHECKLIST.md)。
+
 ```text
 需求 → Discovery → Spec/AC → Tracer Tickets → Skills → Harness
      → 单任务 Bounded Loop（实现→测试→双轴评审→证据）→ 全栈 Demo → 授权发布/复盘
@@ -83,6 +85,8 @@ npm run dev
 
 ~~~bash
 node tools/xeng.mjs method --template   # 8 宏阶段 × 18 活动 × 11 阶段矩阵
+node tools/xeng.mjs method activities   # 列出 G0–G7 与 A01–A18
+node tools/xeng.mjs method A04 --json   # 单项活动的完整字段
 node tools/xeng.mjs matrix --json
 node tools/xeng.mjs delivery --json
 node tools/xeng.mjs skills-matrix --json
@@ -187,7 +191,7 @@ npm run probe -- --target ../your-project --type saas --output project-baseline.
 ## 历史来源与迁移
 
 - 历史来源（只读溯源，不是运行依赖）：`Xander-Xai/X-SuperPlay-AI-Engineering-OS@8553124f238ab463d4a50debad34e871ef8de060`。该仓已标记 superseded 并退役；退役状态不改变冻结快照。
-- 来源当前 HEAD（仅观测）：`fa20126e93c57b1faab56d9c4cecc717b1eea46e`；早期 3 个提交见 [migration/eng-os-delta-audit-20261031.json](migration/eng-os-delta-audit-20261031.json)，安全与归档增量见 [migration/eng-os-post-freeze-increments-20261031.json](migration/eng-os-post-freeze-increments-20261031.json)。
+- 来源当前 HEAD（仅观测）：`34bce00cfc18db73bac59aa44c4df42ef9110ba9`（`src/catalog.mjs` 的 `PROVENANCE.currentHeadObserved` 为同一值）；早期 3 个提交见 [migration/eng-os-delta-audit-20261031.json](migration/eng-os-delta-audit-20261031.json)，安全与退役增量见 [migration/eng-os-post-freeze-increments-20261031.json](migration/eng-os-post-freeze-increments-20261031.json)。
 - 通用治理参考（未复制正文）：`Xander-Xai/AI-Native-Work-Learning-OS@15beebf955d1f2a515e2791dc8b375806598d36a`；PR #57 已于 2026-10-31 合并，契约正文未复制，采用状态仍为 `PARTIAL`。
 - 迁移清单：[migration/eng-os-split-20261031.json](migration/eng-os-split-20261031.json)
 - 文件级语义对账：[migration/eng-os-semantic-reconciliation-20261031.json](migration/eng-os-semantic-reconciliation-20261031.json)（冻结快照 106/106 文件，逐项 `disposition`）
@@ -201,11 +205,12 @@ npm run probe -- --target ../your-project --type saas --output project-baseline.
 
 | 项 | 状态 |
 |---|---|
-| `npm run check` / `npm test` / `npm run verify` / `npm run build` | Windows 11 本地通过；远端 CI 在 `74402bf`、`32e0342` 通过 |
+| `npm run check` / `npm test` / `npm run verify` / `npm run build` | Windows 11 当前工作树通过（154 passed / 1 skipped，Node 24.16.0）；`main` 最新远端 CI 在 `d8a54dc` 通过 |
+| 学习体系分支（`docs/ai-native-learning-system`，PR #31） | 本地 `verify` / `build` 通过；远端检查尚未报告；合入前不代表 `main` 已包含 |
 | 浏览器交互与移动端布局 | 1440px / 390px 无头 Chrome 截图与脚本化交互通过；真机未验证 |
 | Windows 11 Skill 安装 / 更新 / 卸载 / 回滚 | 本地 fixture 通过；三个 Agent 的真实加载未全部验证 |
 | 真实项目 Dogfood / 真机 / 生产发布 | `BLOCKED`：没有获得授权的真实小程序 / SaaS 项目 |
-| GitHub Pages | 已部署：<https://xander-xai.github.io/X-SuperPlay-Dev-Workbench/> |
+| GitHub Pages | 已部署：<https://xander-xai.github.io/X-SuperPlay-Dev-Workbench/>（最近 `main` Pages run 41195396233 成功） |
 | 工程内容迁移（G-01…G-05、三份 SOP） | PR #19 合并为 `b2e29ae`；main CI run 41179291809 通过；Pages 已部署（run 41179291799）；文件级对账 106/106 |
 
 **CI 通过只说明本仓库代码检查通过，不代表用户项目、真实设备或生产交付已验收。**
@@ -214,6 +219,13 @@ npm run probe -- --target ../your-project --type saas --output project-baseline.
 
 - [架构与所有权](docs/ARCHITECTURE.md)
 - [方法视图（8/18/11 与交付 Gate）](docs/METHOD.md)
+- [完整开发流程与 Skills 学习体系](docs/learning/START-HERE.md)
+- [18 活动知识指南](docs/learning/FULLSTACK-LIFECYCLE-GUIDE.md)
+- [阶段到 Skill 矩阵](docs/learning/STAGE-TO-SKILL-MATRIX.md)
+- [Agent 提示词配方](docs/learning/AGENT-PROMPT-RECIPES.md)
+- [四类产品开发指南](docs/learning/PRODUCT-GUIDES.md)
+- [知识学习路线 L1–L6](docs/learning/KNOWLEDGE-ROADMAP.md)
+- [学习文档验收清单](docs/learning/ACCEPTANCE-CHECKLIST.md)
 - [三报告整合与证据对账](docs/research/2026-10-31-ai-native-fullstack-synthesis.md)
 - [迁移与兼容表](docs/MIGRATION.md)
 - [跨仓治理契约对齐](docs/CONTRACT_ALIGNMENT.md)

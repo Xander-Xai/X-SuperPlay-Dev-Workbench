@@ -72,7 +72,7 @@
 |---|---|---|---|
 | 11 阶段生命周期 | `src/catalog.mjs` `STAGES` | 已实现 | 唯一权威 |
 | 任务路由 | `src/routing.mjs` `composeRoute` | 已实现 | 13 任务 × 4 类型 × 4 Tier × 2 模式 |
-| Profiles | `src/catalog.mjs` `PROFILES` | 已实现 | 17 个（14 基础 + 3 叠加） |
+| Profiles | `src/catalog.mjs` `PROFILES` | 已实现 | 17 个（13 基础 + 4 叠加） |
 | 路线 SOP | `src/catalog.mjs` `ROUTE_SOPS` | 已实现 | SaaS / 企业 / 小程序 / APP |
 | Skills bundle | `skills/`、`src/catalog.mjs` `SKILLS` | 已实现（CANDIDATE） | 8 个自包含候选 |
 | 证据模型 | `src/evidence.mjs` | 已实现 | 状态机 + 本地导入不可信 |

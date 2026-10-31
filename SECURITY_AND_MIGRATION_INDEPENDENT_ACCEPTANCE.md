@@ -3,7 +3,7 @@
 - 验收日期：2026-10-31
 - 目标仓库：`Xander-Xai/X-SuperPlay-Dev-Workbench`
 - 只读来源：`Xander-Xai/X-SuperPlay-AI-Engineering-OS@8553124f238ab463d4a50debad34e871ef8de060`（冻结快照）
-- 来源当前 HEAD（仅观测）：`fa20126e93c57b1faab56d9c4cecc717b1eea46e`（已 superseded / archived）
+- 来源当前 HEAD（仅观测）：验收时为 `fa20126e93c57b1faab56d9c4cecc717b1eea46e`；后续观测为 `34bce00cfc18db73bac59aa44c4df42ef9110ba9`（已 superseded / retired，见 [docs/MIGRATION.md](docs/MIGRATION.md)）
 - 分支：`fix/security-secret-output-and-independent-acceptance`
 - PR：`#21`
 - 本报告只判定 Workbench 的安全整改与内容独立复核；真实项目、真机、staging、生产发布与旧仓退役是独立事项。
@@ -182,7 +182,7 @@ npm run verify                            # 131 passed, 1 skipped, 0 failed
 | #10 安全加固 | `MIGRATED_VERIFIED` | 脱敏、fail-closed、扩展规则、Agent 配置扫描、密钥文件扫描、symlink-safe init、密钥忽略、SECURITY.md、固定 action SHA、actions-only Dependabot |
 | #12 / #13 action 升级 | `NOT_APPLICABLE_TO_RUNTIME` | Workbench 使用自己的固定 SHA 与 Dependabot；无 Python 运行时 |
 | #14 公开/私有分离 | `EQUIVALENT_VERIFIED` | 未复制私有注册表、客户证据、审计细节或 OPC-LINK；许可证仍待所有者决定 |
-| #15–#17 归档 | `HISTORICAL_ONLY` | 来源已 superseded/archived；Workbench 仍是当前运行时所有者 |
+| #15–#17 归档 / 退役 | `HISTORICAL_ONLY` | 来源已 superseded 并由所有者批准退役；Workbench 仍是当前运行时所有者 |
 
 可复用安全规则逐项覆盖：
 
