@@ -192,7 +192,7 @@
     "browser": "HEADLESS_CHROME_1440_AND_390",
     "independent_verification": "NOT_RUN"
   },
-  "acceptance_commit": "PR_12_HEAD",
+  "acceptance_commit": "SEE_PR_12_HEAD",
   "unresolved": [
     { "id": "U-01", "item": "destination commit SHA", "status": "PINNED_527499F1AB3BEFDF5E87AF042E746853CBBCF665" },
     { "id": "U-02", "item": "browser interaction and mobile screenshot review", "status": "VERIFIED_HEADLESS_CHROME_1440_AND_390", "note": "Desktop 1440px and mobile 390px screenshots plus scripted interactions; no real-device review." },
@@ -200,7 +200,7 @@
     { "id": "U-04", "item": "real project dogfood, device and production release", "status": "NOT_RUN" },
     { "id": "U-05", "item": "old repository PR #5 and #6 merge state", "status": "NOT_DEPENDED_ON" },
     { "id": "U-06", "item": "license for redistribution", "status": "UNLICENSED_PROPRIETARY" },
-    { "id": "U-07", "item": "CI and Pages receipts for this branch", "status": "CI_PASS_RUN_41107653209_PAGES_PENDING_MERGE" },
+    { "id": "U-07", "item": "CI and Pages receipts for this branch", "status": "CI_PASS_SEE_PR_12_CHECKS_PAGES_PENDING_MERGE" },
     { "id": "U-08", "item": "unmigrated engineering constraints G-01..G-05", "status": "RECORDED_NOT_CLAIMED" },
     { "id": "U-09", "item": "full governance contract implementation", "status": "PARTIAL_ALL_SIX" }
   ],  "verification_status": "NOT_RUN",

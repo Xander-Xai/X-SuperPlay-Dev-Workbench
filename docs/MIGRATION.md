@@ -102,7 +102,7 @@ Workbench 现在是工程运行时的所有者。旧私有 Engineering OS 只保
 | U-04 | 真实项目 Dogfood、真机、生产发布 | `NOT_RUN` |
 | U-05 | 旧仓 PR #5 / #6 的最终合并状态 | 迁移基于冻结 SHA，不依赖未合并 PR |
 | U-06 | 许可证 | `UNLICENSED-PROPRIETARY`，需所有者确定 |
-| U-07 | CI 与 Pages 部署回执 | CI run `41107653209` 通过；Pages 仅在合并到 main 后发布，尚无回执 |
+| U-07 | CI 与 Pages 部署回执 | CI 已通过（见 PR #12 checks）；Pages 仅在合并到 main 后发布，尚无回执 |
 | U-08 | 未迁入的工程约束（G-01…G-05） | 分支/提交/PR 细则、worktree、postmortem/PR/review 模板、安全/AI 检查单、repositories 注册表；未宣称覆盖 |
 | U-09 | 治理契约完整实现 | 6 项均为部分实现；Finding 分类、不可变候选、晋级阶梯未实现 |
 
