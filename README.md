@@ -23,7 +23,7 @@ node tools/xeng.mjs method design   # AI 原生产品和 Agent 架构设计
 node tools/xeng.mjs method skills   # Skill 工厂/代码专家 Skill 创建与评测方法
 ```
 
-**完成度边界**：方法导航和 CLI 已提交到 PR 分支；Skill Factory 自动生成器、Harness/Loop 独立 Runner **未实现**；外部 Skills **未安装**；真实项目 Dogfood、Provider/设备与消费者验收仍为 `NOT_RUN`。文档和 CI 不证明产品已交付。
+**完成度边界**：方法文档与离线 CLI 已纳入本仓版本控制；Skill Factory 自动生成器、Harness/Loop 独立 Runner **未实现**；外部 Skills **未安装**；真实项目 Dogfood、Provider/设备与消费者验收仍为 `NOT_RUN`。文档和 CI 不证明产品已交付。
 
 ## 三分钟运行
 
