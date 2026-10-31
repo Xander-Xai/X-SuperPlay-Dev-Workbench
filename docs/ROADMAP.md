@@ -31,6 +31,19 @@
 - [ ] 三个 Agent 的真实 Skill 加载路径：`NOT_VERIFIED`。
 - [ ] 真实项目 Dogfood：`BLOCKED`（没有获得授权的真实小程序 / SaaS 项目）。
 
+## v0.2.1 工程内容补全（2026-10-31）
+
+目标：逐文件核对旧仓，补齐尚未承接的工程内容；不重做网站、不新增第二套生命周期。
+
+- [x] 文件级语义对账：冻结快照 106/106 文件，逐项 disposition。
+- [x] 三份 Profile 操作手册（AI 应用日常、RAG 从零、Agent 从零）重构为 `src/playbooks.mjs`、网站视图与 `xeng playbook`。
+- [x] 工作区新增实施计划、复盘、外部需求简报、PR 模板、Git 工作流、工程 Playbook；条目 10 → 16。
+- [x] G-01：`src/git-workflow.mjs`、`docs/GIT_WORKFLOW.md`、仓库级 PR 模板、`xeng init` 项目级 Git 指南。
+- [x] G-02：worktree 与 Claude Code / Codex / OpenCode 操作要点。
+- [x] G-03：postmortem、implementation-plan、external-demand、PR 模板。
+- [x] L0–L6 保留为 `xeng maturity` 缺口诊断；L6 不由静态审计宣称。
+- [ ] 独立第三方复核（`INDEPENDENT_REVIEW_NOT_RUN`）。
+
 ## v0.3：真实项目 Dogfood
 
 - [ ] 已有微信小程序真实仓库：固定 base SHA，导出 Spec + 3 张可执行 Ticket。

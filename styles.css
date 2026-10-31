@@ -222,3 +222,8 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,#9
 .evidence-import input[type=file]{margin-top:6px}
 @media(max-width:900px){.workspace-layout{grid-template-columns:1fr}.stat-row{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:600px){.stat-row{grid-template-columns:repeat(2,minmax(0,1fr))}.tabs{gap:6px}.tab{padding:8px 10px;font-size:10px}}
+.workflow-heading{margin:22px 0 6px;font-size:12px;font-weight:600;color:#d6e8df;letter-spacing:.04em}
+.playbook-card{margin:18px 0}
+.playbook-card p{color:#becbd3;font-size:11px;line-height:1.9;margin:8px 0}
+.playbook-code{background:#0b1520;border:1px solid var(--edge);border-radius:6px;padding:14px;font:10px/1.75 var(--mono);color:#c4d6e0;white-space:pre-wrap;word-break:break-word;overflow-x:auto}
+@media(max-width:600px){.workflow-body table{min-width:640px}}

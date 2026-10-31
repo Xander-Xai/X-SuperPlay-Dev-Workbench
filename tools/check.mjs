@@ -12,6 +12,7 @@ const essential=[
   "skills-grid","skill-search","skill-agent","skill-install-command","download-starter",
   "baseline-file","baseline-state","workflow-tabs","workflow-body",
   "workspace-files","workspace-preview","download-workspace-file","download-bundle",
+  "playbook-tabs","playbook-body",
   "evidence-body","install-command","copy-install","build-marker"
 ];
 for(const id of essential) if(!html.includes('id="'+id+'"'))failures.push("missing DOM id "+id);
@@ -19,9 +20,12 @@ const required=[
   "styles.css","src/catalog.mjs","src/routing.mjs","src/engine.mjs","src/app.mjs",
   "src/install-contract.mjs","src/starter.mjs","src/baseline.mjs","src/handoff.mjs",
   "src/workspace.mjs","src/evidence.mjs","src/identity.mjs","src/evidence-identity.mjs",
+  "src/playbooks.mjs","src/git-workflow.mjs","src/maturity.mjs",
   "tools/project-probe.mjs","tools/skill-kit.mjs","tools/xeng.mjs",
   "README.md","docs/ARCHITECTURE.md","docs/MIGRATION.md","docs/AGENT_SKILL_LOAD.md",
-  "migration/eng-os-split-20261031.json"
+  "docs/PLAYBOOKS.md","docs/GIT_WORKFLOW.md","docs/MATURITY.md",
+  ".github/pull_request_template.md","migration/eng-os-split-20261031.json",
+  "migration/eng-os-semantic-reconciliation-20261031.json","FINAL_ENGINEERING_MIGRATION_AUDIT.md"
 ];
 for(const file of required){
   try{if(!(await stat(resolve(base,file))).isFile())failures.push("missing "+file);}

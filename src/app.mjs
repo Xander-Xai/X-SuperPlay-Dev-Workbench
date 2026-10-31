@@ -10,6 +10,9 @@ import { stageHandoff } from "./handoff.mjs";
 import { workspaceBundle } from "./workspace.mjs";
 import { requiredEvidenceByStage } from "./routing.mjs";
 import { normalizeEvidenceReport, evidenceSummary, emptyEvidenceReport, evidenceDisplayState } from "./evidence.mjs";
+import { PLAYBOOKS, PLAYBOOK_STATUS } from "./playbooks.mjs";
+import { GIT_WORKFLOW } from "./git-workflow.mjs";
+import { MATURITY_LEVELS, MATURITY_TARGET } from "./maturity.mjs";
 
 const one = selector => document.querySelector(selector);
 const all = selector => [...document.querySelectorAll(selector)];
@@ -30,6 +33,7 @@ let evidenceReport = emptyEvidenceReport();
 let activeWorkspaceFile = null;
 let activeSkillId = SKILLS[0]?.id ?? null;
 let activeWorkflowTab = "stages";
+let activePlaybook = PLAYBOOKS[0]?.id ?? "ai-application";
 
 const names = { saas: "SaaS 应用", enterprise: "企业内部系统", "mini-program": "微信预约服务小程序", app: "移动端应用" };
 const stackOptions = type => STACKS.filter(s => s.appliesTo.includes(type));
@@ -322,6 +326,31 @@ function renderWorkflow() {
       ["Profile", "适用", "类型", "必需产物", "必需测试"],
       PROFILES.map(p => [p.id, p.appliesWhen, p.overlay ? "OVERLAY" : "BASE", p.required.artifacts.join("；"), p.required.tests.join("；")])
     ));
+  } else if (activeWorkflowTab === "git") {
+    body.append(newElement("p", "muted", GIT_WORKFLOW.authority));
+    for (const [title, key] of [
+      ["Base SHA", "baseSha"], ["分支模型", "branches"], ["Worktree 隔离", "worktrees"],
+      ["提交粒度", "commits"], ["PR 检查", "pullRequest"], ["Review 完成", "review"],
+      ["禁止动作", "prohibitions"], ["合并后清理", "merge"]
+    ]) {
+      body.append(newElement("h3", "workflow-heading", title));
+      const ul = newElement("ul", "inline-points");
+      GIT_WORKFLOW[key].forEach(v => ul.append(newElement("li", "", v)));
+      body.append(ul);
+    }
+    body.append(newElement("h3", "workflow-heading", "按 Agent 的操作要点"));
+    body.append(table(
+      ["Agent", "要点"],
+      GIT_WORKFLOW.agentOperating.map(a => [a.agent, a.notes.join(" ")])
+    ));
+    body.append(newElement("p", "install-disclaimer", "这是建议，不是组织级强制规范；项目本地规则与 CI 门禁优先。生成项目还会收到 docs/git-workflow.md 与 .github/pull_request_template.md。"));
+  } else if (activeWorkflowTab === "maturity") {
+    body.append(newElement("p", "muted", "L0–L6 是缺口诊断，不是质量分数。xeng maturity 复用 audit 的实际检查，L6 不由静态审计宣称。"));
+    body.append(table(
+      ["Level", "名称", "可审计含义", "Tier 目标"],
+      MATURITY_LEVELS.map(l => [l.id, l.name, l.meaning, Object.entries(MATURITY_TARGET).filter(([, v]) => v === l.id).map(([k]) => k).join(", ") || "—"])
+    ));
+    body.append(newElement("p", "install-disclaimer", "运行：node tools/xeng.mjs maturity <path> [--json]。等级按连续达成计算；missing_controls 才是可执行输出。"));
   } else {
     body.append(newElement("p", "muted", "Tier 决定 spec / plan / ADR / review / e2e / rollback / evidence 的最低义务。Tier C/D 可裁剪部分阶段，但必须记录理由。"));
     body.append(table(
@@ -329,6 +358,91 @@ function renderWorkflow() {
       Object.entries(TIERS).map(([id, t]) => [id, t.name, t.spec, t.plan, t.adr, t.review, t.e2e, t.rollback, t.evidence])
     ));
   }
+}
+
+// ------------------------------------------------------------ engineering playbooks
+
+function renderPlaybooks() {
+  all("#playbook-tabs .tab").forEach(t => t.classList.toggle("active", t.dataset.playbook === activePlaybook));
+  const body = one("#playbook-body");
+  body.replaceChildren();
+  const p = PLAYBOOKS.find(x => x.id === activePlaybook) ?? PLAYBOOKS[0];
+  if (!p) return;
+  body.append(newElement("p", "install-disclaimer",
+    "状态：" + PLAYBOOK_STATUS + "。11 阶段与 Profile 义务仍是权威；本手册不新增 Gate，也不提升任何证据状态。"));
+
+  const card = newElement("section", "card playbook-card");
+  card.append(newElement("div", "card-title"));
+  card.querySelector(".card-title").append(newElement("strong", "", p.name), newElement("span", "", p.profile));
+  card.append(newElement("p", "", p.appliesWhen));
+  card.append(newElement("p", "install-disclaimer", p.authority));
+  body.append(card);
+
+  body.append(newElement("h3", "workflow-heading", "原则"));
+  const principles = newElement("ul", "inline-points");
+  p.principles.forEach(x => principles.append(newElement("li", "", x)));
+  body.append(principles);
+
+  body.append(newElement("h3", "workflow-heading", "任务分流"));
+  body.append(table(
+    ["任务", "第一步", "完成证据"],
+    p.triage.map(t => [t.task, t.firstMove, t.evidence])
+  ));
+
+  body.append(newElement("h3", "workflow-heading", "阶段手册"));
+  body.append(table(
+    ["阶段", "问题", "最小实现", "退出证据"],
+    p.phases.map(phase => [phase.id + " · " + phase.title, phase.question, phase.minimal, phase.exitEvidence.join("；")])
+  ));
+
+  if (p.toolContract) {
+    body.append(newElement("h3", "workflow-heading", "工具契约示例"));
+    body.append(newElement("p", "install-disclaimer", p.toolContract.note));
+    const pre = newElement("pre", "playbook-code", p.toolContract.example.join("\n"));
+    body.append(pre);
+  }
+
+  if (p.evaluationLevels) {
+    body.append(newElement("h3", "workflow-heading", "评测分层"));
+    body.append(table(
+      ["层级", "证明什么", "不证明什么"],
+      p.evaluationLevels.map(x => [x.level, x.proves, x.doesNotProve])
+    ));
+  }
+  if (p.evaluation) {
+    body.append(newElement("h3", "workflow-heading", "评测规则"));
+    const rules = newElement("ul", "inline-points");
+    p.evaluation.metrics.forEach(x => rules.append(newElement("li", "", x)));
+    p.evaluation.rules.forEach(x => rules.append(newElement("li", "", x)));
+    body.append(rules);
+  }
+  if (p.riskMatrix) {
+    body.append(newElement("h3", "workflow-heading", "风险与权限"));
+    body.append(table(
+      ["风险", "例子", "权限流程"],
+      p.riskMatrix.map(x => [x.risk, x.examples, x.control])
+    ));
+  }
+
+  body.append(newElement("h3", "workflow-heading", "失败诊断"));
+  const diag = newElement("ul", "inline-points");
+  p.failureDiagnosis.forEach(x => diag.append(newElement("li", "", x.symptom + "：" + x.order.join(" → ") + "。停止规则：" + x.stopRule)));
+  body.append(diag);
+
+  body.append(newElement("h3", "workflow-heading", "Definition of Done"));
+  const done = newElement("ul", "inline-points");
+  p.definitionOfDone.forEach(x => done.append(newElement("li", "", x)));
+  body.append(done);
+
+  body.append(newElement("h3", "workflow-heading", "Agent 交接与回退"));
+  const handoff = newElement("ul", "inline-points");
+  p.handoff.forEach(x => handoff.append(newElement("li", "", x)));
+  p.rollback.forEach(x => handoff.append(newElement("li", "", "回退：" + x)));
+  body.append(handoff);
+
+  const code = newElement("div", "code-bar");
+  code.append(newElement("code", "", "node tools/xeng.mjs playbook " + p.id));
+  body.append(code);
 }
 
 // ------------------------------------------------------------ skill center
@@ -509,8 +623,8 @@ function renderEvidence() {
 
 // ------------------------------------------------------------ views
 
-const VIEWS = ["launcher", "workflow", "skills", "workspace", "evidence"];
-const LABELS = { launcher: "LAUNCHER", workflow: "WORKFLOW", skills: "SKILLS", workspace: "WORKSPACE", evidence: "EVIDENCE" };
+const VIEWS = ["launcher", "workflow", "skills", "workspace", "playbooks", "evidence"];
+const LABELS = { launcher: "LAUNCHER", workflow: "WORKFLOW", skills: "SKILLS", workspace: "WORKSPACE", playbooks: "PLAYBOOKS", evidence: "EVIDENCE" };
 
 function switchView(view) {
   if (!VIEWS.includes(view)) view = "launcher";
@@ -521,6 +635,7 @@ function switchView(view) {
   if (view === "workflow") renderWorkflow();
   if (view === "skills") renderSkills();
   if (view === "workspace") renderWorkspace(plan());
+  if (view === "playbooks") renderPlaybooks();
   if (view === "evidence") renderEvidence();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -632,6 +747,10 @@ function init() {
   all("#workflow-tabs .tab").forEach(tab => tab.addEventListener("click", () => {
     activeWorkflowTab = tab.dataset.tab;
     renderWorkflow();
+  }));
+  all("#playbook-tabs .tab").forEach(tab => tab.addEventListener("click", () => {
+    activePlaybook = tab.dataset.playbook;
+    renderPlaybooks();
   }));
   window.addEventListener("hashchange", () => switchView(location.hash.slice(1)));
 
