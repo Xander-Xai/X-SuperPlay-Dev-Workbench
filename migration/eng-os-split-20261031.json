@@ -2,7 +2,7 @@
   "migration_id": "eng-os-split-20261031",
   "created": "2026-10-31",
   "last_updated": "2026-10-31",
-  "status": "ENGINEERING_CONTENT_MIGRATED_LOCAL_VERIFIED_CI_PENDING",
+  "status": "ENGINEERING_CONTENT_MIGRATED_CI_VERIFIED_PAGES_PENDING",
   "source": {
     "repository": "Xander-Xai/X-SuperPlay-AI-Engineering-OS",
     "commit": "8553124f238ab463d4a50debad34e871ef8de060",
@@ -27,7 +27,7 @@
     "current_main_observed": "32e0342",
     "current_main_observed_at": "2026-10-31",
     "runtime_version": "0.3.0",
-    "current_content_commit": "PENDING_THIS_PR"
+    "current_content_commit": "5fc673bec92249df0754cbb8b3e02df042b97e28"
   },
   "governance_reference": {
     "repository": "Xander-Xai/AI-Native-Work-Learning-OS",
@@ -450,7 +450,7 @@
     "agent_load_claude_code": "PASS_2_1_296_DISCOVERY_INVOCATION_REFERENCES",
     "agent_load_codex": "PARTIAL_0_159_0_DISCOVERY_ONLY_INVOCATION_BLOCKED",
     "agent_load_opencode": "PASS_1_18_35_DISCOVERY_INVOCATION_REFERENCES_WSL2",
-    "remote_ci": "SUCCESS_047FC8E_AND_32E0342",
+    "remote_ci": "SUCCESS_PR19_RUN_41179156940",
     "pages": "DEPLOYED_047FC8E",
     "independent_verification": "NOT_RUN",
     "playbooks": "PASS_3_PLAYBOOKS_SITE_CLI_WORKSPACE_TESTS",
@@ -476,7 +476,7 @@
       "device manual probe"
     ]
   },
-  "acceptance_status": "MERGED_CI_GREEN_PAGES_DEPLOYED",
+  "acceptance_status": "PR_19_CI_GREEN_PAGES_PENDING",
   "acceptance_commit": "74402bf7172c5896e3610364d32b3279a9c8d851",
   "unresolved": [
     {
