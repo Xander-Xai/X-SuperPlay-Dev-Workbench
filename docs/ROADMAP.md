@@ -44,6 +44,19 @@
 - [x] L0–L6 保留为 `xeng maturity` 缺口诊断；L6 不由静态审计宣称。
 - [ ] 独立第三方复核（`INDEPENDENT_REVIEW_NOT_RUN`）。
 
+## AI-Native Spec–Skills–Harness–Loop 方法完整落盘（2026-10-31，分支 PR 进行中）
+
+- [x] 将原方法名称、五组件定义、全流程及 Workbench 唯一模块映射写入 `docs/methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md`。
+- [x] 建立带原始 SHA 的 Matt Pocock Skills / Ralph / OpenAI Harness 来源清单和许可证边界；不 Vendor 任何第三方代码。
+- [x] 建立端到端灯塔试点 SOP（样例 Spec、Tracer Tickets、Harness Contract、Loop 记录、Agent 启动提示词及验收清单）。
+- [x] `xeng method [overview|sources|pilot] [--json]` 只读 CLI 入口与回归测试。
+- [ ] 在真实产品仓实测 Harness 反馈链/一张 Ticket 的有界 Loop，保存可复核证据。
+- [ ] 将迭代预算转为可执行的单任务锁/超时/成本 Gate，按 Owner 授权设计独立 Loop Runner。
+- [ ] Agent 实际调用第三方 Skill 的兼容性、许可证和供应链试验；未经批准不安装。
+- [ ] 真实全栈 Demo、用户验收、跨项目模式晋级；不得使用 Workbench 的 CI 代替。
+
+状态：`METHOD_DOCUMENTED_AND_ROUTED`（待 PR CI/合并）；`HARNESS_LOOP_RUNTIME_NOT_IMPLEMENTED`；`REAL_PROJECT_DOGFOOD_NOT_RUN`。详情见[方法定义](methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md)。
+
 ## v0.3：真实项目 Dogfood
 
 - [ ] 已有微信小程序真实仓库：固定 base SHA，导出 Spec + 3 张可执行 Ticket。
