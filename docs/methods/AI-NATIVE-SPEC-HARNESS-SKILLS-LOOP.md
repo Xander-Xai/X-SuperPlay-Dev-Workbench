@@ -129,12 +129,14 @@ end -> STOP/BLOCKED; never auto-promote UNKNOWN to PASS
 
 ## 4. Agent/使用者快速入口
 
-**学习原理**：[上游固定版本与许可证边界](UPSTREAM-SOURCES.md)；**动手实践**：[真实项目试点指南、模板与验收表](PROJECT-PILOT.md)。其他工程手册 [真项目 SOP](../PLAYBOOK.md)、[RAG/Agent Playbook](../PLAYBOOKS.md)、[Git 工作流](../GIT_WORKFLOW.md)、[治理对齐及未实现项](../CONTRACT_ALIGNMENT.md)。
+**学习原理**：[上游固定版本与许可证边界](UPSTREAM-SOURCES.md)；**产品/Agent 设计**：[AI 原生产品与 Agent 架构设计模板](AI-NATIVE-PRODUCT-AGENT-DESIGN.md)；**技能工厂**：[Skill Engineering Factory 与 Code Expert Skill 示例](SKILL-ENGINEERING-FACTORY.md)；**动手实践**：[真实项目试点指南、模板与验收表](PROJECT-PILOT.md)。其他工程手册 [真项目 SOP](../PLAYBOOK.md)、[RAG/Agent Playbook](../PLAYBOOKS.md)、[Git 工作流](../GIT_WORKFLOW.md)、[治理对齐及未实现项](../CONTRACT_ALIGNMENT.md)。
 
 ```bash
 node tools/xeng.mjs method
 node tools/xeng.mjs method sources
 node tools/xeng.mjs method pilot
+node tools/xeng.mjs method design
+node tools/xeng.mjs method skills
 node tools/xeng.mjs task feature --type=saas --tier=B
 node tools/xeng.mjs assemble --target ../your-project --type saas --task feature --tier B --agent codex
 node tools/xeng.mjs playbook agent
@@ -150,4 +152,4 @@ node tools/xeng.mjs playbook agent
 - `PROJECT_DEMO_VERIFIED`：完整产品路径测试；Mock 和真实 Provider 证据分开。
 - `CONSUMER_ACCEPTED` / `PRODUCTION_PROVEN`：必须另有消费者和生产证据；Workbench 的文档/CI 绝不自动提升此状态。
 
-目前只声明第一层的**待 PR 合并文档与 CLI 集成**；后四层需在真实产品仓由当次证据逐级证明。独立 Harness/Loop Runner、自动的单任务锁、Scope Lock、跨项目知识晋级索引仍是明确缺口，不因为本文存在而宣称完成。
+当前仅声明第一层的**待 PR 合并方法文档与 CLI 集成**；后四层需在真实产品仓由当次证据逐级证明。独立 Harness/Loop Runner、自动的单任务锁、Scope Lock、跨项目知识晋级索引仍是明确缺口，不因为本文存在而宣称完成。
