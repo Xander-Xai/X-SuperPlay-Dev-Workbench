@@ -200,6 +200,7 @@
     "tier_demotion": "non-safety only; existing projects are never weakened",
     "safety_examples": ["security review", "release receipt", "AI/RAG eval", "enterprise integration probe", "device manual probe"]
   },
+  "acceptance_status": "READY_TO_MERGE",
   "acceptance_commit": "SEE_PR_12_HEAD",
   "unresolved": [
     { "id": "U-01", "item": "destination commit SHA", "status": "PINNED_527499F1AB3BEFDF5E87AF042E746853CBBCF665" },
