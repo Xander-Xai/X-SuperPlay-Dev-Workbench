@@ -85,20 +85,49 @@ export function makeStarter(plan) {
     ],
     tickets: rows.map((t, i) => {
       const stage = ticketStage(plan, t, i);
+      const id = "T" + String(i + 1).padStart(2, "0");
+      const baseSha = plan.config.baseline?.headSha ?? "UNKNOWN";
+      const acceptedAC = "PENDING_OWNER_CONFIRMATION";
+      const allowedFiles = [];
+      const allowedCommands = [];
+      const forbiddenActions = [...FORBIDDEN_ACTIONS];
+      const negativeTests = [t.negative];
+      const iterationBudget = { ...ITERATION_BUDGET };
+      const timeBudget = "UNSET_MINUTES";
+      const externalCostBudget = "UNSET";
+      const stopConditions = [...(stage?.stopWhen ?? ["需求不明确", "权限不明", "测试无法完成"])];
+      const evidencePaths = [];
       return {
-        id: "T" + String(i + 1).padStart(2, "0"), title: t.title, outcome: t.outcome,
+        // camelCase surface kept for existing consumers.
+        id, title: t.title, outcome: t.outcome,
         negative: t.negative, testIdea: t.testIdea,
         blockedBy: t.blockedBy, stage: t.stage,
         status: "PROPOSED_NOT_READY",
         acceptance: "业务方待确认可执行的 Given/When/Then",
         testCommand: "NOT_YET_IDENTIFIED", evidence: "NOT_RUN",
         evidencePlan: (stage?.evidencePlan?.required?.length ? stage.evidencePlan.required : [...(stage?.evidence ?? [])]),
-        stopConditions: [...(stage?.stopWhen ?? ["需求不明确", "权限不明", "测试无法完成"])],
-        iterationBudget: { ...ITERATION_BUDGET },
+        evidencePaths, negativeTests, stopConditions, iterationBudget,
+        timeBudget, externalCostBudget, allowedFiles, allowedCommands,
+        forbiddenActions, acceptedAC,
         reviewAxes: { ...REVIEW_AXES },
-        forbiddenActions: [...FORBIDDEN_ACTIONS],
-        baseSha: plan.config.baseline?.headSha ?? "UNKNOWN",
-        agent: plan.config.agent, permission: "READ_ONLY_DISCOVERY_FIRST"
+        baseSha, agent: plan.config.agent, permission: "READ_ONLY_DISCOVERY_FIRST",
+        // snake_case aliases: every TICKET_CONTRACT_FIELDS key must be present.
+        ticket_id: id,
+        spec_id: identity.projectId + "-spec",
+        base_sha: baseSha,
+        accepted_AC: acceptedAC,
+        blocked_by: t.blockedBy,
+        allowed_files: allowedFiles,
+        allowed_commands: allowedCommands,
+        forbidden_actions: forbiddenActions,
+        negative_tests: negativeTests,
+        iteration_budget: iterationBudget,
+        time_budget: timeBudget,
+        external_cost_budget: externalCostBudget,
+        stop_conditions: stopConditions,
+        rollback: "UNSET_REQUIRES_OWNER",
+        evidence_paths: evidencePaths,
+        reviewer: "UNASSIGNED"
       };
     })
   };
@@ -130,20 +159,27 @@ export function starterMarkdown(plan) {
     "### " + t.id + " · " + t.title, "",
     "- 状态：" + t.status,
     "- 阶段：" + t.stage,
+    "- spec_id：" + t.spec_id,
     "- blocked_by：" + (t.blockedBy.join(", ") || "NONE"),
     "- 可观察结果：" + t.outcome,
     "- 负例：" + t.negative,
     "- 验证思路：" + t.testIdea,
-    "- AC：" + t.acceptance,
+    "- AC：" + t.acceptance + "（accepted_AC: " + t.acceptedAC + "）",
     "- 测试命令：" + t.testCommand,
+    "- 负例测试：" + t.negativeTests.join("；"),
     "- Base SHA：" + t.baseSha,
-    "- Agent：" + t.agent,
+    "- Agent：" + t.agent + " · Reviewer：" + t.reviewer,
     "- 权限：" + t.permission,
+    "- allowed_files：" + (t.allowedFiles.join(", ") || "UNSET（执行前必须填写）"),
+    "- allowed_commands：" + (t.allowedCommands.join(", ") || "UNSET（执行前必须填写）"),
     "- 证据：" + t.evidence,
+    "- evidence_paths：" + (t.evidencePaths.join(", ") || "UNSET"),
     "- 证据计划：" + (t.evidencePlan.join(", ") || "未定义"),
     "- 停止条件：" + t.stopConditions.join("；"),
     "- 迭代预算：每个假设最多 " + t.iterationBudget.maxAttemptsPerHypothesis +
       " 次尝试；无新证据即停止；单执行窗口 1 个活动任务",
+    "- 时间/成本预算：" + t.timeBudget + " / " + t.externalCostBudget,
+    "- 回退：" + t.rollback,
     "- Review 双轴：Spec " + t.reviewAxes.specification + " / Standards " + t.reviewAxes.standards,
     "- 禁止动作：" + t.forbiddenActions.join("；"), ""
   );

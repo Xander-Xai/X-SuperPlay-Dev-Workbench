@@ -71,6 +71,25 @@ npm run dev
 
 手册状态固定为 `ADVISORY_PLAYBOOK_NOT_VERIFIED`：不新增 Gate、不自动安装 Skill、不提升任何证据状态。网站「工程 Playbook」、`node tools/xeng.mjs playbook <id>` 与工作区 `<slug>-engineering-playbook.md` 使用同一份数据。示例均为合成/脱敏契约。
 
+## 方法视图：8 宏阶段 / 18 活动 / 商业交付 Gate
+
+在 11 阶段权威生命周期之上，新增一层**兼容视图**（`src/delivery.mjs`），不建立第二套状态机：
+
+- **8 宏阶段 G0–G7**：机会接入、产品定义、工程设计、Tickets 与执行环境、纵向实现、工程验证、发布交付、运营复盘。
+- **18 项详细活动 A01–A18**：每项映射回 1–3 个权威阶段，带知识、输入、人类决定、Agent 操作、主用/替代 Skill、工具、工件、正负验收、停止条件、可确定性化控制与 Greenfield/Brownfield 要求。
+- **商业交付状态**：`CODE_TESTED → CI_VERIFIED → STAGING_VERIFIED → RELEASED → CONSUMER_ACCEPTED`，五层不可互相替代。
+- **有界 Loop**：`PREPARE → RED → IMPLEMENT → GREEN → REFACTOR → VERIFY → REVIEW → RECORD → STOP/NEXT`，终止原因写入结构化 `stop_reason`。
+- **Ticket Harness 契约**：`ticket_id / spec_id / base_sha / accepted_AC / allowed_files / allowed_commands / negative_tests / budgets / rollback / evidence_paths / reviewer` 等字段；当前为 `CONTRACT_DEFINED_NOT_RUNTIME_ENFORCED`。
+
+~~~bash
+node tools/xeng.mjs method --template   # 8 宏阶段 × 18 活动 × 11 阶段矩阵
+node tools/xeng.mjs matrix --json
+node tools/xeng.mjs delivery --json
+node tools/xeng.mjs skills-matrix --json
+~~~
+
+映射校验接入 `npm run check`：8 宏阶段恰好覆盖 11 阶段一次，18 活动覆盖全部阶段，每项活动只有一个主用 Skill。详见 [docs/METHOD.md](docs/METHOD.md) 与 [三报告整合](docs/research/2026-10-31-ai-native-fullstack-synthesis.md)。
+
 ## 支持范围
 
 - 交付对象：SaaS、企业自研系统、微信小程序、移动 APP。
@@ -194,6 +213,8 @@ npm run probe -- --target ../your-project --type saas --output project-baseline.
 ## 文档
 
 - [架构与所有权](docs/ARCHITECTURE.md)
+- [方法视图（8/18/11 与交付 Gate）](docs/METHOD.md)
+- [三报告整合与证据对账](docs/research/2026-10-31-ai-native-fullstack-synthesis.md)
 - [迁移与兼容表](docs/MIGRATION.md)
 - [跨仓治理契约对齐](docs/CONTRACT_ALIGNMENT.md)
 - [实际开发 SOP](docs/PLAYBOOK.md)

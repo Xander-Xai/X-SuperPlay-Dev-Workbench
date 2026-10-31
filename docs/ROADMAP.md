@@ -61,6 +61,22 @@
 
 状态：`METHOD_DOCUMENTED_AND_ROUTED`（仓库方法与入口层；与真实执行分层）；`HARNESS_LOOP_RUNTIME_NOT_IMPLEMENTED`；`REAL_PROJECT_DOGFOOD_NOT_RUN`。详情见[方法定义](methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md)。
 
+## v0.2.2 AI-Native 全栈交付整合（2026-10-31）
+
+目标：在方法文档之上补齐可执行的兼容视图；不新增第二套生命周期。
+
+- [x] `src/delivery.mjs`：8 宏阶段 G0–G7、18 项活动 A01–A18，全部映射回 11 权威阶段。
+- [x] 四路线覆盖清单 + AI Overlay 权限规则（不能绕过平台 Gate）。
+- [x] 商业交付状态 `CODE_TESTED → CI_VERIFIED → STAGING_VERIFIED → RELEASED → CONSUMER_ACCEPTED`。
+- [x] 有界 Loop 阶段与 7 个终止状态，映射到既有证据状态，额外原因用 `stop_reason`。
+- [x] Ticket Harness 契约字段生成到 `src/starter.mjs`（`CONTRACT_DEFINED_NOT_RUNTIME_ENFORCED`）。
+- [x] Skills 冲突矩阵与上游 pin/许可证核验（更正 Matt Pocock v1.3.1 commit；不替换既有 `5beb35b` 研究 pin）。
+- [x] 扩展 `xeng method`（`activities` / `activity <id>` / `matrix` / `--template`），并新增 `xeng matrix / delivery / skills-matrix`。
+- [x] `validateDelivery()` 接入 `validateCatalog()` 与 `npm run check`。
+- [x] 三报告整合文档 `docs/research/2026-10-31-ai-native-fullstack-synthesis.md` 与 `docs/METHOD.md`。
+- [ ] 工具层强制 `allowed_files` / `allowed_commands`（当前仅字段）。
+- [ ] 真实项目执行 `CODE_TESTED` → `CONSUMER_ACCEPTED` 证据链。
+
 ## v0.3：真实项目 Dogfood
 
 - [ ] 已有微信小程序真实仓库：固定 base SHA，导出 Spec + 3 张可执行 Ticket。

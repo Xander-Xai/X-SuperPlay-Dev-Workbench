@@ -15,12 +15,13 @@ Workbench runtime (this repository)
   src/playbooks.mjs      AI application / RAG / Agent operating manuals
   src/git-workflow.mjs   advisory project Git guidance + per-agent notes
   src/maturity.mjs       L0-L6 gap diagnostic derived from audit checks
+  src/delivery.mjs       8 macro stages / 18 activities / delivery gates / skills matrix (compatibility view)
   src/identity.mjs       shared project_id / base_sha header for every artifact
   src/evidence.mjs       state machine + local report import
   src/install-contract.mjs  agent destinations + skill dependency closure
   src/app.mjs            browser UI (no network, no filesystem)
         │
-        ├── tools/xeng.mjs          init / audit / doctor / maturity / playbook / validate-registry / selftest / task
+        ├── tools/xeng.mjs          init / audit / doctor / maturity / playbook / method / matrix / delivery / skills-matrix / validate-registry / selftest / task
         ├── tools/skill-kit.mjs     bundled install / verify / update / uninstall / rollback
         ├── tools/project-probe.mjs read-only local baseline
         └── tools/build-site.mjs    dist allowlist
@@ -109,7 +110,8 @@ catalog ──► routing ──► engine ──► workspace ──► playboo
    │           └──────────┴───────────┴──► starter / handoff / install-contract
    │
    ├──► baseline（浏览器安全）◄── project-probe（Node，只读）
-   └──► maturity（纯函数，复用 audit checks）
+   ├──► maturity（纯函数，复用 audit checks）
+   └──► delivery（纯数据兼容视图：8 宏阶段 / 18 活动 / 交付 Gate / Skills 矩阵）
 ~~~
 
 `engine.mjs` 不导入 `workspace.mjs`；`workspace.mjs` 导入 `engine.mjs` 的 `toManifest`，保持单向依赖。`identity.mjs` 只依赖 `catalog.mjs`，被 starter / handoff / workspace 共享。`playbooks.mjs`、`git-workflow.mjs`、`maturity.mjs` 均为浏览器安全纯模块。CLI 工具导入 `src/`，反向不成立。
