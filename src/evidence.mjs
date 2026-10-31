@@ -1,5 +1,5 @@
 // Evidence model. A state can only advance with a matching, inspectable record.
-import { EVIDENCE_STATES, EVIDENCE_KINDS, EVIDENCE_LAYERS, STAGE_IDS, STAGES } from "./catalog.mjs";
+import { EVIDENCE_STATES, EVIDENCE_KINDS, EVIDENCE_LAYERS, STAGE_IDS } from "./catalog.mjs";
 
 export const TRANSITIONS = Object.freeze({
   NOT_RUN: ["IN_PROGRESS", "BLOCKED"],
@@ -69,15 +69,25 @@ export function normalizeEvidenceReport(input) {
   });
 }
 
-function defaultRequiredByStage() {
-  const map = {};
-  for (const stage of STAGES) map[stage.id] = [...stage.evidence];
-  return map;
+function emptyStageSummary(context) {
+  return {
+    state: "NOT_RUN",
+    complete: false,
+    conflict: false,
+    missing: [],
+    gates: [],
+    items: [],
+    observations: [],
+    context
+  };
 }
 
 // A stage is complete only when every required gate has its own VERIFIED item
 // and nothing in the stage is blocked, unknown, not run or still in progress.
-export function stageGateSummary(items, requiredKinds) {
+export function stageGateSummary(items, requiredKinds, context = "KNOWN") {
+  if (context !== "KNOWN" || !Array.isArray(requiredKinds)) {
+    return { ...emptyStageSummary("UNKNOWN"), items };
+  }
   const gates = requiredKinds.map(kind => {
     const matching = items.filter(i => i.kind === kind);
     const verified = matching.filter(i => i.state === "VERIFIED");
@@ -89,16 +99,17 @@ export function stageGateSummary(items, requiredKinds) {
       total: matching.length
     };
   });
+  const relevant = items.filter(i => requiredKinds.includes(i.kind));
   const missing = gates.filter(g => g.verified === 0).map(g => g.kind);
-  const blocked = items.some(i => i.state === "BLOCKED");
-  const unknown = items.some(i => i.state === "UNKNOWN");
-  const notRun = items.some(i => i.state === "NOT_RUN");
-  const inProgress = items.some(i => i.state === "IN_PROGRESS");
-  const verified = items.some(i => i.state === "VERIFIED");
+  const blocked = relevant.some(i => i.state === "BLOCKED");
+  const unknown = relevant.some(i => i.state === "UNKNOWN");
+  const notRun = relevant.some(i => i.state === "NOT_RUN");
+  const inProgress = relevant.some(i => i.state === "IN_PROGRESS");
+  const verified = relevant.some(i => i.state === "VERIFIED");
   const conflict = blocked && verified;
 
   let state = "NOT_RUN";
-  if (items.length) {
+  if (relevant.length) {
     if (blocked) state = "BLOCKED";
     else if (unknown) state = "UNKNOWN";
     else if (notRun) state = "NOT_RUN";
@@ -109,33 +120,45 @@ export function stageGateSummary(items, requiredKinds) {
 
   return {
     state,
-    complete: items.length > 0 && missing.length === 0 && !blocked && !unknown && !notRun && !inProgress,
+    complete: relevant.length > 0 && missing.length === 0 && !blocked && !unknown && !notRun && !inProgress,
     conflict,
     missing,
     gates,
-    items
+    items,
+    observations: items.filter(i => !requiredKinds.includes(i.kind)),
+    context: "KNOWN"
   };
 }
 
 export function evidenceSummary(report, options = {}) {
   const normalized = normalizeEvidenceReport(report);
-  const requiredByStage = options.requiredByStage ?? defaultRequiredByStage();
+  const requiredByStage = options.requiredByStage;
+  const hasContext = requiredByStage && typeof requiredByStage === "object";
   const stages = {};
   for (const id of STAGE_IDS) {
     const items = normalized.items.filter(i => i.stage === id);
-    stages[id] = stageGateSummary(items, requiredByStage[id] ?? []);
+    if (!hasContext) {
+      stages[id] = stageGateSummary(items, [], "UNKNOWN");
+      continue;
+    }
+    const kinds = requiredByStage[id];
+    stages[id] = stageGateSummary(items, Array.isArray(kinds) ? kinds : [], Array.isArray(kinds) ? "KNOWN" : "UNKNOWN");
   }
   return {
     stages, layers: EVIDENCE_LAYERS, items: normalized.items,
     trusted: false, promotion: "NONE",
-    note: "Every state here is an untrusted claim. Completeness of a claim does not make it verified fact."
+    context: hasContext ? "KNOWN" : "UNKNOWN",
+    note: hasContext
+      ? "Every state here is an untrusted claim. Completeness of a claim does not make it verified fact."
+      : "Project context is missing. Stage completion stays NOT_RUN/UNKNOWN; no optimistic promotion."
   };
 }
 
 export function evidenceDisplayState(stage) {
   const state = EVIDENCE_STATES.includes(stage?.state) ? stage.state : "NOT_RUN";
   let note = "NO_EVIDENCE";
-  if (stage?.conflict) note = "CONFLICT";
+  if (stage?.context === "UNKNOWN") note = "CONTEXT_UNKNOWN";
+  else if (stage?.conflict) note = "CONFLICT";
   else if (stage?.items?.length) {
     if (stage.complete) note = "CLAIM_COMPLETE_NOT_TRUSTED";
     else if (stage.missing?.length) note = "MISSING_GATES";

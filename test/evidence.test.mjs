@@ -4,7 +4,7 @@ import {
   TRANSITIONS,canPromote,transition,hasInspectableProof,normalizeEvidenceReport,
   evidenceSummary,stageGateSummary,emptyEvidenceReport,evidenceDisplayState
 } from "../src/evidence.mjs";
-import {EVIDENCE_STATES,STAGE_IDS,STAGES} from "../src/catalog.mjs";
+import {EVIDENCE_STATES,STAGE_IDS} from "../src/catalog.mjs";
 
 const verifiedItem=(over={})=>({
   stage:"verification",kind:"test",layer:"LOCAL_TESTED",state:"VERIFIED",
@@ -69,7 +69,9 @@ test("imported VERIFIED cannot use a NOT_RUN layer",()=>{
 });
 
 test("a single VERIFIED item does not complete a multi-gate stage",()=>{
-  const summary=evidenceSummary(reportOf([verifiedItem()]));
+  const summary=evidenceSummary(reportOf([verifiedItem()]),{
+    requiredByStage:{verification:["test","eval","integration-probe"]}
+  });
   const v=summary.stages.verification;
   assert.notEqual(v.state,"VERIFIED");
   assert.equal(v.state,"UNKNOWN");
@@ -85,7 +87,7 @@ test("VERIFIED plus BLOCKED in one stage cannot summarise as VERIFIED",()=>{
   const summary=evidenceSummary(reportOf([
     verifiedItem(),
     verifiedItem({kind:"eval",state:"BLOCKED",layer:"NOT_RUN",command:"",result:"",artifact:""})
-  ]));
+  ]),{requiredByStage:{verification:["test","eval"]}});
   const v=summary.stages.verification;
   assert.equal(v.state,"BLOCKED");
   assert.equal(v.complete,false);
@@ -97,7 +99,7 @@ test("VERIFIED plus NOT_RUN in one stage stays NOT_RUN",()=>{
   const summary=evidenceSummary(reportOf([
     verifiedItem(),
     verifiedItem({kind:"eval",state:"NOT_RUN",layer:"NOT_RUN",command:"",result:"",artifact:""})
-  ]));
+  ]),{requiredByStage:{verification:["test","eval"]}});
   const v=summary.stages.verification;
   assert.equal(v.state,"NOT_RUN");
   assert.equal(v.complete,false);
@@ -106,7 +108,7 @@ test("VERIFIED plus NOT_RUN in one stage stays NOT_RUN",()=>{
 test("a claim is complete only when every required gate is VERIFIED, still untrusted",()=>{
   const summary=evidenceSummary(reportOf([
     verifiedItem({stage:"intake",kind:"doc-update"})
-  ]));
+  ]),{requiredByStage:{intake:["doc-update"]}});
   const s=summary.stages.intake;
   assert.equal(s.state,"VERIFIED");
   assert.equal(s.complete,true);
@@ -136,15 +138,22 @@ test("stageGateSummary rejects a blocked gate even if others are verified",()=>{
 });
 
 test("summary keeps every stage NOT_RUN unless evidence exists",()=>{
-  const summary=evidenceSummary(reportOf([verifiedItem()]));
+  const summary=evidenceSummary(reportOf([verifiedItem()]),{
+    requiredByStage:{verification:["test"]}
+  });
   for(const id of STAGE_IDS.filter(x=>x!=="verification"))
     assert.equal(summary.stages[id].state,"NOT_RUN");
 });
 
-test("every stage exposes its catalog gates",()=>{
-  const summary=evidenceSummary(emptyEvidenceReport());
-  for(const stage of STAGES)
-    assert.deepEqual(summary.stages[stage.id].gates.map(g=>g.kind),stage.evidence);
+test("missing project context cannot promote or claim a gate",()=>{
+  const summary=evidenceSummary(reportOf([verifiedItem()]));
+  assert.equal(summary.context,"UNKNOWN");
+  for(const stage of Object.values(summary.stages)){
+    assert.equal(stage.state,"NOT_RUN");
+    assert.equal(stage.complete,false);
+    assert.deepEqual(stage.gates,[]);
+  }
+  assert.equal(evidenceDisplayState(summary.stages.verification).note,"CONTEXT_UNKNOWN");
 });
 
 test("the state shown by the web UI is derived from gate completeness",()=>{

@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import {TYPES,TASKS,TASK_IDS,STAGE_IDS,TIERS,SKILL_IDS} from "../src/catalog.mjs";
 import {
   resolveProfiles,skillClosure,tierObligations,profileObligations,
-  routeForTask,composeRoute,validateRoute,stageSkillIds
+  routeForTask,composeRoute,validateRoute,stageSkillIds,
+  evidencePlanFor,requiredEvidenceByStage
 } from "../src/routing.mjs";
 
 test("4 types x 13 tasks x 4 tiers x 2 modes always produce a valid route",()=>{
@@ -87,4 +88,55 @@ test("every task route references only canonical stages and evidence kinds",()=>
     assert.ok(route.evidence.length>0);
     assert.ok(route.stages.every(s=>s.evidence.length>0));
   }
+});
+test("non-AI bug routes do not require model eval",()=>{
+  const route=composeRoute({type:"enterprise",task:"bug"});
+  const required=route.stages.find(s=>s.id==="verification").evidencePlan.required;
+  assert.ok(!required.includes("eval"));
+  assert.ok(required.includes("test"));
+});
+test("SaaS API changes require contract and permission evidence",()=>{
+  const route=composeRoute({type:"saas",task:"feature"});
+  const verification=route.stages.find(s=>s.id==="verification").evidencePlan.required;
+  const review=route.stages.find(s=>s.id==="review").evidencePlan.required;
+  assert.ok(verification.includes("integration-probe"));
+  assert.ok(review.includes("review"));
+});
+test("RAG behaviour changes cannot drop the applicable eval gate",()=>{
+  for(const tier of ["A","B","C","D"]){
+    const route=composeRoute({type:"saas",task:"feature",tier,addons:["rag"]});
+    const required=route.stages.find(s=>s.id==="verification").evidencePlan.required;
+    assert.ok(required.includes("eval"),tier);
+  }
+});
+test("release requires a real release receipt, not a unit test",()=>{
+  const route=composeRoute({type:"saas",task:"release"});
+  const plan=route.stages.find(s=>s.id==="release").evidencePlan;
+  assert.ok(plan.required.includes("receipt"));
+  assert.ok(!plan.required.includes("test"));
+  assert.ok(plan.notApplicable.includes("test"));
+});
+test("Tier C/D never remove a security gate and never weaken an existing project",()=>{
+  const security=composeRoute({type:"saas",task:"security",tier:"D"});
+  assert.ok(security.stages.find(s=>s.id==="review").evidencePlan.required.includes("review"));
+  assert.ok(security.stages.find(s=>s.id==="verification").evidencePlan.required.includes("test"));
+
+  const existing=composeRoute({type:"saas",task:"feature",tier:"D",mode:"existing"});
+  const verification=existing.stages.find(s=>s.id==="verification").evidencePlan;
+  assert.ok(verification.required.includes("integration-probe"));
+  assert.ok(!verification.rationale["integration-probe"].includes("demoted"));
+});
+test("tier demotion is explicit and limited to non-safety gates",()=>{
+  const route=composeRoute({type:"saas",task:"feature",tier:"C"});
+  const architecture=route.stages.find(s=>s.id==="architecture").evidencePlan;
+  assert.ok(architecture.recommended.includes("adr") || architecture.recommended.includes("review"));
+  assert.ok(Object.values(architecture.rationale).some(r=>r==="tier-demoted"));
+});
+test("the route evidence plan and summary share the same required gates",()=>{
+  const route=composeRoute({type:"saas",task:"feature",addons:["rag"]});
+  const required=requiredEvidenceByStage(route);
+  assert.deepEqual(required.verification,route.stages.find(s=>s.id==="verification").evidencePlan.required);
+  assert.ok(required.verification.includes("eval"));
+  const plan=evidencePlanFor({task:"feature",tier:"B",mode:"new",profiles:["saas","web","backend","ai-application","rag"],stages:route.stages});
+  assert.deepEqual(plan.stages.verification.required,required.verification);
 });
