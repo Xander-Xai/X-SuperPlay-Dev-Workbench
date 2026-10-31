@@ -9,7 +9,11 @@ export const PROVENANCE = Object.freeze({
   captured: "2026-10-31",
   status: "HISTORICAL_PROVENANCE",
   url: "https://github.com/Xander-Xai/X-SuperPlay-AI-Engineering-OS",
-  note: "Frozen snapshot used to derive this catalog. It is not a live dependency and not a permission grant."
+  visibility: "PUBLIC_OBSERVED_2026-10-31",
+  currentHeadObserved: "2b792242894937d303c4680208daf9df97ea0027",
+  currentHeadObservedAt: "2026-10-31",
+  deltaAudit: "migration/eng-os-delta-audit-20261031.json",
+  note: "Frozen snapshot used to derive this catalog. The observed current head is recorded separately for delta audit only; it is not a live dependency, sync promise or permission grant."
 });
 
 export const OWNER = Object.freeze({
@@ -299,6 +303,204 @@ export const TYPES = Object.freeze({
   }
 });
 
+// ---------------------------------------------------------------------------
+// Route SOPs: one deliverable-shaped playbook per product type. They reuse the
+// 11-stage lifecycle and only add route-specific prerequisites, platform limits,
+// failure handling and rollback. They are not a second lifecycle.
+
+export const ROUTE_SOPS = Object.freeze({
+  saas: Object.freeze({
+    id: "saas",
+    name: "SaaS 产品路线",
+    prerequisites: [
+      "确认目标租户模型：单租户、组织多租户或工作区，并写入 Spec",
+      "确认认证方式、会话生命周期与角色模型",
+      "确认计费边界：免费、订阅、试用或按量；未涉及的支付不得假装已实现",
+      "确认数据保留、删除、导出与合规要求"
+    ],
+    platformConstraints: [
+      "真实支付渠道需要商户资质与沙箱/生产凭据，本地代码测试不能替代渠道回执",
+      "生产租户数据与真实计费验收必须由业务方在授权环境完成",
+      "邮件、短信、对象存储等外部依赖需要可用测试凭据，否则标 BLOCKED"
+    ],
+    preInstallChecks: [
+      "确认目标仓库可见性与许可证；公开仓库不得写入私有材料",
+      "确认 .env.example 存在且不含真实密钥",
+      "确认 migrations、tests 与部署/回滚说明的当前路径"
+    ],
+    negativeCase: "租户 A 的账号不能读取、修改或枚举租户 B 的任何业务数据；匿名请求被拒绝。",
+    deliverables: [
+      "租户隔离的认证与授权模块",
+      "含升级与降级路径的数据库迁移",
+      "订阅/支付幂等与对账方案（仅在实际启用时）",
+      "备份、恢复、回滚与监控告警说明"
+    ],
+    gates: [
+      "跨租户隔离负例通过，并保留请求与响应证据",
+      "认证绕过负例与昂贵端点限流通过",
+      "迁移升降级在副本上验证，发布与回滚回执可查"
+    ],
+    failureHandling: [
+      "租户隔离失败：阻断发布，先修数据层边界，不用前端隐藏替代服务端校验",
+      "迁移失败：按已验证的降级路径回退，保留失败日志与快照",
+      "支付回调异常：关闭支付开关，保留幂等记录并对账"
+    ],
+    rollback: [
+      "应用版本回滚到上一镜像/构建",
+      "数据库按迁移降级脚本回退；无法降级时从已验证备份恢复",
+      "支付状态单独核对，避免回滚造成重复扣款"
+    ],
+    optionalBranches: [
+      "payments Profile 仅在真实订阅/支付需求出现时启用",
+      "ai-application / rag / agent 作为叠加能力，不改变租户边界义务"
+    ],
+    keySkills: ["specification", "architecture", "verification", "code-review", "systematic-debugging"]
+  }),
+  enterprise: Object.freeze({
+    id: "enterprise",
+    name: "企业自研系统路线",
+    prerequisites: [
+      "完成业务方需求访谈并记录角色、流程、审批与例外",
+      "确认原系统清单、集成协议、数据归属与停机窗口",
+      "确认企业身份源：SSO（OIDC/SAML）、RBAC 或本地目录",
+      "确认 UAT 参与人、签收标准与运行交接责任人"
+    ],
+    platformConstraints: [
+      "SSO 联调依赖企业 IdP 配置与管理员授权，本地无法替代",
+      "ERP/CRM 等外部系统需要接口文档、测试账号与网络准入",
+      "UAT 签收与生产切换必须由业务方在授权窗口完成"
+    ],
+    preInstallChecks: [
+      "确认企业网络、代理与证书策略，避免本地开发配置泄漏到生产",
+      "确认权限矩阵与审计保留策略已有初稿",
+      "确认数据迁移样本已脱敏且不进入公开仓库"
+    ],
+    negativeCase: "无权限角色、过期会话和越权审批必须被拒绝；审计日志不得被静默删除。",
+    deliverables: [
+      "业务流程与角色权限矩阵",
+      "SSO / RBAC 集成说明与最小权限映射",
+      "数据迁移方案与回滚 Runbook",
+      "审计日志、UAT 脚本与运行交接手册"
+    ],
+    gates: [
+      "RBAC 越权负例通过，权限拒绝证据可查",
+      "企业集成契约测试通过，超时与重试幂等可验证",
+      "业务方完成 UAT 签收，运行交接人确认"
+    ],
+    failureHandling: [
+      "权限模型错误：暂停上线，按最小权限矩阵逐项复核",
+      "集成超时或重复回调：启用幂等与重试，记录外部系统回执",
+      "UAT 未通过：回到发现/规格阶段修正，不以培训掩盖功能缺口"
+    ],
+    rollback: [
+      "保留旧系统只读或双跑窗口，按切换 Runbook 回退",
+      "数据迁移按批次与校验和回退，禁止无备份覆盖",
+      "权限与审计配置回滚需企业管理员共同确认"
+    ],
+    optionalBranches: [
+      "SSO 可作为首个纵向切片，但不得跳过本地角色负例",
+      "payments 仅在存在内部计费/结算需求时叠加"
+    ],
+    keySkills: ["project-discovery", "specification", "architecture", "verification", "code-review"]
+  }),
+  "mini-program": Object.freeze({
+    id: "mini-program",
+    name: "微信小程序路线",
+    prerequisites: [
+      "确认小程序 AppID、主体资质、类目与服务范围",
+      "确认技术栈：原生、Taro、uni-app 或微信云开发，四选一",
+      "确认登录方式、服务端会话与合法请求域名",
+      "确认隐私协议、用户授权项与数据最小化范围"
+    ],
+    platformConstraints: [
+      "平台账号资质、类目审核、合法域名配置和提审属于平台控制，本地代码测试不能替代",
+      "微信登录与真机能力需要真实 AppID、开发者工具和真机环境",
+      "审核与发布回执只能由微信公众平台产生；没有回执不得声称已发布"
+    ],
+    preInstallChecks: [
+      "确认 appid 外置，不把 AppSecret 写入客户端或仓库",
+      "确认合法域名清单与 request/uploadFile 域名一致",
+      "确认主包体积与分包策略，接近上限时先分包"
+    ],
+    negativeCase: "无会话、空数据、非法域名与越权读取必须有明确失败态；客户端包内不得出现密钥。",
+    deliverables: [
+      "小程序页面与登录/会话集成",
+      "服务端 API 与数据模型",
+      "合法域名、隐私与权限配置说明",
+      "体验版、提审、发布与运营迭代记录"
+    ],
+    gates: [
+      "真机完成登录与业务主路径，保留设备与版本记录",
+      "弱网、冷启动与空态降级可复现",
+      "体验版配置与平台审核回执可查；未获回执保持 NOT_RUN"
+    ],
+    failureHandling: [
+      "真机与开发者工具行为不一致：以真机证据为准，记录基础库版本",
+      "审核驳回：按平台原因修正后重新提审，不绕过类目与资质要求",
+      "登录失败：检查 AppID、域名与 session 交换，不把失败归因于用户"
+    ],
+    rollback: [
+      "回退到上一体验版或线上版本，保留版本号与变更记录",
+      "服务端 API 保持向后兼容，必要时按版本开关降级",
+      "配置类变更保留变更前快照，由平台管理员执行回退"
+    ],
+    optionalBranches: [
+      "微信云开发可减少自建后端，但数据边界与迁移义务仍需说明",
+      "Taro/uni-app 叠加 web Profile，但真机验证仍是必需 Gate"
+    ],
+    keySkills: ["specification", "architecture", "verification"]
+  }),
+  app: Object.freeze({
+    id: "app",
+    name: "移动 APP 路线",
+    prerequisites: [
+      "在 Flutter / React Native / 原生 Android / 原生 iOS 中明确选择一个主技术栈",
+      "确认目标设备与最低系统版本矩阵",
+      "确认签名、证书、包名/Bundle ID 与应用商店主体",
+      "确认设备权限、安全存储与离线恢复策略"
+    ],
+    platformConstraints: [
+      "签名证书、商店主体资质、隐私声明和审核属于平台控制，本地构建不能替代",
+      "推送、支付、地图等第三方 SDK 需要各自账号与资质",
+      "真实设备安装、崩溃监控与商店发布回执必须由授权环境产生"
+    ],
+    preInstallChecks: [
+      "确认只安装所选技术栈，不同时引入四套端工程",
+      "确认 keystore/证书不入库，签名配置外置",
+      "确认目标平台的构建、测试与打包命令真实可运行"
+    ],
+    negativeCase: "权限被拒绝、断网、令牌过期与本地存储被清理时，应用必须降级且不得丢失或重复提交业务状态。",
+    deliverables: [
+      "所选技术栈的工程骨架与导航/状态方案",
+      "设备权限、安全存储与 API 集成",
+      "离线恢复与冲突处理说明",
+      "签名构建、测试分发、商店审核与版本迭代记录"
+    ],
+    gates: [
+      "目标设备/模拟器安装并完成黄金路径，保留构建版本",
+      "断网重连与权限拒绝负例通过",
+      "签名构建与测试分发回执可查；商店审核未完成时保持 NOT_RUN"
+    ],
+    failureHandling: [
+      "平台差异导致行为不一致：按目标平台分别记录，不用单一平台证据代替另一个平台",
+      "签名或商店审核失败：修正配置后重新提交，不伪造发布回执",
+      "离线冲突：以服务端版本为准并保留用户操作记录"
+    ],
+    rollback: [
+      "回退到上一签名构建与商店版本，保留 versionCode/build number",
+      "服务端 API 保持向后兼容，必要时按客户端版本降级",
+      "OTA 更新失败时回退到内置包，不阻塞冷启动"
+    ],
+    optionalBranches: [
+      "React Native/Flutter 的 web 能力不自动等同于移动端验收",
+      "后端 Profile 按实际 API 需求选择，不默认引入无关服务"
+    ],
+    keySkills: ["specification", "architecture", "verification"]
+  })
+});
+
+export const ROUTE_SOP_IDS = Object.freeze(Object.keys(ROUTE_SOPS));
+
 export const STACKS = Object.freeze([
   { id: "flutter", name: "Flutter", appliesTo: ["app"], profiles: ["mobile", "flutter", "backend"] },
   { id: "react-native", name: "React Native / Expo", appliesTo: ["app"], profiles: ["mobile", "react-native", "backend"] },
@@ -528,72 +730,83 @@ export const TIERS = Object.freeze({
 
 // ---------------------------------------------------------------------------
 // Skills: public, self-contained bundles shipped with this repository.
+// Status can only advance with evidence: CANDIDATE -> LOCALLY_VERIFIED ->
+// REAL_PROJECT_VERIFIED -> REUSABLE. Nothing auto-promotes.
+
+export const SKILL_STATUSES = Object.freeze([
+  "CANDIDATE", "LOCALLY_VERIFIED", "REAL_PROJECT_VERIFIED", "REUSABLE"
+]);
+
+const SKILL_TESTS = Object.freeze([
+  "test/install.test.mjs",
+  "node tools/xeng.mjs validate-registry"
+]);
+
+const K = (id, name, description, stages, dependencies = []) => ({
+  id, name, description, stages,
+  status: "CANDIDATE", installed: false,
+  version: "0.2.0", bundle: "skills/" + id, selfContained: true,
+  owner: OWNER.repository,
+  source: {
+    kind: "SEMANTIC_REWRITE_FROM_FROZEN_SNAPSHOT",
+    repository: PROVENANCE.repository,
+    commit: PROVENANCE.commit,
+    path: "05-skills/" + id + "/SKILL.md"
+  },
+  license: "UNLICENSED-PROPRIETARY",
+  supportedAgents: ["claude-code", "codex", "opencode"],
+  lifecycle_stage: stages[0],
+  prerequisites: [...dependencies],
+  dependencies,
+  installMethod: "node tools/skill-kit.mjs install --target <project> --agent <agent> --skills <ids> (dry-run by default; --apply --confirm-reviewed writes files)",
+  tests: [...SKILL_TESTS],
+  provenance: { repository: PROVENANCE.repository, commit: PROVENANCE.commit, path: "05-skills/" + id + "/SKILL.md" }
+});
 
 export const SKILLS = Object.freeze([
-  {
-    id: "project-discovery", name: "项目发现",
-    description: "在陌生仓库中快速建立可核验的系统理解，并识别文档与现实的偏差",
-    stages: ["intake", "discovery"], status: "candidate", installed: false,
-    version: "0.2.0", bundle: "skills/project-discovery", selfContained: true,
-    dependencies: [], license: "UNLICENSED-PROPRIETARY",
-    provenance: { repository: PROVENANCE.repository, commit: PROVENANCE.commit, path: "05-skills/project-discovery/SKILL.md" }
-  },
-  {
-    id: "specification", name: "需求规格",
-    description: "把模糊需求转换为可观察、可验证的验收条件与负例",
-    stages: ["specification"], status: "candidate", installed: false,
-    version: "0.2.0", bundle: "skills/specification", selfContained: true,
-    dependencies: [], license: "UNLICENSED-PROPRIETARY",
-    provenance: { repository: PROVENANCE.repository, commit: PROVENANCE.commit, path: "05-skills/specification/SKILL.md" }
-  },
-  {
-    id: "architecture", name: "架构决策",
-    description: "以 ADR 记录边界、接口、信任边界与可逆性取舍",
-    stages: ["architecture"], status: "candidate", installed: false,
-    version: "0.2.0", bundle: "skills/architecture", selfContained: true,
-    dependencies: [], license: "UNLICENSED-PROPRIETARY",
-    provenance: { repository: PROVENANCE.repository, commit: PROVENANCE.commit, path: "05-skills/architecture/SKILL.md" }
-  },
-  {
-    id: "implementation-plan", name: "实施计划",
-    description: "把规格拆成可独立交付、可独立验证的垂直切片",
-    stages: ["planning"], status: "candidate", installed: false,
-    version: "0.2.0", bundle: "skills/implementation-plan", selfContained: true,
-    dependencies: ["specification"], license: "UNLICENSED-PROPRIETARY",
-    provenance: { repository: PROVENANCE.repository, commit: PROVENANCE.commit, path: "05-skills/implementation-plan/SKILL.md" }
-  },
-  {
-    id: "systematic-debugging", name: "系统排障",
-    description: "先复现与定位根因，再修复，并留下回归测试",
-    stages: ["implementation", "verification", "operation", "postmortem"], status: "candidate", installed: false,
-    version: "0.2.0", bundle: "skills/systematic-debugging", selfContained: true,
-    dependencies: [], license: "UNLICENSED-PROPRIETARY",
-    provenance: { repository: PROVENANCE.repository, commit: PROVENANCE.commit, path: "05-skills/systematic-debugging/SKILL.md" }
-  },
-  {
-    id: "verification", name: "实证验证",
-    description: "用可复现的证据证明工作完成，并诚实标记 UNKNOWN",
-    stages: ["verification", "review", "release"], status: "candidate", installed: false,
-    version: "0.2.0", bundle: "skills/verification", selfContained: true,
-    dependencies: [], license: "UNLICENSED-PROPRIETARY",
-    provenance: { repository: PROVENANCE.repository, commit: PROVENANCE.commit, path: "05-skills/verification/SKILL.md" }
-  },
-  {
-    id: "code-review", name: "代码审查",
-    description: "对照规格与工程标准进行对抗式审查，给出明确结论",
-    stages: ["review"], status: "candidate", installed: false,
-    version: "0.2.0", bundle: "skills/code-review", selfContained: true,
-    dependencies: ["verification"], license: "UNLICENSED-PROPRIETARY",
-    provenance: { repository: PROVENANCE.repository, commit: PROVENANCE.commit, path: "05-skills/code-review/SKILL.md" }
-  },
-  {
-    id: "documentation-sync", name: "文档同步",
-    description: "让文档与真实系统一致，并识别已经漂移的声明",
-    stages: ["release", "operation", "postmortem"], status: "candidate", installed: false,
-    version: "0.2.0", bundle: "skills/documentation-sync", selfContained: true,
-    dependencies: [], license: "UNLICENSED-PROPRIETARY",
-    provenance: { repository: PROVENANCE.repository, commit: PROVENANCE.commit, path: "05-skills/documentation-sync/SKILL.md" }
-  }
+  K("project-discovery", "项目发现",
+    "在陌生仓库中快速建立可核验的系统理解，并识别文档与现实的偏差",
+    ["intake", "discovery"]),
+  K("specification", "需求规格",
+    "把模糊需求转换为可观察、可验证的验收条件与负例",
+    ["specification"]),
+  K("architecture", "架构决策",
+    "以 ADR 记录边界、接口、信任边界与可逆性取舍",
+    ["architecture"]),
+  K("implementation-plan", "实施计划",
+    "把规格拆成可独立交付、可独立验证的垂直切片",
+    ["planning"], ["specification"]),
+  K("systematic-debugging", "系统排障",
+    "先复现与定位根因，再修复，并留下回归测试",
+    ["implementation", "verification", "operation", "postmortem"]),
+  K("verification", "实证验证",
+    "用可复现的证据证明工作完成，并诚实标记 UNKNOWN",
+    ["verification", "review", "release"]),
+  K("code-review", "代码审查",
+    "对照规格与工程标准进行对抗式审查，给出明确结论",
+    ["review"], ["verification"]),
+  K("documentation-sync", "文档同步",
+    "让文档与真实系统一致，并识别已经漂移的声明",
+    ["release", "operation", "postmortem"])
 ]);
+
+export function skillMetadata(skill) {
+  if (!skill || !SKILL_IDS.includes(skill.id)) throw new Error("Unknown skill");
+  return {
+    id: skill.id,
+    version: skill.version,
+    owner: skill.owner,
+    source: { ...skill.source },
+    license: skill.license,
+    supported_agents: [...skill.supportedAgents],
+    lifecycle_stage: skill.lifecycle_stage,
+    stages: [...skill.stages],
+    prerequisites: [...skill.prerequisites],
+    dependencies: [...skill.dependencies],
+    install_method: skill.installMethod,
+    tests: [...skill.tests],
+    status: skill.status
+  };
+}
 
 export const SKILL_IDS = Object.freeze(SKILLS.map(s => s.id));

@@ -1,7 +1,7 @@
 ---
 name: documentation-sync
 description: Make documentation match reality after a change, and detect where docs have already drifted. Use after any implementation change, and proactively when staleness is suspected.
-status: candidate
+status: CANDIDATE
 version: 0.2.0
 license: UNLICENSED-PROPRIETARY
 provenance: Xander-Xai/X-SuperPlay-AI-Engineering-OS@8553124f238ab463d4a50debad34e871ef8de060

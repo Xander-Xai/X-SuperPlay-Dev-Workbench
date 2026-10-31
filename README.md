@@ -2,7 +2,7 @@
 
 **AI-Native 软件交付工作台。** 从一个真实项目出发，选择项目类型、项目状态与任务类型，组合工程 Profiles 与候选 Skills，得到可执行的十一阶段路线、工作区资产和 Agent 交接。
 
-本仓库是这套工程运行时的**当前所有者**：生命周期、任务路由、Profiles、Skills、xeng CLI 与证据模型都在这里维护。旧私有 Engineering OS 只作为历史来源记录，不再是运行依赖。
+本仓库是这套工程运行时的**当前所有者**：生命周期、任务路由、Profiles、Skills、xeng CLI 与证据模型都在这里维护。历史 Engineering OS 只作为来源记录（现已 public，但不作为运行时依赖），不再是运行依赖。
 
 > 生成 ≠ 已安装 ≠ 已测试 ≠ 已发布 ≠ 已验收。所有导出的证据状态默认 `NOT_RUN`。
 
@@ -23,11 +23,22 @@ npm run dev
 
 | 入口 | 作用 |
 |---|---|
-| **项目启动器** | 项目类型 → 新/旧项目 → 任务类型 → Tier / 技术栈 / 扩展 → 生成路线、阶段 Gate、导出 |
-| **工作流浏览器** | 11 个唯一阶段、13 种任务路由、17 个 Profile、A/B/C/D 等级义务 |
-| **Skills 能力库** | 8 个自包含候选 Skill、依赖闭包、按 Agent 生成 dry-run 安装命令 |
-| **项目工作区** | 生成 7 份可审查草案：Manifest、ENGINEERING_PROFILE、Spec/Tickets、ADR、验证计划、发布清单、Agent 交接 |
+| **项目启动器** | 项目类型 → 新/旧项目 → 任务类型 → Tier / 技术栈 / 扩展 → 生成路线、阶段 Gate、路线 SOP、导出 |
+| **工作流浏览器** | 11 个唯一阶段、4 条路线 SOP、13 种任务路由、17 个 Profile、A/B/C/D 等级义务 |
+| **Skills 能力库** | 8 个自包含候选 Skill、标准元数据、依赖闭包、按 Agent 生成 dry-run 安装命令 |
+| **项目工作区** | 生成 9 份可审查草案：Manifest、ENGINEERING_PROFILE、Spec/Tickets、ADR、验证计划、发布清单、Agent 交接、路线 SOP、完整资产包 |
 | **证据与改进** | 证据状态机、本地报告导入（不上传）、阶段摘要与改进闭环 |
+
+## 四条路线 SOP
+
+4 条交付路线复用同一套 11 阶段生命周期，各自增加前置条件、平台不可替代环节、必须覆盖的负例、Gate、失败处理与回退：
+
+- **SaaS**：租户隔离、认证会话、迁移升降级、订阅/支付幂等、备份与监控；必须证明租户 A 无法读取或修改租户 B 的数据。
+- **企业自研**：业务访谈、流程与权限矩阵、SSO/RBAC、集成契约、审计、数据迁移、UAT 与运行交接。
+- **微信小程序**：AppID/资质、登录与服务端会话、合法域名、隐私授权、真机、提审与发布；平台审核和资质不能由本地测试替代。
+- **移动 APP**：在 Flutter / React Native / Android / iOS 中择一，覆盖导航状态、设备权限、安全存储、离线恢复、签名与商店审核；不同时强制四套技术栈。
+
+路线 SOP 会随方案进入工作区资产包；平台不可替代的环节必须标 `BLOCKED` / `NOT_RUN`，不得用本地测试冒充平台回执。
 
 ## 支持范围
 
@@ -52,7 +63,9 @@ node tools/xeng.mjs task bug --type=saas --tier=B
 
 ## Skills：自包含 bundle
 
-8 个候选 Skill 均位于 `skills/<id>/`，包含 `SKILL.md` 与 `references/`，不再依赖旧仓目录结构。
+8 个候选 Skill 均位于 `skills/<id>/`，包含 `SKILL.md` 与 `references/`，不再依赖旧仓目录结构。每个 Skill 都带标准化元数据：`id / version / owner / source / license / supported_agents / lifecycle_stage / prerequisites / dependencies / install_method / tests / status`。
+
+状态阶梯为 `CANDIDATE → LOCALLY_VERIFIED → REAL_PROJECT_VERIFIED → REUSABLE`。没有真实使用证据，不会自动晋级；当前全部为 `CANDIDATE`。
 
 ~~~bash
 node tools/skill-kit.mjs list
@@ -98,21 +111,23 @@ npm run probe -- --target ../your-project --type saas --output project-baseline.
 
 ## 历史来源与迁移
 
-- 历史来源（只读溯源，不是运行依赖）：`Xander-Xai/X-SuperPlay-AI-Engineering-OS@8553124f238ab463d4a50debad34e871ef8de060`
-- 通用治理参考（未复制正文）：`Xander-Xai/AI-Native-Work-Learning-OS@f1289d685c95c7fac6f1d50068527a60f080ee1b`
+- 历史来源（只读溯源，不是运行依赖）：`Xander-Xai/X-SuperPlay-AI-Engineering-OS@8553124f238ab463d4a50debad34e871ef8de060`。该仓现已 public；可见性变化不改变冻结快照。
+- 来源当前 HEAD（仅观测）：`2b792242894937d303c4680208daf9df97ea0027`；冻结后 3 个提交的增量审计见 [migration/eng-os-delta-audit-20261031.json](migration/eng-os-delta-audit-20261031.json)。
+- 通用治理参考（未复制正文）：`Xander-Xai/AI-Native-Work-Learning-OS@f1289d685c95c7fac6f1d50068527a60f080ee1b`；PR #57 仍为 OPEN。
 - 迁移清单：[migration/eng-os-split-20261031.json](migration/eng-os-split-20261031.json)
 - 迁移说明：[docs/MIGRATION.md](docs/MIGRATION.md)
 
-旧仓未归档、未删除。退役需要仓库所有者单独确认，并完成真实项目验证。
+迁移 PR #12 已合并为 `74402bf`；Windows CRLF 修复 PR #13 已合并为 `32e0342`。两者 CI 通过，Pages 已部署。旧仓未归档、未删除，退役需要仓库所有者单独确认并完成真实项目验证（当前 `DECOMMISSION_NOT_VERIFIED`）。
 
 ## 验证状态
 
 | 项 | 状态 |
 |---|---|
-| `npm run check` / `npm test` / `npm run verify` / `npm run build` | 由本机执行结果决定，见 PR 与终端输出 |
-| 浏览器交互与移动端布局 | 需实际运行 `npm run dev` 并截图检查，不能仅凭代码推断 |
-| 真实项目 Dogfood / 真机 / 生产发布 | `NOT_RUN` |
-| Windows 11 / WSL2 / 三个 Agent 的真实加载 | 未全部验证 |
+| `npm run check` / `npm test` / `npm run verify` / `npm run build` | Windows 11 本地通过；远端 CI 在 `74402bf`、`32e0342` 通过 |
+| 浏览器交互与移动端布局 | 1440px / 390px 无头 Chrome 截图与脚本化交互通过；真机未验证 |
+| Windows 11 Skill 安装 / 更新 / 卸载 / 回滚 | 本地 fixture 通过；三个 Agent 的真实加载未全部验证 |
+| 真实项目 Dogfood / 真机 / 生产发布 | `BLOCKED`：没有获得授权的真实小程序 / SaaS 项目 |
+| GitHub Pages | 已部署：<https://xander-xai.github.io/X-SuperPlay-Dev-Workbench/> |
 
 **CI 通过只说明本仓库代码检查通过，不代表用户项目、真实设备或生产交付已验收。**
 

@@ -9,7 +9,8 @@ Workbench runtime (this repository)
   src/catalog.mjs        canonical data: 11 stages, 13 tasks, 17 profiles, 8 skills, tiers
   src/routing.mjs        type x task x mode x tier -> ordered stages + skill closure
   src/engine.mjs         plan composition, Markdown/Manifest export, catalog validation
-  src/workspace.mjs      seven reviewable project artifacts
+  src/workspace.mjs      nine reviewable project artifacts + route SOP + bundle
+  src/identity.mjs       shared project_id / base_sha header for every artifact
   src/evidence.mjs       state machine + local report import
   src/install-contract.mjs  agent destinations + skill dependency closure
   src/app.mjs            browser UI (no network, no filesystem)
@@ -48,8 +49,9 @@ Workbench runtime (this repository)
 2. 由 task 选择阶段序列；`existing` 模式在最前面补 `intake` 与 `discovery`。
 3. Tier C/D 的 `feature` 任务把 `specification` / `architecture` 标为 `optional`，并记录理由——不静默删除。
 4. 未进入路线的阶段写入 `skipped`，明确说明“不包含”，不视为完成。
-5. Skills 通过依赖闭包解析；所有 Skill 初始 `candidate / installed=false`。
+5. Skills 通过依赖闭包解析；所有 Skill 初始 `CANDIDATE / installed=false`，晋级需要真实使用证据。
 6. 每个阶段初始 `state = NOT_RUN`，证据种类来自阶段定义与任务定义。
+7. 4 条产品路线各自带一份 `ROUTE_SOPS`：前置条件、平台不可替代环节、必须覆盖的负例、Gate、失败处理与回退；复用 11 阶段，不建立第二套生命周期。
 
 ## 证据模型
 
@@ -79,6 +81,12 @@ NOT_RUN ──► IN_PROGRESS ──► VERIFIED
 
 Tier C/D 只能降低非安全义务；`security` 的 review/test、`release` 的 receipt、AI/RAG 的 eval、企业接口探针、设备真机探针保持必需。`existing` 模式不降级任何必需 Gate。缺少项目上下文时，`evidenceSummary()` 返回 `context:"UNKNOWN"`，阶段保持 `NOT_RUN`，不做乐观晋级。
 
+## 工作区资产与共享身份
+
+`workspaceBundle()` 生成 9 个可审查文件：manifest、ENGINEERING_PROFILE、Spec/Tickets、ADR、验证计划、发布检查单、Agent 交接、路线 SOP 与完整资产包。除 manifest 与 bundle 自身外，每个 Markdown/YAML 文件都带同一段 `WORKBENCH_PROJECT_IDENTITY`：`project_id`、`project_type`、`task`、`mode`、`tier`、`base_sha`、`runtime`、`current_owner`、`status`。`<slug>-bundle.json` 汇总全部文件内容、字节数与身份，便于整体导出和一致性核对。
+
+所有产物状态为 `DRAFT_NOT_EXECUTED`；生成资产不等于写入目标仓库、安装 Skill、运行测试或完成验收。
+
 ## 浏览器安全
 
 - `index.html` 使用 CSP：`default-src 'self'`、`connect-src 'none'`、`form-action 'none'`。
@@ -96,7 +104,7 @@ catalog ──► routing ──► engine ──► workspace
    └──► baseline（浏览器安全）◄── project-probe（Node，只读）
 ~~~
 
-`engine.mjs` 不导入 `workspace.mjs`；`workspace.mjs` 导入 `engine.mjs` 的 `toManifest`，保持单向依赖。CLI 工具导入 `src/`，反向不成立。
+`engine.mjs` 不导入 `workspace.mjs`；`workspace.mjs` 导入 `engine.mjs` 的 `toManifest`，保持单向依赖。`identity.mjs` 只依赖 `catalog.mjs`，被 starter / handoff / workspace 共享。CLI 工具导入 `src/`，反向不成立。
 
 ## 版本与漂移
 
@@ -107,4 +115,4 @@ catalog ──► routing ──► engine ──► workspace
 
 ## Gate 语义
 
-`GENERATED_NOT_EXECUTED`、`NOT_RUN`、`candidate` 是硬编码的安全默认值。任何“已完成”都必须来自目标项目的真实执行回执，不能通过网页开关或 CI 通过来提升。
+`GENERATED_NOT_EXECUTED`、`NOT_RUN`、`CANDIDATE` 是硬编码的安全默认值。任何“已完成”都必须来自目标项目的真实执行回执，不能通过网页开关或 CI 通过来提升。

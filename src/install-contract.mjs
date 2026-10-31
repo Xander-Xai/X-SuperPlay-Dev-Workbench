@@ -1,4 +1,4 @@
-import { AGENTS, SKILLS, SKILL_IDS, RUNTIME, PROVENANCE } from "./catalog.mjs";
+import { AGENTS, SKILLS, SKILL_IDS, RUNTIME, PROVENANCE, skillMetadata } from "./catalog.mjs";
 import { skillClosure } from "./routing.mjs";
 
 export const SKILL_DESTINATIONS = Object.freeze(Object.fromEntries(
@@ -25,7 +25,13 @@ export function discoverSkills() {
     stages: s.stages, version: s.version, status: s.status,
     bundle: s.bundle, dependencies: s.dependencies,
     selfContained: s.selfContained, license: s.license,
-    provenance: s.provenance
+    supportedAgents: [...s.supportedAgents],
+    lifecycleStage: s.lifecycle_stage,
+    prerequisites: [...s.prerequisites],
+    installMethod: s.installMethod,
+    tests: [...s.tests],
+    provenance: s.provenance,
+    metadata: skillMetadata(s)
   }));
 }
 
@@ -45,7 +51,10 @@ export function skillInstallContract({ agent, skills, bundleRoot = "skills" }) {
       historicalProvenance: { repository: PROVENANCE.repository, commit: PROVENANCE.commit }
     },
     installState: "DRY_RUN_ONLY",
-    runtime: "NOT_EXECUTED"
+    runtime: "NOT_EXECUTED",
+    license: "UNLICENSED-PROPRIETARY",
+    installMethod: "node tools/skill-kit.mjs install --target <project> --agent <agent> --skills <ids>",
+    skillRuntime: "NOT_EXECUTED"
   };
 }
 

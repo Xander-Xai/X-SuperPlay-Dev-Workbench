@@ -1,6 +1,6 @@
 import {
   TYPES, STACKS, AGENTS, ADDONS, SKILLS, STAGES, TASKS, PROFILES, TIERS,
-  EVIDENCE_STATES, EVIDENCE_LAYERS, EVIDENCE_KINDS, OWNER, PROVENANCE, RUNTIME
+  EVIDENCE_STATES, EVIDENCE_LAYERS, EVIDENCE_KINDS, OWNER, PROVENANCE, RUNTIME, ROUTE_SOPS
 } from "./catalog.mjs";
 import { assemble, xengDryRun, toMarkdown, toManifest } from "./engine.mjs";
 import { skillKitCommand, skillsForStage, resolveSkillDependencies, discoverSkills } from "./install-contract.mjs";
@@ -155,7 +155,7 @@ function renderAddons() {
 
 function renderSummary(p) {
   one("#summary-type").textContent = p.type.name + " · " + p.profiles.length + " Profiles";
-  one("#summary-acceptance").textContent = p.type.acceptance;
+  one("#summary-acceptance").textContent = p.type.acceptance + " 必须覆盖的负例：" + p.routeSop.negativeCase;
   one("#summary-task").textContent = p.task.name + "（" + p.task.id + "） · " + p.stages.length + " 阶段 · " + p.mode + " · Tier " + p.tier.id;
   const chipRoot = one("#profile-chips");
   chipRoot.replaceChildren();
@@ -307,6 +307,15 @@ function renderWorkflow() {
       ["任务", "名称", "阶段数", "阶段序列", "必需证据"],
       TASKS.map(t => [t.id, t.name, String(t.stages.length), t.stages.join(" → "), t.evidence.join(", ")])
     ));
+  } else if (activeWorkflowTab === "routes") {
+    body.append(newElement("p", "muted", "4 条交付路线的专属 SOP。复用 11 阶段生命周期，只补充前置条件、平台限制、负例、Gate 与回退。"));
+    body.append(table(
+      ["路线", "前置条件", "必须覆盖的负例", "关键 Gate", "平台不可替代", "回退"],
+      Object.values(ROUTE_SOPS).map(s => [
+        s.name, s.prerequisites.join("；"), s.negativeCase,
+        s.gates.join("；"), s.platformConstraints.join("；"), s.rollback.join("；")
+      ])
+    ));
   } else if (activeWorkflowTab === "profiles") {
     body.append(newElement("p", "muted", "17 个 Profile（14 个基础 + 3 个叠加）。叠加 Profile 只作用于适用项目类型。"));
     body.append(table(
@@ -352,11 +361,15 @@ function renderSkills() {
   for (const skill of items) {
     const card = newElement("article", "skill-card" + (skill.id === activeSkillId ? " selected" : ""));
     const header = newElement("div", "skill-head");
-    header.append(newElement("span", "skill-logo", "◇"), newElement("span", "candidate-label", "CANDIDATE"));
+    header.append(newElement("span", "skill-logo", "◇"), newElement("span", "candidate-label", skill.status));
     card.append(header, newElement("strong", "skill-name", skill.id), newElement("p", "", skill.description));
     card.append(newElement("div", "skill-stage", "用于：" + skill.stages.map(x => STAGES.find(s => s.id === x).name).join(" / ")));
-    card.append(newElement("div", "skill-meta", "v" + skill.version + " · 自包含 · 依赖：" + (skill.dependencies.join(", ") || "无")));
+    card.append(newElement("div", "skill-meta", "v" + skill.version + " · 阶段 " + skill.lifecycleStage +
+      " · 依赖：" + (skill.dependencies.join(", ") || "无") + " · " + skill.license));
+    card.append(newElement("div", "skill-meta", "Agents：" + skill.supportedAgents.join(", ") +
+      (skill.prerequisites.length ? " · 前置：" + skill.prerequisites.join(", ") : "")));
     card.append(newElement("code", "skill-path", skill.bundle + "/SKILL.md + references/"));
+    card.title = "安装方式：" + skill.installMethod + "\n测试：" + skill.tests.join(", ");
     card.addEventListener("click", () => {
       activeSkillId = skill.id;
       one("#skill-install-command").textContent = installCommandFor(skill.id, agent);
@@ -605,6 +618,14 @@ function init() {
     const isJson = activeWorkspaceFile.endsWith(".json");
     download(activeWorkspaceFile, bundle[activeWorkspaceFile], isJson ? "application/json;charset=utf-8" : "text/markdown;charset=utf-8");
     toast("已下载工作区草案文件；未执行任何安装或部署。");
+  });
+  one("#download-bundle").addEventListener("click", () => {
+    const p = plan();
+    const bundle = workspaceBundle(p);
+    const name = p.slug + "-bundle.json";
+    if (!bundle[name]) return;
+    download(name, bundle[name], "application/json;charset=utf-8");
+    toast("已导出完整项目资产包（同一 project_id / base_sha）；未执行任何安装或部署。");
   });
   all("#workflow-tabs .tab").forEach(tab => tab.addEventListener("click", () => {
     activeWorkflowTab = tab.dataset.tab;

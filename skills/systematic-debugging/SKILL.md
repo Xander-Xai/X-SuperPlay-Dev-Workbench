@@ -1,7 +1,7 @@
 ---
 name: systematic-debugging
 description: Find root causes before fixing. Use when behavior does not match expectations, tests fail inexplicably, builds break, or any "works on my machine" situation appears.
-status: candidate
+status: CANDIDATE
 version: 0.2.0
 license: UNLICENSED-PROPRIETARY
 provenance: Xander-Xai/X-SuperPlay-AI-Engineering-OS@8553124f238ab463d4a50debad34e871ef8de060

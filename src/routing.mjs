@@ -1,7 +1,7 @@
 // Task x Profile x Stage x Skill routing. Pure functions; safe in browser and Node.
 import {
   TYPES, STACKS, ADDONS, PROFILES, PROFILE_IDS, PROFILE_CONFLICTS,
-  TASKS, TASK_IDS, STAGES, STAGE_IDS, TIERS, SKILLS, SKILL_IDS, DEFAULT_STACK, EVIDENCE_KINDS
+  TASKS, TASK_IDS, STAGES, STAGE_IDS, TIERS, SKILLS, SKILL_IDS, ROUTE_SOPS, DEFAULT_STACK, EVIDENCE_KINDS
 } from "./catalog.mjs";
 
 const byId = (arr, id) => arr.find(x => x.id === id);
@@ -208,6 +208,11 @@ export function routeForTask(taskId) {
   return task;
 }
 
+export function routeSopFor(type) {
+  if (!Object.hasOwn(ROUTE_SOPS, type)) throw new Error("Unknown route SOP: " + type);
+  return ROUTE_SOPS[type];
+}
+
 export function composeRoute(input = {}) {
   const type = Object.hasOwn(TYPES, input.type) ? input.type : "mini-program";
   const tierId = Object.hasOwn(TIERS, input.tier) ? input.tier : "B";
@@ -256,7 +261,7 @@ export function composeRoute(input = {}) {
     return {
       id, required, recommended,
       dependencies: byId(SKILLS, id).dependencies ?? [],
-      status: "candidate", installed: false
+      status: "CANDIDATE", installed: false
     };
   });
 
@@ -268,6 +273,7 @@ export function composeRoute(input = {}) {
     task: { id: task.id, name: task.name, notes: task.notes, stages: task.stages },
     type, tier: { id: tierId, ...tier }, mode, stack,
     profiles, profileObligations: profileObligations(profiles),
+    routeSop: ROUTE_SOPS[type],
     stages: plannedStages, skipped, skills, evidence, evidencePlan: plan,
     warnings,
     status: "GENERATED_NOT_EXECUTED"
@@ -279,6 +285,7 @@ export function validateRoute(route) {
   if (!route || route.status !== "GENERATED_NOT_EXECUTED") errors.push("route status must be GENERATED_NOT_EXECUTED");
   if (!TASK_IDS.includes(route?.task?.id)) errors.push("unknown task");
   if (!route?.stages?.length) errors.push("route has no stages");
+  if (!route?.routeSop || route.routeSop.id !== route.type) errors.push("route SOP missing or mismatched");
   for (const stage of route?.stages ?? []) {
     if (!STAGE_IDS.includes(stage.id)) errors.push("unknown stage " + stage.id);
     if (stage.state !== "NOT_RUN") errors.push("stage " + stage.id + " must start NOT_RUN");

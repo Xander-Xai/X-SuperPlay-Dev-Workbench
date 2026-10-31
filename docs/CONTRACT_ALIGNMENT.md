@@ -5,6 +5,7 @@
 - 对账日期：2026-10-31
 - 契约版本：`v1`
 - 契约来源：AI-Native PR #57 @ `2b3013ca8d096bdd25c5ec7d5c7a9b3b02b98735`（contract blob `df6f5100`）
+- 契约 PR 状态（2026-10-31 观测）：`OPEN`，未作为已合并权威
 - Workbench 版本：`0.2.0`
 - 结论：**6 项均为部分实现**；状态词汇兼容已采用；Review Convergence 与 Knowledge Promotion 存在明确的未实现子项；无运行时依赖。
 
@@ -88,7 +89,7 @@
 | Project Evidence → Domain Pattern | 无跨任务证据聚合模型 | 未实现 |
 | Cross-Domain Pattern | 无 | 未实现 |
 | Durable Principle | 无 | 未实现 |
-| Skill 晋级需两真实任务 | Skill 固定 `candidate`，未记录复用证据 | 部分 |
+| Skill 晋级需两真实任务 | Skill 固定 `CANDIDATE`，未记录复用证据 | 部分 |
 | Artifact 晋级需真实消费者 | 工作区产物明确为草案，未记录消费者 | 部分 |
 
 缺口：晋级阶梯目前是文档规则，不是数据结构；没有跨项目证据索引。

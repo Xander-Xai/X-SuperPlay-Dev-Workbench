@@ -1,7 +1,7 @@
 ---
 name: project-discovery
 description: Rapidly build an accurate, evidence-based mental model of a repository before changing it. Use at project intake, when onboarding an unfamiliar codebase, or when docs and reality may disagree.
-status: candidate
+status: CANDIDATE
 version: 0.2.0
 license: UNLICENSED-PROPRIETARY
 provenance: Xander-Xai/X-SuperPlay-AI-Engineering-OS@8553124f238ab463d4a50debad34e871ef8de060

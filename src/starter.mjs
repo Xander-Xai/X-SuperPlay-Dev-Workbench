@@ -1,4 +1,6 @@
 // Draft starter tickets are hypotheses, not approved project work.
+import { projectIdentity, identityBlock } from "./identity.mjs";
+
 const FLOW = {
   saas: [
     ["组织登录与读取", "用户登录到组织空间，仅可访问自己租户的记录", "匿名用户或租户 B 不能读取租户 A 的数据", "认证、租户隔离集成测试"],
@@ -43,12 +45,15 @@ function taskTickets(plan) {
 export function makeStarter(plan) {
   if (!plan || !plan.config || !Object.hasOwn(FLOW, plan.config.type)) throw new TypeError("Invalid plan");
   const rows = taskTickets(plan);
+  const identity = projectIdentity(plan);
   return {
     status: "DRAFT_REQUIRES_OWNER_APPROVAL",
     sourceCommit: plan.ownership?.historical?.commit ?? "UNKNOWN",
     currentOwner: plan.ownership?.currentOwner?.repository ?? "UNKNOWN",
+    projectId: identity.projectId,
     project: plan.config.name,
     task: plan.task?.id ?? plan.config.task,
+    baseSha: identity.baseSha,
     originalRequest: plan.config.description,
     profiles: [...plan.profiles],
     unknowns: [
@@ -76,8 +81,10 @@ const quote = s => String(s ?? "").replace(/\r\n/g, "\n").split("\n")
 export function starterMarkdown(plan) {
   const pack = makeStarter(plan);
   const lines = [
+    identityBlock(plan), "",
     "# " + pack.project + " · Spec & Tracer Tickets（草案）", "",
     "> DRAFT_REQUIRES_OWNER_APPROVAL / NOT_RUN。不代表用户需求已核实或项目已开始。",
+    "> project_id：" + pack.projectId + " · base_sha：" + pack.baseSha,
     "> 任务类型：" + pack.task + " · 当前所有者：" + pack.currentOwner,
     "> 历史来源：" + pack.sourceCommit, "",
     "## 原始需求（未经核实）", "", quote(pack.originalRequest || "未填写"), "",

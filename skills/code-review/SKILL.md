@@ -1,7 +1,7 @@
 ---
 name: code-review
 description: Review a diff adversarially before merge, whether your own work or another agent's. Use when completing a task, before requesting merge, or when reviewing an AI-generated changeset.
-status: candidate
+status: CANDIDATE
 version: 0.2.0
 license: UNLICENSED-PROPRIETARY
 provenance: Xander-Xai/X-SuperPlay-AI-Engineering-OS@8553124f238ab463d4a50debad34e871ef8de060

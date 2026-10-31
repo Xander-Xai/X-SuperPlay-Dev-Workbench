@@ -1,7 +1,7 @@
 ---
 name: specification
 description: Turn an idea or request into a short, verifiable specification with numbered acceptance criteria and a stated verification method for each. Use before feature work when requirements feel fuzzy or when acceptance is contested.
-status: candidate
+status: CANDIDATE
 version: 0.2.0
 license: UNLICENSED-PROPRIETARY
 provenance: Xander-Xai/X-SuperPlay-AI-Engineering-OS@8553124f238ab463d4a50debad34e871ef8de060

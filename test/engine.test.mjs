@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {TYPES,STAGES,SKILLS,TASKS,PROFILES,OWNER,PROVENANCE,SOURCE} from "../src/catalog.mjs";
+import {TYPES,STAGES,SKILLS,TASKS,PROFILES,OWNER,PROVENANCE,SOURCE,ROUTE_SOPS,SKILL_STATUSES,skillMetadata} from "../src/catalog.mjs";
 import {slugify,normalizeConfig,assemble,xengDryRun,toMarkdown,toManifest,validateCatalog} from "../src/engine.mjs";
 
 test("catalog contains the preserved routes, stages, tasks, profiles and skills",()=>{
@@ -10,7 +10,7 @@ test("catalog contains the preserved routes, stages, tasks, profiles and skills"
   assert.equal(TASKS.length,13);
   assert.equal(PROFILES.length,17);
   assert.equal(SKILLS.length,8);
-  assert.ok(SKILLS.every(x=>x.status==="candidate" && x.installed===false && x.selfContained===true));
+  assert.ok(SKILLS.every(x=>x.status==="CANDIDATE" && x.installed===false && x.selfContained===true));
   assert.deepEqual(validateCatalog(),[]);
 });
 test("every product route resolves its base profiles",()=>{
@@ -53,7 +53,7 @@ test("manifest separates ownership and does not claim verification or installati
   assert.equal(m.ownership.historicalProvenance.commit,PROVENANCE.commit);
   assert.equal(m.ownership.historicalProvenance.status,"HISTORICAL_PROVENANCE");
   assert.ok(m.route.stages.every(s=>s.state==="NOT_RUN"));
-  assert.ok(m.skills.every(s=>s.status==="candidate" && !s.installed));
+  assert.ok(m.skills.every(s=>s.status==="CANDIDATE" && !s.installed));
   assert.equal(m.ownership.historicalProvenance.commit,SOURCE.commit);
 });
 test("Markdown outputs the task route and safety caveats",()=>{
@@ -76,4 +76,45 @@ test("task choice changes the route without inventing stages",()=>{
 test("input lengths are bounded",()=>{
   const cfg=normalizeConfig({name:"a".repeat(400),description:"b".repeat(5000)});
   assert.equal(cfg.name.length,100);assert.equal(cfg.description.length,2000);
+});
+test("every product route owns a distinct, complete SOP",()=>{
+  assert.equal(Object.keys(ROUTE_SOPS).length,4);
+  const cases={
+    saas:/租户 B/,
+    enterprise:/越权/,
+    "mini-program":/非法域名/,
+    app:/权限被拒绝/
+  };
+  for(const [id,sop] of Object.entries(ROUTE_SOPS)){
+    assert.equal(sop.id,id);
+    assert.ok(sop.prerequisites.length>0);
+    assert.ok(sop.platformConstraints.length>0);
+    assert.ok(sop.preInstallChecks.length>0);
+    assert.ok(sop.gates.length>0);
+    assert.ok(sop.failureHandling.length>0);
+    assert.ok(sop.rollback.length>0);
+    assert.ok(sop.optionalBranches.length>0);
+    assert.match(sop.negativeCase,cases[id]);
+    assert.match(sop.platformConstraints.join(" "),/.+/);
+    for(const key of ["prerequisites","platformConstraints","deliverables","gates","failureHandling","rollback"])
+      for(const text of sop[key]) assert.ok(text.trim().length>10,id+"."+key);
+  }
+  const app=assemble({type:"app",stack:"flutter"});
+  assert.equal(app.routeSop.id,"app");
+  assert.ok(app.routeSop.platformConstraints.join(" ").includes("签名"));
+});
+test("skill metadata is complete and status cannot self-promote",()=>{
+  assert.deepEqual(SKILL_STATUSES,["CANDIDATE","LOCALLY_VERIFIED","REAL_PROJECT_VERIFIED","REUSABLE"]);
+  for(const skill of SKILLS){
+    const meta=skillMetadata(skill);
+    for(const key of ["id","version","owner","source","license","supported_agents","lifecycle_stage","prerequisites","dependencies","install_method","tests","status"])
+      assert.ok(Object.hasOwn(meta,key),"missing "+key+" for "+skill.id);
+    assert.equal(meta.status,"CANDIDATE");
+    assert.equal(meta.license,"UNLICENSED-PROPRIETARY");
+    assert.deepEqual(meta.supported_agents,["claude-code","codex","opencode"]);
+    assert.ok(meta.lifecycle_stage);
+    assert.ok(meta.install_method.includes("skill-kit.mjs"));
+    assert.ok(meta.tests.length>0);
+    assert.equal(skill.evidence,undefined);
+  }
 });

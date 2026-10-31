@@ -23,6 +23,8 @@ Profile 组合：
 - APP：`mobile + <flutter|react-native|android|ios> + backend`，不同时安装四种端。
 - AI：追加 `ai-application`，按需再追加 `rag` / `agent`；评测是必需义务。
 
+每条路线同时生成独立 SOP，列出前置条件、平台不可替代环节、必须覆盖的负例、验收 Gate、失败处理与回退。平台环节（支付渠道、企业 IdP、微信审核、设备签名/商店）只能产生 `BLOCKED` / `NOT_RUN` 或真实平台回执，不能用本地代码测试替代。
+
 ## 02–04 形成可检查的工作合同
 
 需求 → Spec（Goal / Non-goals / Given-When-Then / 权限负例）→ 架构与 ADR（接口、数据边界、恢复与取舍）→ 任务规划（Tracer Ticket，blocked_by、测试命令、最低预算）。首张卡应纵向穿过必要 UI、API、数据库和测试，而不是先做完所有 UI 再联调所有后端。

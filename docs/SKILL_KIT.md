@@ -29,10 +29,28 @@ skills/verification/
   references/evidence-block.md
 ~~~
 
-- `SKILL.md` 必须包含 frontmatter：`name` 与目录一致、`description`、`self_contained: true`。
+- `SKILL.md` 必须包含 frontmatter：`name` 与目录一致、`description`、`self_contained: true`、`status` 与 `license` 与 catalog 一致。
 - 安装时整包递归复制，保持相对路径。
 - 拒绝符号链接、绝对路径、`..`、超过 256 KiB 的单文件。
 - 跨目录链接会在 dry-run 中警告；bundle 设计上要求自包含。
+- Windows CRLF 检出会先归一化 frontmatter 比较，但文件字节与 SHA-256 完整性语义不变。
+
+## 元数据与状态
+
+每个 Skill 在 catalog 中带标准元数据：`id / version / owner / source / license / supported_agents / lifecycle_stage / prerequisites / dependencies / install_method / tests / status`。`skillMetadata()` 输出 snake_case 合同，`discoverSkills()` 将其提供给网站。
+
+状态阶梯：
+
+~~~text
+CANDIDATE → LOCALLY_VERIFIED → REAL_PROJECT_VERIFIED → REUSABLE
+~~~
+
+- `CANDIDATE`：正文可审查，未在真实项目执行。
+- `LOCALLY_VERIFIED`：目标项目真实安装并在本地测试中使用。
+- `REAL_PROJECT_VERIFIED`：至少一个真实项目产生可核验执行证据。
+- `REUSABLE`：第二个真实项目复用并验证。
+- 没有证据不允许晋级；`validateCatalog()` 会对非 `CANDIDATE` 但缺少 `evidence` 的 Skill 报错。
+- 许可证固定为 `UNLICENSED-PROPRIETARY`；未经所有者授权不得改为 MIT/Apache-2.0，也不得把第三方受限正文复制进公开仓库。
 
 ## 依赖闭包
 
@@ -78,4 +96,4 @@ skills/verification/
 - 安装文件 ≠ Skill 已执行 ≠ 已验证 ≠ 业务验收。
 - 不执行 Skill 代码，不访问网络，不读取凭证。
 - 不自动检查目标仓库是否为私有；由操作者确认。
-- 真实 Windows 11 / WSL2、三个 Agent 的加载路径、许可证与供应链扫描仍为 `NOT_VERIFIED`。
+- 真实 Windows 11 本地安装/更新/卸载/回滚已通过 fixture 验证；WSL2、三个 Agent 的真实加载路径、许可证与供应链扫描仍为 `NOT_VERIFIED`。

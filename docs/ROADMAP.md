@@ -8,7 +8,7 @@
 - 静态本机预览服务器、Node 逻辑测试、CI 计划。
 - 工程验收状态阶梯、反馈回流说明、公共 / 私有 Source of Truth 边界。
 
-## v0.2 运行时整合（2026-10-31，本分支，未合并）
+## v0.2 运行时整合（2026-10-31，已合并）
 
 目标：把旧私有 Engineering OS 的运行时能力语义迁移进 Workbench，并消除运行时依赖。
 
@@ -16,6 +16,9 @@
 - [x] 任务路由：type × task × tier × mode × stack → 有序阶段 + Skill 依赖闭包（`src/routing.mjs`）。
 - [x] 显式证据状态机与本地报告导入，全部初始 `NOT_RUN`（`src/evidence.mjs`）。
 - [x] 7 件项目工作区产物：manifest、ENGINEERING_PROFILE.yaml、Spec、Tickets、ADR、验证计划、发布检查单（`src/workspace.mjs`）。
+- [x] 9 件工作区资产：新增路线 SOP 与共享 project_id / base_sha 的完整资产包。
+- [x] 4 条路线独立 SOP：前置条件、平台不可替代环节、负例、Gate、失败处理与回退。
+- [x] 8 个 Skill 的标准化元数据与 `CANDIDATE` 状态阶梯；无证据不晋级。
 - [x] 自包含 8 个 Skill bundle；安装器从本仓 `skills/` 读取，拒绝 `--source`。
 - [x] 锁文件 v2 + SHA-256 校验 + 回执 + 受控卸载 / 回滚。
 - [x] `tools/xeng.mjs` Node CLI：init / audit / doctor / validate-registry / selftest / task / version。
@@ -23,9 +26,10 @@
 - [x] 五视图网站：启动器、工作流、Skills、工作区、证据。
 - [x] `npm run scan` 区分活跃旧仓依赖与历史溯源。
 - [x] 迁移清单 `migration/eng-os-split-20261031.json` 与 `docs/MIGRATION.md`。
-- [ ] 分支合并、CI 与 Pages 回执：`NOT_RUN`。
-- [ ] 浏览器真实交互与移动端截图复核：`NOT_RUN`（提交前执行）。
+- [x] 分支合并、CI 与 Pages 回执：PR #12 → `74402bf`；PR #13 → `32e0342`；CI 成功，Pages 已部署。
+- [x] 浏览器真实交互与移动端截图复核：1440px / 390px 无头 Chrome。
 - [ ] 三个 Agent 的真实 Skill 加载路径：`NOT_VERIFIED`。
+- [ ] 真实项目 Dogfood：`BLOCKED`（没有获得授权的真实小程序 / SaaS 项目）。
 
 ## v0.3：真实项目 Dogfood
 

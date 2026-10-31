@@ -1,6 +1,7 @@
 import {
   PROVENANCE, OWNER, GOVERNANCE, RUNTIME, TYPES, STACKS, AGENTS, ADDONS,
-  SKILLS, STAGES, PROFILES, PROFILE_IDS, TASKS, TASK_IDS, TIERS, DEFAULT_STACK
+  SKILLS, STAGES, PROFILES, PROFILE_IDS, TASKS, TASK_IDS, TIERS, DEFAULT_STACK,
+  ROUTE_SOPS, ROUTE_SOP_IDS, SKILL_STATUSES
 } from "./catalog.mjs";
 import { normalizeBaseline, baselineSummary } from "./baseline.mjs";
 import { composeRoute, validateRoute, stageSkillIds, tierObligations, profileObligations } from "./routing.mjs";
@@ -60,6 +61,7 @@ export function assemble(input = {}) {
     config, slug: slugify(config.name),
     type, task: route.task, tier: route.tier, mode: route.mode, stack: route.stack,
     profiles: route.profiles,
+    routeSop: route.routeSop,
     profileObligations: route.profileObligations,
     stages, skipped: route.skipped,
     skills: SKILLS, routeSkills: route.skills,
@@ -127,12 +129,22 @@ export function toMarkdown(plan) {
       "- 交付：" + s.deliverable,
       "- Gate：" + s.gate,
       "- 角色：" + s.role + (s.optionalReason ? "（" + s.optionalReason + "）" : ""),
-      "- 相关 Skills：" + (s.skills.map(x => x.id + " [candidate, 未安装]").join(", ") || "无"),
+      "- 相关 Skills：" + (s.skills.map(x => x.id + " [CANDIDATE, 未安装]").join(", ") || "无"),
       "- 所需证据：" + s.evidence.join(", "),
       "- 证据状态：NOT_RUN", ""
     );
   }
+  const sop = plan.routeSop;
   lines.push(
+    "## 路线 SOP · " + sop.name, "",
+    "- 前置条件：" + sop.prerequisites.join("；"),
+    "- 本地不可替代的平台环节：" + sop.platformConstraints.join("；"),
+    "- 安装前检查：" + sop.preInstallChecks.join("；"),
+    "- 必须覆盖的负例：" + sop.negativeCase,
+    "- 路线关键 Gate：" + sop.gates.join("；"),
+    "- 失败处理：" + sop.failureHandling.join("；"),
+    "- 回退方式：" + sop.rollback.join("；"),
+    "- 可选分支：" + sop.optionalBranches.join("；"), "",
     "## Profiles 义务", "",
     "- 必需产物：" + (plan.profileObligations.artifacts.join("；") || "无"),
     "- 必需实践：" + (plan.profileObligations.practices.join("；") || "无"),
@@ -168,12 +180,19 @@ export function toManifest(plan) {
     },
     project: {
       name: config.name, slug, type: config.type, mode: config.mode, tier: config.tier,
-      description: config.description, stack: config.stack, task: config.task
+      description: config.description, stack: config.stack, task: config.task,
+      baseSha: config.baseline?.headSha ?? "UNKNOWN"
     },
     task: { id: task.id, name: task.name, notes: task.notes },
     agent: config.agent,
     addons: config.addons,
     profiles,
+    routeSop: {
+      id: plan.routeSop.id, name: plan.routeSop.name,
+      negativeCase: plan.routeSop.negativeCase,
+      platformConstraints: [...plan.routeSop.platformConstraints],
+      gates: [...plan.routeSop.gates]
+    },
     profileObligations: plan.profileObligations,
     baseline: config.baseline ? baselineSummary(config.baseline) : null,
     route: {
@@ -198,6 +217,20 @@ export function validateCatalog() {
   for (const [id, type] of Object.entries(TYPES)) {
     if (!type.profiles.every(p => PROFILE_IDS.includes(p))) errors.push("unknown profile in type " + id);
     if (!type.checks?.length) errors.push("empty checks in " + id);
+  }
+  if (ROUTE_SOP_IDS.length !== Object.keys(TYPES).length)
+    errors.push("route SOP count must match product types");
+  for (const id of Object.keys(TYPES)) {
+    const sop = ROUTE_SOPS[id];
+    if (!sop) { errors.push("missing route SOP " + id); continue; }
+    if (sop.id !== id) errors.push("route SOP id mismatch " + id);
+    for (const key of ["prerequisites", "platformConstraints", "preInstallChecks", "deliverables", "gates", "failureHandling", "rollback", "optionalBranches"])
+      if (!Array.isArray(sop[key]) || !sop[key].length || !sop[key].every(x => typeof x === "string" && x.trim()))
+        errors.push("route SOP " + id + " has invalid " + key);
+    if (typeof sop.negativeCase !== "string" || !sop.negativeCase.trim())
+      errors.push("route SOP " + id + " lacks a negative case");
+    if (!sop.keySkills.length || !sop.keySkills.every(s => SKILLS.some(k => k.id === s)))
+      errors.push("route SOP " + id + " references an unknown skill");
   }
   for (const item of STACKS) {
     if (!item.profiles.every(p => PROFILE_IDS.includes(p))) errors.push("unknown profile in stack " + item.id);
@@ -236,6 +269,23 @@ export function validateCatalog() {
     if (!skill.stages.every(x => stageSet.has(x))) errors.push("unknown stage in skill " + skill.id);
     if (!skill.dependencies.every(d => SKILLS.some(k => k.id === d))) errors.push("unknown dependency in skill " + skill.id);
     if (skill.selfContained !== true) errors.push("skill " + skill.id + " must be self-contained");
+    if (!SKILL_STATUSES.includes(skill.status)) errors.push("invalid skill status " + skill.id);
+    if (skill.owner !== OWNER.repository) errors.push("skill " + skill.id + " has no current owner");
+    if (!skill.source || skill.source.repository !== PROVENANCE.repository ||
+        skill.source.commit !== PROVENANCE.commit || !skill.source.path)
+      errors.push("skill " + skill.id + " has incomplete source metadata");
+    if (skill.license !== "UNLICENSED-PROPRIETARY") errors.push("skill " + skill.id + " license changed without authorization");
+    if (!Array.isArray(skill.supportedAgents) || !skill.supportedAgents.length ||
+        !skill.supportedAgents.every(a => AGENTS.some(x => x.id === a)))
+      errors.push("skill " + skill.id + " lists an unsupported agent");
+    if (!skill.stages.includes(skill.lifecycle_stage)) errors.push("skill " + skill.id + " lifecycle_stage is not in stages");
+    if (!Array.isArray(skill.prerequisites) || !skill.prerequisites.every(d => SKILLS.some(k => k.id === d)))
+      errors.push("skill " + skill.id + " has invalid prerequisites");
+    if (typeof skill.installMethod !== "string" || !skill.installMethod.includes("skill-kit.mjs"))
+      errors.push("skill " + skill.id + " has no installation method");
+    if (!Array.isArray(skill.tests) || !skill.tests.length) errors.push("skill " + skill.id + " has no tests");
+    if (skill.status !== "CANDIDATE" && (!Array.isArray(skill.evidence) || !skill.evidence.length))
+      errors.push("skill " + skill.id + " cannot advance without real use evidence");
   }
   for (const tier of ["A", "B", "C", "D"]) if (!Object.hasOwn(TIERS, tier)) errors.push("missing tier " + tier);
   return errors;
