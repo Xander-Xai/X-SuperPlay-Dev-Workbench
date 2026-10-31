@@ -631,7 +631,7 @@ function cmdValidateRegistry() {
     if (!isDir(dir)) { errors.push(skill.id + ": missing bundle directory " + skill.bundle); continue; }
     const skillFile = join(dir, "SKILL.md");
     if (!isFile(skillFile)) { errors.push(skill.id + ": missing SKILL.md"); continue; }
-    const text = readText(skillFile) ?? "";
+    const text = (readText(skillFile) ?? "").replace(/\r\n/g, "\n");
     if (!text.startsWith("---\n")) errors.push(skill.id + ": SKILL.md must start with frontmatter");
     if (!text.includes("\nname: " + skill.id + "\n")) errors.push(skill.id + ": frontmatter name mismatch");
     if (!/\ndescription:\s*\S/.test(text)) errors.push(skill.id + ": missing description");

@@ -114,7 +114,7 @@ export function readSkillBundle(id, root = join(ROOT, "skills")) {
     if (!/^[A-Za-z0-9._/-]+$/.test(f.rel) || f.rel.split("/").includes(".."))
       throw new Error(id + ": unsafe file name in bundle: " + f.rel);
   }
-  const text = main.data.toString("utf8");
+  const text = main.data.toString("utf8").replace(/\r\n/g, "\n");
   if (!text.startsWith("---\n")) throw new Error(id + ": SKILL.md must start with frontmatter");
   if (!text.includes("\nname: " + id + "\n")) throw new Error(id + ": frontmatter name mismatch");
   if (!/\ndescription:\s*\S/.test(text)) throw new Error(id + ": frontmatter lacks description");

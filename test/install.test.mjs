@@ -7,7 +7,7 @@ import {tmpdir} from "node:os";
 import {join,dirname,resolve} from "node:path";
 import {fileURLToPath} from "node:url";
 import {selectedSkills,skillInstallContract,skillKitCommand,resolveSkillDependencies} from "../src/install-contract.mjs";
-import {run} from "../tools/skill-kit.mjs";
+import {run,readSkillBundle} from "../tools/skill-kit.mjs";
 import {assemble} from "../src/engine.mjs";
 import {PROVENANCE} from "../src/catalog.mjs";
 
@@ -142,3 +142,15 @@ test("rollback refuses when a file changed after the receipt",()=>withTarget(tar
   writeFileSync(installed(target),"someone else's file");
   assert.throws(()=>run(["rollback","--target",target,"--receipt",removed.receipt,"--apply","--confirm-reviewed"],{silent:true}),/Rollback refused/);
 }));
+test("CRLF checkouts still parse skill frontmatter",()=>{
+  const root=mkdtempSync(join(tmpdir(),"workbench-crlf-"));
+  try{
+    const dir=join(root,"verification");
+    mkdirSync(dir,{recursive:true});
+    const body=["---","name: verification","description: CRLF fixture","self_contained: true","---","","# Body",""].join("\r\n");
+    writeFileSync(join(dir,"SKILL.md"),body);
+    const bundle=readSkillBundle("verification",root);
+    assert.equal(bundle.id,"verification");
+    assert.ok(bundle.files.some(f=>f.path==="SKILL.md"));
+  }finally{rmSync(root,{recursive:true,force:true});}
+});
