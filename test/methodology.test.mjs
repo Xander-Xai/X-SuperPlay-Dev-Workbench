@@ -59,9 +59,8 @@ test("method --json is truthful about maturity and documents", () => {
 test("AI-native product and Agent design is available through the offline CLI", () => {
   const r = cli("design");
   assert.equal(r.status, 0, r.stderr);
-  for (const term of ["Agent Architecture Card", "AI-native", "HITL", "NON", "AG-06"]) {
-    // NON in Non-goals is intentionally case-sensitive? Prefer vocabulary present in document.
-    if (term !== "NON") assert.ok(r.stdout.includes(term), term);
+  for (const term of ["Agent Architecture Card", "AI-native", "HITL", "AG-06"]) {
+    assert.ok(r.stdout.includes(term), term);
   }
   assert.match(r.stdout, /NOT_REAL_PROJECT_VERIFIED/);
 });
