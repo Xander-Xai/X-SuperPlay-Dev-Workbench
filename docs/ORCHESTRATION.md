@@ -190,8 +190,8 @@ Codex and OpenCode were present but were not used as orchestration providers.
 
 ## 10. Security boundary
 
-- No shell command is built from ticket fields; `allowed_commands` that contain chaining or
-  redirection are rejected.
+- No shell command is built from ticket fields; `allowed_commands` that contain chaining,
+  expansion, redirection or a destructive/remote command are rejected.
 - `allowed_files` rejects absolute paths, drive letters, `..` segments and control characters.
 - No network call, credential read, account login or repository upload happens in Workbench.
 - No provider receives merge, push or deployment authority.

@@ -452,14 +452,18 @@ export function normalizeRepoPath(value) {
 }
 
 // Commands are recorded, never executed. Reject anything that would let one
-// entry chain into a second command if a future adapter ever runs it.
+// entry chain into a second command, or that names a destructive/remote action.
+// This is defence in depth, not a sandbox.
+const DESTRUCTIVE_COMMAND = /(^|[\s/\\])(rm|rmdir|del)(\s|$)|(^|\s)(shutdown|reboot|mkfs|dd|powershell|pwsh|cmd|curl|wget|ssh|scp|docker|kubectl|terraform|aws|gcloud|az)(\s|$)|git\s+push(\s|$)|git\s+reset\s+--hard(\s|$)|npm\s+publish(\s|$)/i;
+
 export function normalizeAllowedCommand(value) {
   if (typeof value !== "string") throw new Error("allowed_commands entries must be strings");
   const raw = value.replace(/\r\n?/g, "\n").trim();
   if (!raw) throw new Error("allowed_commands entries must not be empty");
   if (raw.length > MAX_FIELD) throw new Error("allowed_commands entry is too long");
   if (/[\n\r\0]/.test(raw)) throw new Error("allowed_commands must be a single line");
-  if (/(;|&&|\|\||\||`|\$\(|>|<)/.test(raw)) throw new Error("shell chaining/redirection is not allowed in allowed_commands: " + raw);
+  if (/(;|&&|&|\|\||\||`|\$|>|<)/.test(raw)) throw new Error("shell chaining/expansion is not allowed in allowed_commands: " + raw);
+  if (DESTRUCTIVE_COMMAND.test(raw)) throw new Error("destructive or remote command is not allowed in allowed_commands: " + raw);
   return raw;
 }
 

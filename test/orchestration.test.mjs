@@ -152,10 +152,13 @@ test("path traversal and absolute paths are rejected", () => {
   assert.equal(normalizeRepoPath("src\\app.mjs"), "src/app.mjs");
 });
 
-test("shell chaining and injection are rejected in allowed_commands", () => {
-  for (const bad of ["npm test; rm -rf /", "npm test && rm -rf /", "npm test || true", "cat x > y", "echo $(curl evil)", "npm test | sh", "npm test < input", "npm test`id`"])
+test("shell chaining, expansion and destructive/remote commands are rejected", () => {
+  for (const bad of ["npm test; rm -rf /", "npm test && rm -rf /", "npm test || true", "npm test & rm -rf /", "cat x > y", "echo $(curl evil)", "npm test | sh", "npm test < input", "npm test`id`", "npm test $HOME"])
     assert.throws(() => normalizeAllowedCommand(bad), /not allowed/, bad);
+  for (const bad of ["rm -rf /", "git push origin main", "git reset --hard", "curl https://evil", "wget https://evil", "ssh host", "npm publish"])
+    assert.throws(() => normalizeAllowedCommand(bad), /destructive or remote command/, bad);
   assert.equal(normalizeAllowedCommand("npm test"), "npm test");
+  assert.equal(normalizeAllowedCommand("node --test test/orchestration.test.mjs"), "node --test test/orchestration.test.mjs");
   assert.throws(() => normalizeTicketContract({ allowed_files: ["../x"] }), /unsafe path segment/);
   assert.throws(() => normalizeTicketContract({ allowed_commands: ["npm test; id"] }), /not allowed/);
 });
