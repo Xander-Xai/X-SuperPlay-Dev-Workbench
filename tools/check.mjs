@@ -27,6 +27,8 @@ const required=[
   "docs/methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md",
   "docs/methods/UPSTREAM-SOURCES.md","docs/methods/PROJECT-PILOT.md",
   "test/methodology.test.mjs",
+  "docs/methods/AI-NATIVE-PRODUCT-AGENT-DESIGN.md",
+  "docs/methods/SKILL-ENGINEERING-FACTORY.md",
   ".github/pull_request_template.md","migration/eng-os-split-20261031.json",
   "migration/eng-os-semantic-reconciliation-20261031.json",
   "migration/eng-os-post-freeze-increments-20261031.json","FINAL_ENGINEERING_MIGRATION_AUDIT.md",
