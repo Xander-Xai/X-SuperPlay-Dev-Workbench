@@ -197,6 +197,7 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,#9
 .tab.active{background:#20392f;border-color:#79c98d;color:#e9ffe4}
 .workflow-body{overflow-x:auto;padding-bottom:10px}
 .table-scroll{overflow-x:auto}
+.gate-note{display:block;margin-top:5px;color:#b7a882;font:9px var(--mono);line-height:1.5}
 .data-table{width:100%;border-collapse:collapse;font-size:11px;min-width:720px}
 .data-table th{text-align:left;color:#8fa7b5;font:10px var(--mono);text-transform:uppercase;letter-spacing:.6px;padding:10px 12px;border-bottom:1px solid #355046;white-space:nowrap}
 .data-table td{padding:12px;border-bottom:1px solid var(--edge);vertical-align:top;color:#b9cdd8;line-height:1.7}

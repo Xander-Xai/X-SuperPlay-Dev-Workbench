@@ -8,7 +8,7 @@ import { starterMarkdown } from "./starter.mjs";
 import { normalizeBaseline } from "./baseline.mjs";
 import { stageHandoff } from "./handoff.mjs";
 import { workspaceBundle } from "./workspace.mjs";
-import { normalizeEvidenceReport, evidenceSummary, emptyEvidenceReport } from "./evidence.mjs";
+import { normalizeEvidenceReport, evidenceSummary, emptyEvidenceReport, evidenceDisplayState } from "./evidence.mjs";
 
 const one = selector => document.querySelector(selector);
 const all = selector => [...document.querySelectorAll(selector)];
@@ -457,8 +457,27 @@ function renderEvidence() {
   panel.append(statRow);
   const stageTable = newElement("div", "table-scroll");
   stageTable.append(table(
-    ["阶段", "状态", "证据数"],
-    STAGES.map(s => [s.name, statePill(summary.stages[s.id].state), String(summary.stages[s.id].items.length)])
+    ["阶段", "声明状态", "缺失必需 Gate", "证据数"],
+    STAGES.map(s => {
+      const st = summary.stages[s.id];
+      const display = evidenceDisplayState(st);
+      const stateCell = newElement("span");
+      stateCell.append(statePill(display.state));
+      const noteText = display.note === "CONFLICT"
+        ? "冲突：同时存在 VERIFIED 与阻断项"
+        : display.note === "CLAIM_COMPLETE_NOT_TRUSTED"
+          ? "声明完整 · 未受信"
+          : display.note === "MISSING_GATES"
+            ? "必需 Gate 未全部证明"
+            : "无证据";
+      stateCell.append(newElement("small", "gate-note", " " + noteText));
+      return [
+        s.name,
+        stateCell,
+        st.missing.length ? st.missing.join(", ") : "—",
+        String(st.items.length)
+      ];
+    })
   ));
   panel.append(stageTable);
   root.append(panel);

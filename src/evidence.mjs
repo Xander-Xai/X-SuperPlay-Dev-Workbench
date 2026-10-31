@@ -1,5 +1,5 @@
 // Evidence model. A state can only advance with a matching, inspectable record.
-import { EVIDENCE_STATES, EVIDENCE_KINDS, EVIDENCE_LAYERS, STAGE_IDS } from "./catalog.mjs";
+import { EVIDENCE_STATES, EVIDENCE_KINDS, EVIDENCE_LAYERS, STAGE_IDS, STAGES } from "./catalog.mjs";
 
 export const TRANSITIONS = Object.freeze({
   NOT_RUN: ["IN_PROGRESS", "BLOCKED"],
@@ -9,6 +9,9 @@ export const TRANSITIONS = Object.freeze({
   VERIFIED: []
 });
 
+// Only executed layers can back a VERIFIED claim. NOT_RUN is a placeholder.
+export const EXECUTED_LAYERS = Object.freeze(["LOCAL_TESTED", "CI_VERIFIED", "RELEASED", "ACCEPTED"]);
+
 const cap = (v, max) => String(v ?? "").replace(/\0/g, "").trim().slice(0, max);
 
 export function canPromote(from, to) {
@@ -16,10 +19,22 @@ export function canPromote(from, to) {
   return (TRANSITIONS[from] ?? []).includes(to);
 }
 
+export function hasInspectableProof(record) {
+  return ["command", "result", "artifact"].every(
+    key => typeof record?.[key] === "string" && record[key].trim().length > 0
+  );
+}
+
 export function transition(record, to) {
   if (!record) throw new Error("Evidence record required");
   if (!canPromote(record.state, to))
     throw new Error("Illegal evidence transition " + record.state + " -> " + to + " (no silent promotion)");
+  if (to === "VERIFIED") {
+    if (!hasInspectableProof(record))
+      throw new Error("VERIFIED requires command, result and artifact");
+    if (!EXECUTED_LAYERS.includes(record.layer))
+      throw new Error("VERIFIED requires an executed layer, not " + (record.layer ?? "NOT_RUN"));
+  }
   return { ...record, state: to, history: [...(record.history ?? []), { from: record.state, to, at: "UNRECORDED" }] };
 }
 
@@ -37,6 +52,8 @@ export function normalizeEvidenceReport(input) {
     if (!EVIDENCE_STATES.includes(item.state)) throw new Error("Unknown evidence state in item " + i);
     if (item.state === "VERIFIED" && (!item.command || !item.result || !item.artifact))
       throw new Error("VERIFIED evidence requires command, result and artifact");
+    if (item.state === "VERIFIED" && !EXECUTED_LAYERS.includes(layer))
+      throw new Error("VERIFIED evidence requires an executed layer");
     return {
       stage: item.stage, kind: item.kind, layer,
       state: item.state,
@@ -52,17 +69,78 @@ export function normalizeEvidenceReport(input) {
   });
 }
 
-export function evidenceSummary(report) {
-  const normalized = normalizeEvidenceReport(report);
-  const stages = {};
-  for (const id of STAGE_IDS) stages[id] = { state: "NOT_RUN", items: [] };
-  for (const item of normalized.items) {
-    stages[item.stage].items.push(item);
-    const order = ["NOT_RUN", "BLOCKED", "IN_PROGRESS", "UNKNOWN", "VERIFIED"];
-    if (order.indexOf(item.state) > order.indexOf(stages[item.stage].state))
-      stages[item.stage].state = item.state;
+function defaultRequiredByStage() {
+  const map = {};
+  for (const stage of STAGES) map[stage.id] = [...stage.evidence];
+  return map;
+}
+
+// A stage is complete only when every required gate has its own VERIFIED item
+// and nothing in the stage is blocked, unknown, not run or still in progress.
+export function stageGateSummary(items, requiredKinds) {
+  const gates = requiredKinds.map(kind => {
+    const matching = items.filter(i => i.kind === kind);
+    const verified = matching.filter(i => i.state === "VERIFIED");
+    const blocking = matching.find(i => ["BLOCKED", "UNKNOWN", "NOT_RUN"].includes(i.state));
+    return {
+      kind,
+      state: verified.length ? "VERIFIED" : (blocking?.state ?? matching[0]?.state ?? "NOT_RUN"),
+      verified: verified.length,
+      total: matching.length
+    };
+  });
+  const missing = gates.filter(g => g.verified === 0).map(g => g.kind);
+  const blocked = items.some(i => i.state === "BLOCKED");
+  const unknown = items.some(i => i.state === "UNKNOWN");
+  const notRun = items.some(i => i.state === "NOT_RUN");
+  const inProgress = items.some(i => i.state === "IN_PROGRESS");
+  const verified = items.some(i => i.state === "VERIFIED");
+  const conflict = blocked && verified;
+
+  let state = "NOT_RUN";
+  if (items.length) {
+    if (blocked) state = "BLOCKED";
+    else if (unknown) state = "UNKNOWN";
+    else if (notRun) state = "NOT_RUN";
+    else if (inProgress) state = "IN_PROGRESS";
+    else if (missing.length === 0) state = "VERIFIED";
+    else state = "UNKNOWN";
   }
-  return { stages, layers: EVIDENCE_LAYERS, items: normalized.items, trusted: false };
+
+  return {
+    state,
+    complete: items.length > 0 && missing.length === 0 && !blocked && !unknown && !notRun && !inProgress,
+    conflict,
+    missing,
+    gates,
+    items
+  };
+}
+
+export function evidenceSummary(report, options = {}) {
+  const normalized = normalizeEvidenceReport(report);
+  const requiredByStage = options.requiredByStage ?? defaultRequiredByStage();
+  const stages = {};
+  for (const id of STAGE_IDS) {
+    const items = normalized.items.filter(i => i.stage === id);
+    stages[id] = stageGateSummary(items, requiredByStage[id] ?? []);
+  }
+  return {
+    stages, layers: EVIDENCE_LAYERS, items: normalized.items,
+    trusted: false, promotion: "NONE",
+    note: "Every state here is an untrusted claim. Completeness of a claim does not make it verified fact."
+  };
+}
+
+export function evidenceDisplayState(stage) {
+  const state = EVIDENCE_STATES.includes(stage?.state) ? stage.state : "NOT_RUN";
+  let note = "NO_EVIDENCE";
+  if (stage?.conflict) note = "CONFLICT";
+  else if (stage?.items?.length) {
+    if (stage.complete) note = "CLAIM_COMPLETE_NOT_TRUSTED";
+    else if (stage.missing?.length) note = "MISSING_GATES";
+  }
+  return { state, note, trusted: false };
 }
 
 export function emptyEvidenceReport() {
