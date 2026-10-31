@@ -127,6 +127,8 @@ test("implementation plan carries assumptions, budget, stop conditions and rollb
 test("postmortem separates facts, impact, root cause, actions and unverified items",()=>{
   const text=postmortemTemplate(plan());
   assert.match(text,/TEMPLATE_NOT_EXECUTED/);
+  assert.match(text,/Blameless/);
+  assert.match(text,/一页为主/);
   assert.match(text,/## 1\. 事实与时间线/);
   assert.match(text,/## 2\. 影响/);
   assert.match(text,/## 3\. 根因/);

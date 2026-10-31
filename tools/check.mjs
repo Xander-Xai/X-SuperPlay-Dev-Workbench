@@ -21,12 +21,13 @@ const required=[
   "src/install-contract.mjs","src/starter.mjs","src/baseline.mjs","src/handoff.mjs",
   "src/workspace.mjs","src/evidence.mjs","src/identity.mjs","src/evidence-identity.mjs",
   "src/playbooks.mjs","src/git-workflow.mjs","src/maturity.mjs",
-  "tools/project-probe.mjs","tools/skill-kit.mjs","tools/xeng.mjs",
-  "README.md","docs/ARCHITECTURE.md","docs/MIGRATION.md","docs/AGENT_SKILL_LOAD.md",
+  "tools/project-probe.mjs","tools/skill-kit.mjs","tools/xeng.mjs","tools/security-gate.mjs",
+  "README.md","SECURITY.md","docs/ARCHITECTURE.md","docs/MIGRATION.md","docs/AGENT_SKILL_LOAD.md",
   "docs/PLAYBOOKS.md","docs/GIT_WORKFLOW.md","docs/MATURITY.md",
   ".github/pull_request_template.md","migration/eng-os-split-20261031.json",
-  "migration/eng-os-semantic-reconciliation-20261031.json","FINAL_ENGINEERING_MIGRATION_AUDIT.md"
-];
+  "migration/eng-os-semantic-reconciliation-20261031.json",
+  "migration/eng-os-post-freeze-increments-20261031.json","FINAL_ENGINEERING_MIGRATION_AUDIT.md",
+  "SECURITY_AND_MIGRATION_INDEPENDENT_ACCEPTANCE.md"];
 for(const file of required){
   try{if(!(await stat(resolve(base,file))).isFile())failures.push("missing "+file);}
   catch{failures.push("missing "+file);}

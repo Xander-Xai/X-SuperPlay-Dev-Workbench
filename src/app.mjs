@@ -328,6 +328,18 @@ function renderWorkflow() {
     ));
   } else if (activeWorkflowTab === "git") {
     body.append(newElement("p", "muted", GIT_WORKFLOW.authority));
+    const b = GIT_WORKFLOW.governanceBoundary;
+    body.append(newElement("h3", "workflow-heading", "治理边界（G-02）"));
+    const boundary = newElement("ul", "inline-points");
+    [
+      "组织级所有者：" + b.owner,
+      "组织级范围：" + b.organizationScope,
+      "项目级范围：" + b.projectScope,
+      "优先级：" + b.precedence.join(" > "),
+      "冲突规则：" + b.conflictRule,
+      "不复制：" + b.nonCopy
+    ].forEach(v => boundary.append(newElement("li", "", v)));
+    body.append(boundary);
     for (const [title, key] of [
       ["Base SHA", "baseSha"], ["分支模型", "branches"], ["Worktree 隔离", "worktrees"],
       ["提交粒度", "commits"], ["PR 检查", "pullRequest"], ["Review 完成", "review"],
@@ -338,11 +350,23 @@ function renderWorkflow() {
       GIT_WORKFLOW[key].forEach(v => ul.append(newElement("li", "", v)));
       body.append(ul);
     }
+    body.append(newElement("h3", "workflow-heading", "Agent 默认分工"));
+    const roleSplit = newElement("div", "agent-note-list");
+    GIT_WORKFLOW.agentRoleSplit.forEach(r => {
+      const card = newElement("div", "agent-note");
+      card.append(newElement("strong", "", r.task), newElement("span", "", r.defaultAgent), newElement("p", "", r.note));
+      roleSplit.append(card);
+    });
+    body.append(roleSplit);
+    body.append(newElement("p", "install-disclaimer", GIT_WORKFLOW.agentSplitRule));
     body.append(newElement("h3", "workflow-heading", "按 Agent 的操作要点"));
-    body.append(table(
-      ["Agent", "要点"],
-      GIT_WORKFLOW.agentOperating.map(a => [a.agent, a.notes.join(" ")])
-    ));
+    const agentNotes = newElement("div", "agent-note-list");
+    GIT_WORKFLOW.agentOperating.forEach(a => {
+      const card = newElement("div", "agent-note");
+      card.append(newElement("strong", "", a.agent), newElement("p", "", a.notes.join(" ")));
+      agentNotes.append(card);
+    });
+    body.append(agentNotes);
     body.append(newElement("p", "install-disclaimer", "这是建议，不是组织级强制规范；项目本地规则与 CI 门禁优先。生成项目还会收到 docs/git-workflow.md 与 .github/pull_request_template.md。"));
   } else if (activeWorkflowTab === "maturity") {
     body.append(newElement("p", "muted", "L0–L6 是缺口诊断，不是质量分数。xeng maturity 复用 audit 的实际检查，L6 不由静态审计宣称。"));
@@ -368,6 +392,12 @@ function renderPlaybooks() {
   body.replaceChildren();
   const p = PLAYBOOKS.find(x => x.id === activePlaybook) ?? PLAYBOOKS[0];
   if (!p) return;
+  const listSection = (title, values) => {
+    body.append(newElement("h3", "workflow-heading", title));
+    const ul = newElement("ul", "inline-points");
+    values.forEach(x => ul.append(newElement("li", "", x)));
+    body.append(ul);
+  };
   body.append(newElement("p", "install-disclaimer",
     "状态：" + PLAYBOOK_STATUS + "。11 阶段与 Profile 义务仍是权威；本手册不新增 Gate，也不提升任何证据状态。"));
 
@@ -378,18 +408,26 @@ function renderPlaybooks() {
   card.append(newElement("p", "install-disclaimer", p.authority));
   body.append(card);
 
-  body.append(newElement("h3", "workflow-heading", "原则"));
-  const principles = newElement("ul", "inline-points");
-  p.principles.forEach(x => principles.append(newElement("li", "", x)));
-  body.append(principles);
+  listSection("原则", p.principles);
+  if (p.acceptanceExamples) listSection("验收示例（合成场景）", p.acceptanceExamples);
+  if (p.negativeCases) listSection("必须覆盖的负例", p.negativeCases);
+  if (p.stopConditions) listSection("停止条件", p.stopConditions);
+  if (p.antiClaims) listSection("不可宣称", p.antiClaims);
+  if (p.rhythm) listSection("每日节律", p.rhythm);
+  if (p.reporting) {
+    body.append(newElement("h3", "workflow-heading", "汇报句式"));
+    body.append(newElement("p", "", p.reporting));
+  }
 
   body.append(newElement("h3", "workflow-heading", "任务分流"));
+  body.append(newElement("p", "table-hint", "移动端可左右滑动表格查看完整列。"));
   body.append(table(
     ["任务", "第一步", "完成证据"],
     p.triage.map(t => [t.task, t.firstMove, t.evidence])
   ));
 
   body.append(newElement("h3", "workflow-heading", "阶段手册"));
+  body.append(newElement("p", "table-hint", "移动端可左右滑动表格查看完整列。"));
   body.append(table(
     ["阶段", "问题", "最小实现", "退出证据"],
     p.phases.map(phase => [phase.id + " · " + phase.title, phase.question, phase.minimal, phase.exitEvidence.join("；")])
@@ -423,6 +461,14 @@ function renderPlaybooks() {
       p.riskMatrix.map(x => [x.risk, x.examples, x.control])
     ));
   }
+  if (p.stateContract) listSection("状态契约", p.stateContract);
+  if (p.durabilityRules) listSection("持久化与恢复", p.durabilityRules);
+  if (p.hitlRules) listSection("人工接管（HITL）", p.hitlRules);
+  if (p.evalMetrics) listSection("评测指标与覆盖", p.evalMetrics);
+  if (p.rerankDecision) {
+    body.append(newElement("h3", "workflow-heading", "Rerank 决策"));
+    body.append(newElement("p", "", p.rerankDecision));
+  }
 
   body.append(newElement("h3", "workflow-heading", "失败诊断"));
   const diag = newElement("ul", "inline-points");
@@ -439,6 +485,7 @@ function renderPlaybooks() {
   p.handoff.forEach(x => handoff.append(newElement("li", "", x)));
   p.rollback.forEach(x => handoff.append(newElement("li", "", "回退：" + x)));
   body.append(handoff);
+  if (p.exercises) listSection("隔离练习", p.exercises);
 
   const code = newElement("div", "code-bar");
   code.append(newElement("code", "", "node tools/xeng.mjs playbook " + p.id));

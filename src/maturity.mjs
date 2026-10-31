@@ -76,7 +76,9 @@ export function maturityReport(checks, { tier = "B", profiles = [] } = {}) {
   const target = MATURITY_TARGET[tier] ?? "L0";
   const targetIndex = MATURITY_LEVELS.findIndex(l => l.id === target);
   const missingControls = controls.filter(c => !c.met).flatMap(c => c.missing.map(m => c.id + ":" + m));
-  const outOfBand = controls.filter((c, i) => i < levelIndex).map(c => c.id);
+  // A single higher-level control can be met while the contiguous level is not.
+  // Record it as out-of-band instead of inflating the level.
+  const outOfBand = controls.filter((c, i) => i >= levelIndex && c.met).map(c => c.id);
   return {
     status: "MATURITY_ASSESSED_FROM_AUDIT",
     tier,
@@ -92,7 +94,7 @@ export function maturityReport(checks, { tier = "B", profiles = [] } = {}) {
     },
     notes: [
       "等级只是缺口指标，不是质量分数；missing_controls 才是可执行输出。",
-      "未达到的等级不会因为更高层的单个控制存在而被提升。",
+      "未达到的等级不会因为更高层的单个控制存在而被提升；该控制列入 out_of_band_controls。",
       "审计通过不等于真实项目、设备或生产验收通过。"
     ]
   };

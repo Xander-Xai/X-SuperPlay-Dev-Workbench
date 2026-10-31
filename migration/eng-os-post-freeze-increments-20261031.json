@@ -1,0 +1,264 @@
+{
+  "audit_id": "eng-os-post-freeze-increments-20261031",
+  "created": "2026-10-31",
+  "method": "READ_ONLY_GIT_LOG_DIFF_AND_FILE_REVIEW",
+  "source_repository": "Xander-Xai/X-SuperPlay-AI-Engineering-OS",
+  "source_visibility_observed": "PUBLIC",
+  "frozen_snapshot_commit": "8553124f238ab463d4a50debad34e871ef8de060",
+  "observed_head": "fa20126e93c57b1faab56d9c4cecc717b1eea46e",
+  "observed_at": "2026-10-31",
+  "compare_status": "ahead",
+  "ahead_by": 10,
+  "independent_of_frozen_106": true,
+  "note": "This ledger covers only commits after the frozen 106-file snapshot. It does not change any disposition in migration/eng-os-semantic-reconciliation-20261031.json.",
+  "commits": [
+    {
+      "sha": "bbd5910fb8169d6372f78c6a73b45992350e3fb4",
+      "pr": "#5",
+      "merged_at": "2026-10-31T04:17:52Z",
+      "title": "docs: adapt upstream Spec–Tickets–Harness–Loop into Engineering OS",
+      "assessment": "EQUIVALENT_VERIFIED",
+      "workbench_disposition": "Bounded-loop stop conditions, tracer-ticket fields, implementation plan and handoff evidence are represented in src/handoff.mjs, src/starter.mjs, src/workspace.mjs and the three playbooks.",
+      "residual": "Upstream narrative and template bodies were not copied."
+    },
+    {
+      "sha": "f1369b5d39600a82833fcb1bfcb4700f87f4babd",
+      "pr": "#6",
+      "merged_at": "2026-10-31T04:19:54Z",
+      "title": "docs(portfolio): clarify repository responsibility and cross-repo handoff",
+      "assessment": "NOT_APPLICABLE_TO_RUNTIME",
+      "workbench_disposition": "Portfolio README text; no engineering runtime behaviour."
+    },
+    {
+      "sha": "2b792242894937d303c4680208daf9df97ea0027",
+      "pr": "#9",
+      "merged_at": "2026-10-31T04:21:16Z",
+      "title": "chore(github): add the PR template referenced by the pull-request standard",
+      "assessment": "MIGRATED_VERIFIED",
+      "workbench_disposition": "This repository now carries .github/pull_request_template.md; xeng init also generates a project-level template."
+    },
+    {
+      "sha": "c18ec67734ecf0f449c7dde3e2c530ecd3724a7c",
+      "pr": "#10",
+      "merged_at": "2026-10-31T06:56:35Z",
+      "title": "security: harden xeng secret handling, init paths and public CI",
+      "assessment": "MIGRATED_VERIFIED",
+      "workbench_disposition": "Redaction, fail-closed security gate, expanded rules, agent-config scanning, key-file scanning, symlink-safe init, key-file ignores, SECURITY.md, pinned actions and actions-only Dependabot are implemented in tools/xeng.mjs, tools/security-gate.mjs and .github/."
+    },
+    {
+      "sha": "4bd794e5fc6afc7d3e4de266ca11a73f21cd19d4",
+      "pr": "#12",
+      "merged_at": "2026-10-31T07:55:08Z",
+      "title": "chore(deps): bump actions/checkout from 5.0.1 to 7.0.1",
+      "assessment": "NOT_APPLICABLE_TO_RUNTIME",
+      "workbench_disposition": "Workbench pins its own action SHAs and uses an actions-only Dependabot policy; it does not inherit the source workflow."
+    },
+    {
+      "sha": "ba3c7a98176692be005e9bba4a7de0a71820f0f1",
+      "pr": "#13",
+      "merged_at": "2026-10-31T07:57:40Z",
+      "title": "chore(deps): bump actions/setup-python from 6.1.0 to 7.1.0",
+      "assessment": "NOT_APPLICABLE_TO_RUNTIME",
+      "workbench_disposition": "Workbench has no Python runtime or Python dependencies."
+    },
+    {
+      "sha": "25c8e74385fba0c8980209e9f301ab3a1f6f806f",
+      "pr": "#14",
+      "merged_at": "2026-10-31T07:13:46Z",
+      "title": "security: separate public methodology from portfolio-private records",
+      "assessment": "EQUIVALENT_VERIFIED",
+      "workbench_disposition": "Public-only boundary is preserved: no portfolio registry, customer evidence, private repository inventory or OPC-LINK.yaml is copied. The Workbench remains public methodology plus CLI.",
+      "residual": "Source adopted MIT; Workbench licence remains UNLICENSED-PROPRIETARY pending the owner's decision."
+    },
+    {
+      "sha": "ee2a41d319f3d220550e9374a98d598d0cb3eb84",
+      "pr": "#15",
+      "merged_at": "2026-10-31T07:59:40Z",
+      "title": "docs: mark repository superseded and add archive index",
+      "assessment": "HISTORICAL_ONLY",
+      "workbench_disposition": "Source is now marked superseded and archived. Workbench remains the current runtime owner and adds no runtime dependency on the archive."
+    },
+    {
+      "sha": "4393c3ff628741b99cf7838d5413f95ae23927b6",
+      "pr": "#16",
+      "merged_at": "2026-10-31T08:01:00Z",
+      "title": "docs(archive): avoid a self-referential Final HEAD in the archive index",
+      "assessment": "HISTORICAL_ONLY",
+      "workbench_disposition": "Archive-index correction only; no runtime effect."
+    },
+    {
+      "sha": "fa20126e93c57b1faab56d9c4cecc717b1eea46e",
+      "pr": "#17",
+      "merged_at": "2026-10-31T08:03:43Z",
+      "title": "docs: point the archive-index reference at its actual section",
+      "assessment": "HISTORICAL_ONLY",
+      "workbench_disposition": "Archive-index correction only; no runtime effect."
+    }
+  ],
+  "file_delta": {
+    "changed_file_count": 65,
+    "added": 9,
+    "modified": 55,
+    "deleted": 1,
+    "categories": [
+      {
+        "category": "security hardening (#10)",
+        "representative_paths": [
+          ".github/dependabot.yml",
+          ".github/workflows/ci.yml",
+          ".gitignore",
+          "SECURITY.md",
+          "requirements-dev.txt",
+          "tools/xeng.py",
+          "tools/tests/test_xeng.py"
+        ]
+      },
+      {
+        "category": "public/private separation and desensitization (#14)",
+        "representative_paths": [
+          "LICENSE",
+          "OPC-LINK.yaml (deleted)",
+          "PUBLICATION.md",
+          "README.md",
+          "ROADMAP.md",
+          "docs/adr/*",
+          "docs/audits/repository-portfolio-audit-2026-09-30.md",
+          "registry/repositories.yaml",
+          "registry/skills.yaml"
+        ]
+      },
+      {
+        "category": "method and template increments (#5, #9)",
+        "representative_paths": [
+          "03-ai-coding/ai-native-spec-harness-loop.md",
+          "03-ai-coding/upstream-method-adoption.md",
+          "06-templates/implementation-plan.md",
+          "06-templates/tracer-ticket.md",
+          ".github/pull_request_template.md"
+        ]
+      },
+      {
+        "category": "archive and supersession (#15, #16, #17)",
+        "representative_paths": [
+          "ARCHIVE_INDEX.md",
+          "CHANGELOG.md",
+          "README.md",
+          "PUBLICATION.md"
+        ]
+      },
+      {
+        "category": "dependency bumps (#12, #13)",
+        "representative_paths": [".github/workflows/ci.yml"]
+      }
+    ]
+  },
+  "reusable_security_rules": [
+    {
+      "rule": "never print secret text or fragments in stdout, stderr, JSON or CI logs",
+      "source_pr": "#10",
+      "workbench": "tools/xeng.mjs SECRET_RULES scan stores only {rel,line,ruleId}; detail lists path:line [rule] and counts",
+      "status": "MIGRATED_VERIFIED",
+      "evidence": "test/security.test.mjs"
+    },
+    {
+      "rule": "expanded credential shapes: GitHub PAT, cloud keys, JWT, private key, URL auth, quoted JSON keys",
+      "source_pr": "#10",
+      "workbench": "tools/xeng.mjs SECRET_RULES",
+      "status": "MIGRATED_VERIFIED",
+      "evidence": "test/security.test.mjs"
+    },
+    {
+      "rule": "scan agent configuration but exclude nested worktree state",
+      "source_pr": "#10",
+      "workbench": "tools/xeng.mjs IGNORED_DIRS / IGNORED_PATHS",
+      "status": "MIGRATED_VERIFIED",
+      "evidence": "test/security.test.mjs"
+    },
+    {
+      "rule": "scan key files and key-bearing names, not only source extensions",
+      "source_pr": "#10",
+      "workbench": "tools/xeng.mjs SCAN_EXTS / SCAN_NAMES",
+      "status": "MIGRATED_VERIFIED",
+      "evidence": "test/security.test.mjs"
+    },
+    {
+      "rule": "generated-file writes must reject absolute paths, traversal and symlink/junction components",
+      "source_pr": "#10",
+      "workbench": "tools/xeng.mjs safeInitPath / assertSafeInitTarget",
+      "status": "MIGRATED_VERIFIED",
+      "evidence": "test/security.test.mjs"
+    },
+    {
+      "rule": "ignore private key material in repositories and generated projects",
+      "source_pr": "#10",
+      "workbench": ".gitignore and the init .gitignore template",
+      "status": "MIGRATED_VERIFIED",
+      "evidence": "test/xeng.test.mjs"
+    },
+    {
+      "rule": "publish a private vulnerability reporting policy",
+      "source_pr": "#10",
+      "workbench": "SECURITY.md",
+      "status": "MIGRATED_VERIFIED",
+      "evidence": "tools/check.mjs requires SECURITY.md"
+    },
+    {
+      "rule": "least privilege, concurrency, timeout and pinned action SHAs in CI",
+      "source_pr": "#10",
+      "workbench": ".github/workflows/ci.yml and pages.yml",
+      "status": "MIGRATED_VERIFIED",
+      "evidence": "workflow files; security gate step"
+    },
+    {
+      "rule": "automated action dependency updates",
+      "source_pr": "#10",
+      "workbench": ".github/dependabot.yml (github-actions only)",
+      "status": "MIGRATED_VERIFIED",
+      "evidence": ".github/dependabot.yml"
+    },
+    {
+      "rule": "dependency pinning",
+      "source_pr": "#10",
+      "workbench": "no npm runtime dependencies and no Python dependencies; nothing to pin",
+      "status": "NOT_APPLICABLE_ZERO_DEPENDENCIES",
+      "evidence": "package.json"
+    },
+    {
+      "rule": "CI self-audit",
+      "source_pr": "#10",
+      "workbench": "npm run security is a hard, redacted security gate; full xeng audit remains advisory because the repository has intentional WARN-level checks",
+      "status": "PARTIAL_EQUIVALENT",
+      "evidence": ".github/workflows/ci.yml"
+    }
+  ],
+  "public_boundary": {
+    "public_methodology_only": true,
+    "private_registry_copied": false,
+    "customer_data_copied": false,
+    "opc_link_copied": false,
+    "opc_link_reference": "OPC-LINK.yaml appears only as a source path in the frozen reconciliation; its body is not copied.",
+    "source_history_caveat": "The source history may still contain records removed from its current tree. Workbench does not copy or depend on that history.",
+    "license": "UNLICENSED-PROPRIETARY_UNRESOLVED",
+    "license_note": "Source #14 adopted MIT; Workbench does not inherit that decision without the owner's explicit approval."
+  },
+  "archive_state": {
+    "source_marked_superseded": true,
+    "archive_index": "ARCHIVE_INDEX.md",
+    "observed_head": "fa20126e93c57b1faab56d9c4cecc717b1eea46e",
+    "workbench_role": "CURRENT_RUNTIME_OWNER",
+    "runtime_dependency": false
+  },
+  "residuals": [
+    "Full `xeng audit .` is not a hard CI gate because the repository has intentional WARN-level advisory checks; `npm run security` is the hard security subset.",
+    "The Workbench licence remains unresolved; the source MIT licence was not copied.",
+    "External human independent review is NOT_RUN; the independent re-audit was performed in the same agent session.",
+    "No real project, device, staging or production acceptance was executed by this audit."
+  ],
+  "boundary": {
+    "source_repository_modified": false,
+    "upstream_bodies_copied": false,
+    "learning_os_modified": false,
+    "runtime_dependency_added": false
+  },
+  "conclusion": "Ten source commits appeared after the frozen snapshot. PR #10's reusable security rules are implemented and regression-tested; PR #14's public boundary is preserved but its licence was not copied; PR #15-#17 are historical archive changes. No runtime dependency was added."
+}

@@ -10,6 +10,29 @@ export const GIT_WORKFLOW = Object.freeze({
   status: GIT_WORKFLOW_STATUS,
   authority: "建议性项目级指导。目标仓库已有的 CONTRIBUTING、AGENTS、分支保护或组织规范优先；本项目不覆盖它们，也不引入 Git 托管或自动推送。",
 
+  // G-02: the organisation-level half of Git/Worktree governance is not owned here.
+  governanceBoundary: {
+    owner: "Xander-Xai/X-SuperPlay-OPC-Blueprint",
+    organizationScope: "跨仓库治理、组合与本地 worktree 生命周期、OPC 本地路径、分支前缀契约与 worktree 脚本由 OPC-Blueprint 定义。",
+    projectScope: "Workbench 只提供产品仓与生成项目的交付级 Git/Worktree 使用建议；不定义组织级路径、标签、分支白名单或生命周期命令。",
+    precedence: [
+      "目标仓库本地的 CONTRIBUTING / AGENTS.md / 分支保护 / CODEOWNERS",
+      "OPC-Blueprint 对 OPC 管理仓库的组织级治理",
+      "Workbench 的建议性 Git 指导"
+    ],
+    conflictRule: "冲突时更严格的一方生效；Workbench 建议不得覆盖、放宽或替代项目本地规则与 OPC 组织级规则。",
+    nonCopy: "不把 OPC 的 worktree 根目录、脚本、分支前缀或生命周期命令复制进 Workbench 或生成项目；需要时只引用其公开治理入口。"
+  },
+
+  agentRoleSplit: [
+    { task: "交互式实现、调试、UI 验证与操作循环", defaultAgent: "Claude Code", note: "需要频繁观察、调整和真实页面验证的任务。" },
+    { task: "大上下文重构、跨文件机械变更、批量生成", defaultAgent: "Codex", note: "以清晰契约、可验证测试和限定范围为前提。" },
+    { task: "高风险 diff 的独立第二意见", defaultAgent: "另一个 Agent", note: "写者不单独批准自己产出的高风险变更。" },
+    { task: "内容、研究、浏览器取证与多工具流水线", defaultAgent: "Claude Code", note: "需要逐步核验来源与中间结果。" },
+    { task: "同一文件的并行写入", defaultAgent: "禁止", note: "改为串行，或为每个 Agent 分配独立 worktree。" }
+  ],
+  agentSplitRule: "分工不明确时：交互、紧循环、需要现有 Skill 生态 → Claude Code；大范围机械扫描、批量生成、第二意见 → Codex。实际分工写入计划与 PR，便于复盘归因。",
+
   baseSha: [
     "开工前记录 exact base SHA：git rev-parse HEAD；接手项目时同时记录 git status --short 的 dirty 状态。",
     "每个工作区产物、PR 描述和 Agent 交接都引用同一个 base SHA；base 变了要显式更新，不能静默沿用旧值。",
@@ -36,11 +59,13 @@ export const GIT_WORKFLOW = Object.freeze({
 
   commits: [
     "使用 Conventional Commits，祈使句，主题 ≤72 字符：<type>(<scope>): <summary>。",
-    "type 使用 feat / fix / docs / test / refactor / chore / ci / perf；scope 用模块或路径名。",
+    "type 使用 feat / fix / docs / test / refactor / chore / ci / perf；scope 用小写模块或路径名。",
+    "需要时使用 footer：BREAKING CHANGE: 与 Refs:；破坏性变更不得只写在正文里。",
     "一个提交一个逻辑变更；重构、修复、文档混在一起时在评审前拆分。",
     "提交正文写“为什么”和被否决的替代方案；diff 已经说明“改了什么”。",
+    "Bug 修复正文包含复现链接或根因摘要；“fix bug”单独一句是评审气味。",
     "不提交密钥、.env、大二进制、注释掉的死代码；提交前扫描 diff。",
-    "生成文件在正文标注 (generated) 或使用 chore(gen): 并写明生成器；不伪造协作者。",
+    "生成文件在正文标注 (generated) 或使用 chore(gen): 并写明生成器；署名 footer 按工具配置生成，不伪造协作者。",
     "Tier A/B 默认 squash merge；PR 标题成为提交信息，PR 描述保存完整上下文。"
   ],
 
@@ -113,5 +138,18 @@ export function validateGitWorkflow() {
   if (!GIT_WORKFLOW.pullRequest.some(x => x.includes("UNKNOWN"))) errors.push("git workflow must require unverified items");
   for (const a of GIT_WORKFLOW.agentOperating)
     if (!a.agent || !Array.isArray(a.notes) || !a.notes.length) errors.push("agent operating notes incomplete");
+  const boundary = GIT_WORKFLOW.governanceBoundary;
+  if (!boundary || typeof boundary !== "object") errors.push("git workflow missing governance boundary");
+  else {
+    for (const key of ["owner", "organizationScope", "projectScope", "conflictRule", "nonCopy"])
+      if (typeof boundary[key] !== "string" || !boundary[key].trim()) errors.push("governance boundary missing " + key);
+    if (!Array.isArray(boundary.precedence) || boundary.precedence.length < 2) errors.push("governance boundary missing precedence");
+    if (!boundary.organizationScope.includes("OPC")) errors.push("governance boundary must name the OPC organisation scope");
+  }
+  if (!Array.isArray(GIT_WORKFLOW.agentRoleSplit) || !GIT_WORKFLOW.agentRoleSplit.length) errors.push("git workflow missing agent role split");
+  else for (const row of GIT_WORKFLOW.agentRoleSplit)
+    if (!row.task || !row.defaultAgent || !row.note) errors.push("agent role split row incomplete");
+  if (typeof GIT_WORKFLOW.agentSplitRule !== "string" || !GIT_WORKFLOW.agentSplitRule.includes("Claude Code") || !GIT_WORKFLOW.agentSplitRule.includes("Codex"))
+    errors.push("agent split rule must name both default agents");
   return errors;
 }

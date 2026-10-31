@@ -24,7 +24,7 @@ node tools/xeng.mjs maturity <path> --json
 ## 规则
 
 - 等级是**缺口指标**，`missing_controls` 才是可执行输出。
-- 只按连续达成计算；更高层的单个控制存在不会自动提升等级。
+- 只按连续达成计算；更高层已满足的单个控制列入 `out_of_band_controls`（等价于旧模型的 `[+]` 记录），不会提升等级。
 - Tier 目标：A → L4，B → L2，C → L1，D → L0。
 - L6 固定 `NOT_VERIFIABLE`，除非有真实运行记录另行证明。
 - 审计通过不等于真实项目、设备或生产验收通过。

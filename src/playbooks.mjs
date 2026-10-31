@@ -18,6 +18,45 @@ export const PLAYBOOKS = Object.freeze([
       "scripted fake LLM 与 real-provider eval 是不同证据层，不能互相替代。",
       "没有真实消费者验收时，不得宣称已上线、高可用或准确率达标。"
     ],
+    acceptanceExamples: [
+      "AC1 有权用户提供订单号时，工具返回真实状态并解释结果。",
+      "AC2 缺少订单号时只追问，不调用后端。",
+      "AC3 用户查询他人订单时返回 FORBIDDEN，不泄露订单是否存在。",
+      "AC4 上游超时时明确说明暂时无法确认，不编造状态。",
+      "AC5 “未查到”不等于“未发货”，两者使用不同文案与后续动作。"
+    ],
+    negativeCases: [
+      "跨租户/跨用户读取：身份必须由服务端从认证上下文取得，模型生成的 user_id 被忽略。",
+      "工具超时、部分失败与重复提交：返回结构化错误并保持幂等。",
+      "Prompt 注入：检索文档或工具结果中的指令不得改变权限、工具集合或审批路径。",
+      "缺参或歧义：只追问一个必要槽位，不猜测订单号。",
+      "模型不可用或超预算：降级为明确失败或人工路径，不静默换模型。"
+    ],
+    stopConditions: [
+      "发现越权、密钥或 PII 泄露：立即停止调参，止血并通知 Owner。",
+      "没有可运行测试或真实基线：停止宣称修复，列出缺失依赖。",
+      "AC 未获业务 Owner 确认：停止实现，先澄清 Scope / Non-goals。",
+      "需要生产权限、部署或删除数据：停止并请求明确授权。",
+      "模型行为变更没有 real-provider eval：停止合并，补评测或标 NOT_RUN。"
+    ],
+    antiClaims: [
+      "scripted fake LLM 通过 ≠ 真实模型行为已验证。",
+      "CI 绿 ≠ Consumer/测试环境联调通过。",
+      "Prompt 改得更长 ≠ 质量提升；必须同集合、同版本对比。",
+      "PR 合并 ≠ 已发布 ≠ 已验收。"
+    ],
+    rhythm: [
+      "晨间：审查工单、PR、CI 与告警，确认当天优先级。",
+      "需求：澄清 AC、权限、负例与现有实现，冻结失败基线。",
+      "开发：最小 Diff、测试先行、受控 AI 编码、逐步验证。",
+      "交付：回归评测、PR/Review、状态同步；不把未运行项写成通过。"
+    ],
+    reporting: "已完成 [具体能力]，证据 [测试/PR/trace]，受阻于 [接口/环境/授权]，下一步 [行动和依赖]。禁止用“优化了 Prompt”“基本完成”替代证据。",
+    exercises: [
+      "隔离实验 1：复现一个 RAG 召回 Bug，先写故障树、AC 与测试，再改代码。",
+      "隔离实验 2：实现一项只读 Tool Calling Feature，覆盖缺参、越权与超时。",
+      "隔离实验 3：注入一次上游故障，验证降级、恢复与复盘证据。"
+    ],
     triage: [
       { task: "新 Feature", firstMove: "先确认用户、权限、业务接口、AC 与当前实现；不要先让 AI 生成整套 Agent。", evidence: "AC→测试 / 联调 / Eval / PR" },
       { task: "Bug", firstMove: "先取得失败输入、trace_id、版本和复现步骤；不要先改 Prompt 猜原因。", evidence: "失败用例转绿、根因定位、回归" },
@@ -113,6 +152,39 @@ export const PLAYBOOKS = Object.freeze([
       "检索到的文本一律视为不可信输入，不能执行文档内指令。",
       "权限过滤必须在检索侧生效，不能只靠 Prompt 禁止泄露。",
       "没有稳定金标时只能报告探索性指标，不能声称准确率达标。"
+    ],
+    acceptanceExamples: [
+      "AC1 未找到授权证据时返回结构化拒答，不给推测答案。",
+      "AC2 管理员文档不会出现在普通用户的检索结果或模型上下文中。",
+      "AC3 有足够证据时引用文件、页码或条款，并标注 corpus/index 版本。",
+      "AC4 过期法规被标记为过期并走拒答或提示路径。",
+      "AC5 同一 query 在固定 snapshot 下可复现 TopK 与引用。"
+    ],
+    negativeCases: [
+      "越权检索：ACL 在检索侧过滤，越权 chunk 不进入模型上下文。",
+      "Prompt 注入：文档内指令不能改变系统规则或调用外部工具。",
+      "重复入库与更新：同一文档多次导入不产生重复 chunk，旧版本可回退。",
+      "空页、乱码、扫描件：解析失败可见且可重试，不静默丢弃。",
+      "无答案或低置信：拒答而非编造；引用不存在时判失败。"
+    ],
+    stopConditions: [
+      "发现权限泄露：立即停止调参，隔离索引并通知 Owner。",
+      "没有稳定 gold 或 corpus/index 版本：停止声称准确率，改为探索性结果。",
+      "正确 chunk 从未召回：停止加 Rerank，先修 ingestion、ACL、rewrite、embedding/BM25。",
+      "高风险法规或权限子集退化：停止发布，回到上一 snapshot。",
+      "需要真实客户数据或生产索引：停止并请求授权与脱敏方案。"
+    ],
+    antiClaims: [
+      "模型能返回自然语言 ≠ 召回已好。",
+      "集成测试绿 ≠ 业务准确率达标。",
+      "Docker 部署成功 ≠ 生产就绪。",
+      "单次 demo 命中 ≠ 稳定质量；必须同集合、同版本、可复算。"
+    ],
+    rerankDecision: "只有在候选已包含相关 chunk、但排名靠后或 TopK 噪声大时，重排才可能明显有效。正确 chunk 从未召回时，先修 ingestion、ACL、query rewrite、embedding/BM25，不能靠 Rerank 修补缺失证据。",
+    exercises: [
+      "基础 RAG：一批授权文档 → 索引 → 服务 → 引用与拒答。",
+      "检索 A/B：在固定 gold 上比较 BM25、Dense、Hybrid/Rerank 的增益或无增益。",
+      "修真实 Bug：从失败 query/trace 复现、定位、修复并回归。"
     ],
     triage: [
       { task: "需求与数据", firstMove: "确认使用者、业务问题、数据许可、权限、法规版本和拒答行为。", evidence: "可追踪的数据清单与 AC" },
@@ -256,6 +328,63 @@ export const PLAYBOOKS = Object.freeze([
       "评测场景从 Spec 阶段开始定义，不是最后才补。",
       "每一阶段只在上一阶段必要能力有证据后升级。"
     ],
+    acceptanceExamples: [
+      "AC1 有权用户查询自己的订单：工具返回真实状态并解释。",
+      "AC2 缺少订单号：只追问，不访问后端。",
+      "AC3 查询他人订单：FORBIDDEN，且不泄露订单是否存在。",
+      "AC4 工具超时：明确说明无法确认，不编造状态。",
+      "AC5 高风险退款：进入人工审批，模型不能自行批准；重复提交不产生二次退款。"
+    ],
+    negativeCases: [
+      "身份由模型填写：服务端忽略并拒绝。",
+      "越权工具调用、参数注入、Schema 绕过：在工具执行前阻断。",
+      "Prompt 注入：检索文档或工具输出不能改变权限、审批或工具集合。",
+      "重复投递、重试与 worker 失锁：幂等台账保证无二次副作用。",
+      "跨 thread/tenant 污染：会话隔离，旧状态不得进入新会话。",
+      "escalated=true 但没有真实坐席接管：判为未完成人工闭环。"
+    ],
+    stopConditions: [
+      "发现越权或重复副作用：立即禁用相关工具，止血后再修。",
+      "没有后端幂等台账：停止宣称 exactly-once。",
+      "高风险动作缺少服务端审批：停止上线。",
+      "L1/L2 通过但 L3/L4 未执行：停止宣称生产就绪。",
+      "练习或测试环境涉及真实资金或生产数据：停止执行。"
+    ],
+    antiClaims: [
+      "PR 合并 ≠ 测试环境验收 ≠ 生产高可用。",
+      "本地 PG/Redis/Celery 验证 ≠ 生产高可用或真实 ERP 集成。",
+      "checkpointer 恢复图状态 ≠ 外部写操作 exactly-once。",
+      "fake-LLM 图测试通过 ≠ 真实模型决策质量。"
+    ],
+    stateContract: [
+      "建议字段：request_id、thread_id、messages、user_context、intent、slots、tool_results、risk_level、pending_approval、attempt_count。",
+      "每个字段明确 Owner、reducer、是否可持久化、TTL 与跨会话可见性。",
+      "短期会话、长期记忆、工作流状态与业务事实分开存储；业务事实以业务系统为准。",
+      "checkpointer 只恢复图状态，不替代业务事务或外部副作用台账。"
+    ],
+    durabilityRules: [
+      "区分 thread_id（对话）、run_id（一次图执行）、job_id（异步任务）、idempotency_key（一次业务意图）。",
+      "队列通常是至少一次投递；重试、redelivery、worker 失锁都要经过后端幂等台账。",
+      "模拟“外部 API 已成功、本地尚未记录”时崩溃，验证不会二次退款或下单。",
+      "没有原子业务动作与台账时，不宣称 exactly-once。"
+    ],
+    hitlRules: [
+      "低风险只读可直接执行；中风险验证意图与业务规则；高风险必须服务端审批。",
+      "审批保存待审批意图、上下文、授权范围与时效；确认后再次检查归属、金额资格、时效与幂等。",
+      "拒绝、过期、重复提交都不能绕过权限门禁。",
+      "escalated=true 只是意图；真实接管需要队列、分配、可见上下文、接管确认、处理回执与未接入 fallback。"
+    ],
+    evalMetrics: [
+      "Task Success、Tool Correctness、Argument Correctness、Handoff Correctness。",
+      "unsafe action attempted / executed、recovery success、P95、Token/Cost。",
+      "至少覆盖正常、缺参、越权、工具超时、重复提交、Prompt Injection、转人工与跨会话污染。",
+      "高风险安全项建议零容忍；阈值由任务 Owner 在评测前确定，不能事后挑数。"
+    ],
+    exercises: [
+      "第 1 周：单 Agent + 结构化回复；第 2 周：只读 Tool 与鉴权。",
+      "第 3 周：StateGraph 与 RAG 知识工具；第 4 周：用同一 Eval Set 比较 Router/多 Agent。",
+      "第 5–6 周：HITL、崩溃恢复、正式 Eval、CI 与灰度模拟；练习环境隔离，不执行真实资金操作。"
+    ],
     triage: [
       { task: "业务与 API", firstMove: "写清任务、角色、数据源、权限、异常与人工路径。", evidence: "成功/失败/人工接管流程" },
       { task: "Tool 设计", firstMove: "先写 Tool/State/Authorization/Handoff Spec 与禁止动作。", evidence: "schema/参数/权限/超时/无泄露验证" },
@@ -342,6 +471,7 @@ export function playbooksForProfiles(profiles = []) {
 
 export function playbookMarkdown(playbook) {
   if (!playbook || !PLAYBOOK_IDS.includes(playbook.id)) throw new Error("Unknown playbook");
+  const block = (title, values) => ["## " + title, "", ...values.map(x => "- " + x), ""];
   const lines = [
     "# " + playbook.name,
     "",
@@ -352,6 +482,12 @@ export function playbookMarkdown(playbook) {
     "",
     ...playbook.principles.map(x => "- " + x),
     "",
+    ...(playbook.acceptanceExamples ? block("验收示例（合成场景）", playbook.acceptanceExamples) : []),
+    ...(playbook.negativeCases ? block("必须覆盖的负例", playbook.negativeCases) : []),
+    ...(playbook.stopConditions ? block("停止条件", playbook.stopConditions) : []),
+    ...(playbook.antiClaims ? block("不可宣称", playbook.antiClaims) : []),
+    ...(playbook.rhythm ? block("每日节律", playbook.rhythm) : []),
+    ...(playbook.reporting ? ["## 汇报句式", "", playbook.reporting, ""] : []),
     "## 任务分流",
     "",
     "| 任务 | 第一步 | 完成证据 |",
@@ -387,14 +523,20 @@ export function playbookMarkdown(playbook) {
     lines.push("## 风险与权限", "", "| 风险 | 例子 | 权限流程 |", "|---|---|---|",
       ...playbook.riskMatrix.map(x => "| " + x.risk + " | " + x.examples + " | " + x.control + " |"), "");
   }
+  if (playbook.stateContract) lines.push(...block("状态契约", playbook.stateContract));
+  if (playbook.durabilityRules) lines.push(...block("持久化与恢复", playbook.durabilityRules));
+  if (playbook.hitlRules) lines.push(...block("人工接管（HITL）", playbook.hitlRules));
+  if (playbook.evalMetrics) lines.push(...block("评测指标与覆盖", playbook.evalMetrics));
+  if (playbook.rerankDecision) lines.push("## Rerank 决策", "", playbook.rerankDecision, "");
   lines.push("## 失败诊断", "");
   for (const item of playbook.failureDiagnosis) {
     lines.push("- **" + item.symptom + "**：" + item.order.join(" → ") + "。停止规则：" + item.stopRule);
   }
   lines.push("", "## Definition of Done", "", ...playbook.definitionOfDone.map(x => "- " + x), "",
     "## Agent 交接", "", ...playbook.handoff.map(x => "- " + x), "",
-    "## 回退", "", ...playbook.rollback.map(x => "- " + x), "",
-    "> 本手册是操作建议，不含真实客户数据；示例均为合成/脱敏内容。所有未执行项保持 NOT_RUN。", "");
+    "## 回退", "", ...playbook.rollback.map(x => "- " + x), "");
+  if (playbook.exercises) lines.push(...block("隔离练习", playbook.exercises));
+  lines.push("> 本手册是操作建议，不含真实客户数据；示例均为合成/脱敏内容。所有未执行项保持 NOT_RUN。", "");
   return lines.join("\n");
 }
 
@@ -409,6 +551,16 @@ export function validatePlaybooks() {
     if (!p.triage?.length) errors.push(p.id + " has no triage");
     if (!p.phases?.length) errors.push(p.id + " has no phases");
     if (!p.definitionOfDone?.length) errors.push(p.id + " has no definition of done");
+    for (const key of ["acceptanceExamples", "negativeCases", "stopConditions", "antiClaims", "exercises"])
+      if (!Array.isArray(p[key]) || !p[key].length) errors.push(p.id + " missing " + key);
+    if (p.id === "ai-application") {
+      if (!Array.isArray(p.rhythm) || !p.rhythm.length) errors.push("ai-application missing rhythm");
+      if (typeof p.reporting !== "string" || !p.reporting.trim()) errors.push("ai-application missing reporting");
+    }
+    if (p.id === "rag" && (typeof p.rerankDecision !== "string" || !p.rerankDecision.trim())) errors.push("rag missing rerank decision");
+    if (p.id === "agent")
+      for (const key of ["stateContract", "durabilityRules", "hitlRules", "evalMetrics"])
+        if (!Array.isArray(p[key]) || !p[key].length) errors.push("agent missing " + key);
     for (const phase of p.phases ?? [])
       for (const key of ["id", "title", "question", "minimal"])
         if (typeof phase[key] !== "string" || !phase[key].trim()) errors.push(p.id + "." + phase.id + " missing " + key);

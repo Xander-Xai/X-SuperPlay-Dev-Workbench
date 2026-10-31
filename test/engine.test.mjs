@@ -129,18 +129,27 @@ test("three engineering playbooks exist and bind to real profiles",()=>{
     assert.equal(p.status,"ADVISORY_PLAYBOOK_NOT_VERIFIED");
     assert.ok(p.phases.length>=5);
     assert.ok(p.triage.length>=3);
+    assert.ok(p.acceptanceExamples.length>=5);
+    assert.ok(p.negativeCases.length>=4);
+    assert.ok(p.stopConditions.length>=4);
+    assert.ok(p.antiClaims.length>=3);
+    assert.ok(p.exercises.length>=3);
     assert.ok(playbookById(p.id)===p);
   }
   assert.deepEqual(validatePlaybooks(),[]);
-  assert.match(playbookMarkdown(PLAYBOOKS[0]),/11 阶段/);
+  assert.match(playbookMarkdown(PLAYBOOKS.find(p=>p.id==="ai-application")),/汇报句式/);
+  assert.match(playbookMarkdown(PLAYBOOKS.find(p=>p.id==="rag")),/Rerank 决策/);
+  assert.match(playbookMarkdown(PLAYBOOKS.find(p=>p.id==="agent")),/状态契约/);
 });
 
 test("git workflow covers base SHA, worktrees, PR evidence and agent operating notes",()=>{
   assert.deepEqual(validateGitWorkflow(),[]);
   assert.equal(GIT_WORKFLOW.status,"ADVISORY_PROJECT_GUIDANCE");
   const all=JSON.stringify(GIT_WORKFLOW);
-  for(const token of ["base SHA","worktree","命令 + 结果","UNKNOWN","Claude Code","Codex","OpenCode","force-push"])
+  for(const token of ["base SHA","worktree","命令 + 结果","UNKNOWN","Claude Code","Codex","OpenCode","force-push","OPC","组织级","项目级","写者不单独批准"])
     assert.ok(all.toLowerCase().includes(token.toLowerCase()),token);
+  assert.ok(GIT_WORKFLOW.governanceBoundary.precedence.length>=3);
+  assert.ok(GIT_WORKFLOW.agentRoleSplit.some(x=>x.defaultAgent==="禁止"));
 });
 
 test("maturity starts at L0 without controls and never auto-claims L6",()=>{
@@ -151,4 +160,16 @@ test("maturity starts at L0 without controls and never auto-claims L6",()=>{
   assert.equal(report.target_met,false);
   assert.equal(report.l6.status,"NOT_VERIFIABLE");
   assert.ok(report.missing_controls.some(x=>x.startsWith("L1.reproducible")));
+});
+
+test("maturity records a higher met control as out-of-band without inflating the level",()=>{
+  const checks=["readme","engineering_profile","config.env_example","tests.present","docs.freshness",
+    "security.secret_scan","git.gitignore","ops.rollback","release.changelog","config.env_pairing"]
+    .map(name=>({name,status:"PASS"}));
+  checks.push({name:"ci.present",status:"FAIL"});
+  const report=maturityReport(checks,{tier:"B",profiles:[]});
+  assert.equal(report.level,"L1");
+  assert.ok(report.out_of_band_controls.includes("L4.production"));
+  assert.equal(report.out_of_band_controls.includes("L1.reproducible"),false);
+  assert.ok(report.missing_controls.some(x=>x.startsWith("L2.structured")));
 });
