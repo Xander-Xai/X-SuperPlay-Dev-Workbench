@@ -1,0 +1,708 @@
+#!/usr/bin/env node
+// Workbench engineering CLI. Node-only, zero dependencies, no network.
+import { readFileSync, writeFileSync, existsSync, statSync, mkdirSync, readdirSync, lstatSync } from "node:fs";
+import { resolve, join, dirname, relative, sep, basename } from "node:path";
+import { fileURLToPath } from "node:url";
+import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
+import {
+  PROFILES, PROFILE_IDS, STAGES, STAGE_IDS, TASKS, TASK_IDS, TIERS, SKILLS, SKILL_IDS,
+  PROVENANCE, OWNER, GOVERNANCE, RUNTIME
+} from "../src/catalog.mjs";
+import { composeRoute, tierObligations } from "../src/routing.mjs";
+import { validateCatalog } from "../src/engine.mjs";
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const LEVEL_ORDER = { not_applicable: 0, optional: 1, recommended: 2, required: 3 };
+const STATUS_ORDER = { PASS: 0, NOT_APPLICABLE: 1, WARN: 2, UNKNOWN: 3, FAIL: 4 };
+const IGNORED_DIRS = new Set([".git", "node_modules", "__pycache__", ".venv", "venv", "dist", "build", ".pytest_cache", "_worktrees", ".claude", ".agents", ".opencode"]);
+const SCAN_EXTS = new Set([".py", ".js", ".mjs", ".ts", ".tsx", ".jsx", ".go", ".yaml", ".yml", ".json", ".md", ".toml", ".sh", ".ps1", ".env", ".txt"]);
+
+const readText = p => { try { return readFileSync(p, "utf8"); } catch { return null; } };
+const isDir = p => { try { return statSync(p).isDirectory(); } catch { return false; } };
+const isFile = p => { try { return statSync(p).isFile(); } catch { return false; } };
+const sha256 = b => createHash("sha256").update(b).digest("hex");
+
+// ---------------------------------------------------------------- simple YAML
+
+function parseScalar(raw) {
+  const s = raw.trim();
+  if (s === "") return null;
+  if (s === "[]") return [];
+  if (s.startsWith("[") && s.endsWith("]"))
+    return s.slice(1, -1).split(",").map(x => parseScalar(x)).filter(x => x !== null);
+  if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'")))
+    return s.slice(1, -1);
+  if (/^(true|false)$/i.test(s)) return s.toLowerCase() === "true";
+  if (/^-?\d+(\.\d+)?$/.test(s)) return Number(s);
+  return s;
+}
+
+export function parseSimpleYaml(text) {
+  const root = {};
+  const stack = [{ indent: -1, node: root }];
+  const lines = String(text ?? "").replace(/\r\n/g, "\n").split("\n");
+  let i = 0;
+  const nextMeaningful = from => {
+    for (let j = from; j < lines.length; j++) {
+      if (lines[j].trim() && !lines[j].trim().startsWith("#")) return j;
+    }
+    return -1;
+  };
+  while (i < lines.length) {
+    const raw = lines[i];
+    if (!raw.trim() || raw.trim().startsWith("#")) { i++; continue; }
+    const indent = raw.match(/^ */)[0].length;
+    const line = raw.trim();
+    while (stack.length > 1 && indent <= stack[stack.length - 1].indent) stack.pop();
+    const parent = stack[stack.length - 1].node;
+
+    if (line.startsWith("- ")) {
+      const content = line.slice(2).trim();
+      const target = Array.isArray(parent) ? parent : null;
+      if (!target) { i++; continue; }
+      if (content.includes(":") && !content.startsWith('"') && !content.startsWith("'")) {
+        const idx = content.indexOf(":");
+        const obj = { [content.slice(0, idx).trim()]: parseScalar(content.slice(idx + 1)) };
+        target.push(obj);
+        stack.push({ indent, node: obj });
+      } else {
+        target.push(parseScalar(content));
+      }
+      i++;
+      continue;
+    }
+
+    const m = line.match(/^([^:]+):\s*(.*)$/);
+    if (!m) { i++; continue; }
+    const key = m[1].trim();
+    const value = m[2];
+    if (value === "" || value === "|" || value === ">") {
+      const n = nextMeaningful(i + 1);
+      const childIndent = n === -1 ? -1 : lines[n].match(/^ */)[0].length;
+      const isList = n !== -1 && childIndent > indent && lines[n].trim().startsWith("- ");
+      const child = isList ? [] : {};
+      parent[key] = child;
+      stack.push({ indent, node: child });
+      i++;
+      continue;
+    }
+    parent[key] = parseScalar(value);
+    i++;
+  }
+  return root;
+}
+
+function renderYaml(obj, indent = 0) {
+  const pad = "  ".repeat(indent);
+  const out = [];
+  for (const [k, v] of Object.entries(obj)) {
+    if (Array.isArray(v)) {
+      out.push(pad + k + ": " + (v.length ? "[" + v.join(", ") + "]" : "[]"));
+    } else if (v && typeof v === "object") {
+      out.push(pad + k + ":");
+      out.push(renderYaml(v, indent + 1));
+    } else {
+      out.push(pad + k + ": " + (v ?? ""));
+    }
+  }
+  return out.join("\n");
+}
+
+// ---------------------------------------------------------------- init
+
+const INIT_FILES = {
+  "README.md": `# <project-name>
+
+> TODO: What this project IS, what it is NOT, and the one success signal.
+
+Governed by [X-SuperPlay Dev Workbench](https://github.com/Xander-Xai/X-SuperPlay-Dev-Workbench) (defaults; this repository's local knowledge wins).
+`,
+  "AGENTS.md": `# AGENTS.md
+
+Rules for AI agents working in this repository.
+
+## Boundary
+<What this repo is / is not.>
+
+## Source of truth
+- CURRENT TRUTH: docs/current-state.md (last_verified discipline)
+- Historical reports are append-only, never current fact.
+
+## Verification before DONE
+- <command that proves it> (fill in; agents rely on this)
+
+## Permissions
+- Agents do not push/deploy/delete without explicit instruction.
+`,
+  "CLAUDE.md": `# CLAUDE.md
+
+Context for Claude Code sessions.
+
+## What this repo is
+<One paragraph.>
+
+## Navigation
+- <key files, key docs>
+
+## Common commands
+~~~bash
+# <install / run / test commands>
+~~~
+`,
+  ".github/pull_request_template.md": `## Why
+<…>
+
+## Scope
+<…>
+
+## Verification
+- [ ] tests: <which, result>
+- [ ] evals: <if AI change>
+- [ ] probe: <if applicable>
+
+## Risks
+<…>
+
+## Rollback
+<…>
+`,
+  "docs/current-state.md": `# Current State
+
+<!-- CURRENT TRUTH — update in place; touch last_verified when you re-verify. -->
+
+last_verified: YYYY-MM-DD
+version: <version>
+
+## What is true now
+<Compact facts with command provenance: how to regenerate each number.>
+`,
+  ".gitignore": `.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+node_modules/
+dist/
+.DS_Store
+`
+};
+
+const PROFILE_DIRS = {
+  saas: ["migrations", "tests"], backend: ["tests"], web: ["tests"],
+  "ai-application": ["evals"], rag: ["evals"], agent: ["evals"],
+  cli: ["tests"], enterprise: ["tests"], mobile: ["tests"],
+  android: ["tests"], ios: ["tests"], "react-native": ["tests"], flutter: ["tests"],
+  desktop: ["tests"], infrastructure: []
+};
+
+export function composeProfileContract({ profiles, tier, name, task = "feature", mode = "new" }) {
+  const levels = tierObligations(tier);
+  const merged = {
+    ownership: {
+      current_owner: OWNER.repository,
+      historical_provenance: PROVENANCE.repository + "@" + PROVENANCE.commit,
+      governance_reference: "AI-Native-Work-Learning-OS (reference only)",
+      runtime: RUNTIME.name + " " + RUNTIME.version
+    },
+    project: { name, tier, task, mode, profiles },
+    lifecycle: {
+      spec_required: levels.spec,
+      plan_required: levels.plan,
+      adr_required: levels.adr,
+      review_required: levels.review
+    },
+    quality: {
+      unit_tests: "required",
+      integration_tests: profiles.includes("saas") || profiles.includes("enterprise") ? "required" : "recommended",
+      e2e: levels.e2e,
+      evals: profiles.some(p => ["ai-application", "rag", "agent"].includes(p)) ? "required" : "not_applicable"
+    },
+    security: {
+      secret_scan: "required",
+      review: levels.review,
+      dependency_audit: profiles.some(p => ["web", "backend", "mobile"].includes(p)) ? "required" : "recommended"
+    },
+    operations: {
+      observability: "recommended",
+      rollback_plan: levels.rollback,
+      backup: profiles.some(p => ["saas", "enterprise", "infrastructure"].includes(p)) ? "required" : "optional"
+    },
+    exceptions: []
+  };
+  return merged;
+}
+
+function cmdInit(argv) {
+  const opts = { profile: null, tier: "B", task: "feature", mode: "new", name: null, dryRun: false, path: null };
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === "--dry-run") { opts.dryRun = true; continue; }
+    if (["--profile", "--tier", "--task", "--mode", "--name"].includes(a)) {
+      if (!argv[i + 1] || argv[i + 1].startsWith("--")) throw new Error("Missing value for " + a);
+      const key = a.slice(2);
+      opts[key === "dry-run" ? "dryRun" : key] = argv[++i];
+      continue;
+    }
+    if (a.startsWith("--")) throw new Error("Unknown option: " + a);
+    if (opts.path) throw new Error("Only one target path is allowed");
+    opts.path = a;
+  }
+  if (!opts.path) throw new Error("Usage: xeng init <path> --profile a,b --tier A|B|C|D [--task feature] [--mode new|existing] [--dry-run]");
+  if (!opts.profile) throw new Error("Missing --profile");
+  if (!Object.hasOwn(TIERS, opts.tier)) throw new Error("Tier must be A|B|C|D");
+  if (!TASK_IDS.includes(opts.task)) throw new Error("Unknown task: " + opts.task);
+  if (!["new", "existing"].includes(opts.mode)) throw new Error("Mode must be new|existing");
+
+  const target = resolve(opts.path);
+  const profiles = opts.profile.split(",").map(x => x.trim()).filter(Boolean);
+  const unknown = profiles.filter(p => !PROFILE_IDS.includes(p));
+  if (unknown.length) {
+    console.error("FAIL: unknown profile(s): " + unknown.join(", "));
+    console.error("available: " + PROFILE_IDS.join(", "));
+    return 2;
+  }
+  const name = opts.name || basename(target);
+  const contract = composeProfileContract({ profiles, tier: opts.tier, name, task: opts.task, mode: opts.mode });
+  const created = [], skipped = [], suggested = [];
+  const log = msg => { if (!opts.dryRun) console.log(msg); };
+
+  if (!existsSync(target) && !opts.dryRun) mkdirSync(target, { recursive: true });
+
+  const planFile = (rel, content) => {
+    const dest = join(target, rel);
+    const rendered = content.replace(/YYYY-MM-DD/g, new Date().toISOString().slice(0, 10));
+    if (existsSync(dest)) {
+      skipped.push(rel);
+      const sugg = dest + ".suggested.md";
+      if (!opts.dryRun && !existsSync(sugg)) { writeFileSync(sugg, rendered); suggested.push(basename(sugg)); }
+      return;
+    }
+    if (opts.dryRun) { console.log("[dry-run] would create " + rel); }
+    else { mkdirSync(dirname(dest), { recursive: true }); writeFileSync(dest, rendered); }
+    created.push(rel);
+  };
+
+  const ep = join(target, "ENGINEERING_PROFILE.yaml");
+  if (existsSync(ep)) skipped.push("ENGINEERING_PROFILE.yaml");
+  else {
+    const body = "# ENGINEERING_PROFILE.yaml — generated by Workbench; owned and editable by this project.\n" +
+      "# Levels: required | recommended | optional | not_applicable\n\n" + renderYaml(contract) + "\n";
+    if (opts.dryRun) console.log("[dry-run] would create ENGINEERING_PROFILE.yaml");
+    else writeFileSync(ep, body);
+    created.push("ENGINEERING_PROFILE.yaml");
+  }
+
+  for (const [rel, content] of Object.entries(INIT_FILES)) planFile(rel, content);
+
+  const dirs = new Set();
+  for (const p of profiles) for (const d of (PROFILE_DIRS[p] ?? [])) dirs.add(d);
+  if (["A", "B"].includes(opts.tier)) dirs.add("tests");
+  for (const d of [...dirs].sort()) {
+    const dd = join(target, d);
+    if (existsSync(dd)) continue;
+    if (opts.dryRun) console.log("[dry-run] would create directory " + d + "/");
+    else {
+      mkdirSync(dd, { recursive: true });
+      const readme = join(dd, "README.md");
+      if (!existsSync(readme)) writeFileSync(readme, "# " + d + "\n\n<describe conventions for this directory>\n");
+    }
+    created.push(d + "/");
+  }
+
+  const label = opts.dryRun ? "[dry-run] " : "";
+  console.log(label + "init " + target + " profiles=" + profiles.join(",") + " tier=" + opts.tier + " task=" + opts.task);
+  console.log("  created:   " + created.length + " entries");
+  console.log("  skipped (exist, untouched): " + skipped.length);
+  if (suggested.length) console.log("  suggested: " + suggested.length + " *.suggested.md files written next to existing files");
+  if (opts.dryRun) console.log("dry-run complete — no files were modified");
+  return 0;
+}
+
+// ---------------------------------------------------------------- audit
+
+function iterRepoFiles(root) {
+  const out = [];
+  const walk = dir => {
+    let entries;
+    try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return; }
+    for (const e of entries.sort((a, b) => a.name.localeCompare(b.name))) {
+      const fp = join(dir, e.name);
+      if (e.isDirectory()) { if (!IGNORED_DIRS.has(e.name)) walk(fp); }
+      else if (SCAN_EXTS.has(extnameLower(e.name)) || [".env.example", "Dockerfile", "Makefile"].includes(e.name)) out.push(fp);
+    }
+  };
+  walk(root);
+  return out;
+}
+const extnameLower = n => { const i = n.lastIndexOf("."); return i < 0 ? "" : n.slice(i).toLowerCase(); };
+
+const SECRET_PATTERNS = [
+  [/(api[_-]?key|secret|token|passwd|password|pwd)\s*[:=]\s*['"]?[A-Za-z0-9_\-/+=]{16,}/gi, "hardcoded secret-looking assignment"],
+  [/-----BEGIN [A-Z ]*PRIVATE KEY-----/g, "private key block"],
+  [/ghp_[A-Za-z0-9]{30,}|gho_[A-Za-z0-9]{30,}|sk-[A-Za-z0-9]{20,}|xox[bpars]-[A-Za-z0-9\-]{10,}/g, "known token shape"]
+];
+
+function loadEngineeringProfile(root) {
+  const file = join(root, "ENGINEERING_PROFILE.yaml");
+  if (!isFile(file)) return null;
+  try { return parseSimpleYaml(readText(file) ?? ""); } catch { return null; }
+}
+
+function contractField(ep, section, key) {
+  const sec = ep?.[section];
+  return sec && typeof sec === "object" ? (sec[key] ?? null) : null;
+}
+
+function checkExceptions(report, ep, rule, findingPath = null) {
+  const exceptions = Array.isArray(ep?.exceptions) ? ep.exceptions : [];
+  for (const ex of exceptions) {
+    if (!ex || typeof ex !== "object") continue;
+    if (String(ex.rule ?? "") !== rule) continue;
+    const scope = String(ex.scope ?? "/");
+    if (findingPath && scope !== "/" && scope !== findingPath && !findingPath.startsWith(scope.replace(/\/$/, "") + "/")) continue;
+    const until = ex.until ? String(ex.until) : null;
+    const expired = until && /^\d{4}-\d{2}-\d{2}$/.test(until) && new Date(until) < new Date(new Date().toISOString().slice(0, 10));
+    if (expired) { report.add("exception." + ex.id, "FAIL", "exception expired " + until, rule); continue; }
+    report.add("exception." + ex.id, "PASS", "exception active for " + rule + " in scope " + scope + " (until " + (until ?? "no expiry") + ")", rule);
+    return ex.id;
+  }
+  return null;
+}
+
+class AuditReport {
+  constructor(repo) { this.repo = repo; this.checks = []; }
+  add(name, status, detail = "", rule = "") { this.checks.push({ name, status, detail, rule }); }
+  worst() {
+    let worst = "PASS";
+    for (const c of this.checks) if ((STATUS_ORDER[c.status] ?? 0) > (STATUS_ORDER[worst] ?? 0)) worst = c.status;
+    return worst;
+  }
+  toJSON() { return { repo: this.repo, checks: this.checks, worst: this.worst() }; }
+}
+
+function cmdAudit(argv) {
+  const json = argv.includes("--json");
+  const repoArg = argv.find(a => !a.startsWith("--")) ?? ".";
+  const root = resolve(repoArg);
+  if (!isDir(root)) { console.error("FAIL: not a directory: " + root); return 2; }
+  const ep = loadEngineeringProfile(root);
+  const tier = String(ep?.project?.tier ?? "B");
+  let profiles = ep?.project?.profiles ?? [];
+  if (typeof profiles === "string") profiles = profiles.replace(/^\[|\]$/g, "").split(",").map(x => x.trim()).filter(Boolean);
+  if (!Array.isArray(profiles)) profiles = [];
+  const report = new AuditReport(root);
+  const add = (n, s, d = "", r = "") => report.add(n, s, d, r);
+
+  add("readme", isFile(join(root, "README.md")) ? "PASS" : "WARN", isFile(join(root, "README.md")) ? "" : "README.md missing");
+  for (const [file, rule] of [["AGENTS.md", "governance.agents"], ["CLAUDE.md", "governance.claude"]])
+    add(file.toLowerCase(), isFile(join(root, file)) ? "PASS" : "WARN", isFile(join(root, file)) ? "" : file + " missing", rule);
+  add("engineering_profile", ep ? "PASS" : "WARN", ep ? "" : "ENGINEERING_PROFILE.yaml missing — tier/profiles unknown", "governance.profile");
+  add("git.repo", isDir(join(root, ".git")) ? "PASS" : "WARN", isDir(join(root, ".git")) ? "git repository present" : "no .git");
+
+  const envExample = join(root, ".env.example");
+  let envFiles = [];
+  try { envFiles = readdirSync(root).filter(n => n.startsWith(".env") && n !== ".env.example"); } catch {}
+  if (isFile(envExample)) add("config.env_example", "PASS");
+  else if (envFiles.length) add("config.env_example", "FAIL", ".env files exist but no .env.example", "configuration.env_example");
+  else add("config.env_example", "NOT_APPLICABLE", "no env config detected");
+
+  const gi = join(root, ".gitignore");
+  if (isFile(gi)) {
+    const text = readText(gi) ?? "";
+    add("git.gitignore", text.includes(".env") ? "PASS" : "WARN", text.includes(".env") ? "" : ".gitignore does not ignore .env");
+  } else add("git.gitignore", "WARN", "no .gitignore");
+
+  const testDirs = ["tests", "test", "spec"].filter(d => isDir(join(root, d)));
+  const testFiles = iterRepoFiles(root).filter(p => /(^|[/\\])test_|_test\.|\.test\.|\.spec\./.test(basename(p)));
+  if (testDirs.length || testFiles.length) add("tests.present", "PASS", testFiles.length + " test files found");
+  else {
+    const q = contractField(ep, "quality", "unit_tests");
+    if (q === "not_applicable" || ["C", "D"].includes(tier)) add("tests.present", "NOT_APPLICABLE", "tier C/D or unit_tests not_applicable");
+    else add("tests.present", "WARN", "no tests detected", "quality.unit_tests");
+  }
+
+  const aiProfiles = ["ai-application", "rag", "agent"].filter(p => profiles.includes(p));
+  if (aiProfiles.length) {
+    const present = ["evals", "evaluation", "tests/eval", "tests/evals", "benchmark", "benchmarks"].some(d => isDir(join(root, d)));
+    add("evals.present", present ? "PASS" : "WARN", present ? "" : "profiles " + aiProfiles.join(",") + " declared but no evals directory", "quality.evals");
+  } else add("evals.present", "NOT_APPLICABLE", "no AI profiles declared");
+
+  const ciDir = join(root, ".github", "workflows");
+  let ciFiles = [];
+  try { ciFiles = readdirSync(ciDir).filter(n => /\.ya?ml$/.test(n)); } catch {}
+  if (ciFiles.length) add("ci.present", "PASS", ciFiles.length + " workflow(s)");
+  else if (["A", "B"].includes(tier)) add("ci.present", "WARN", "no CI workflows — verification not repeatable", "quality.ci");
+  else add("ci.present", "NOT_APPLICABLE", "no CI (tier C/D)");
+
+  const ctCandidates = ["STATE.md", "docs/current-state.md", "docs/reference/current-state.md", "CURRENT_STATE.md"].map(f => join(root, f));
+  const ct = ctCandidates.find(isFile);
+  if (ct) {
+    const text = readText(ct) ?? "";
+    const m = text.match(/last_verified[:=]\s*(\d{4}-\d{2}-\d{2})/);
+    if (!m) add("docs.freshness", "WARN", "current-truth file lacks last_verified", "docs.freshness");
+    else {
+      const age = Math.floor((Date.now() - Date.parse(m[1] + "T00:00:00Z")) / 86400000);
+      if (age > 30 && ["A", "B"].includes(tier)) add("docs.freshness", "WARN", "current truth " + age + "d stale", "docs.freshness");
+      else add("docs.freshness", "PASS", "last_verified " + m[1] + " (" + age + "d)");
+    }
+  } else add("docs.freshness", "NOT_APPLICABLE", "no current-truth file");
+
+  const findings = [];
+  let scanned = 0;
+  for (const fp of iterRepoFiles(root)) {
+    scanned++;
+    const text = readText(fp);
+    if (!text) continue;
+    const rel = relative(root, fp).split(sep).join("/");
+    for (const [rx, label] of SECRET_PATTERNS) {
+      rx.lastIndex = 0;
+      let m;
+      while ((m = rx.exec(text))) {
+        const frag = m[0].length > 60 ? m[0].slice(0, 60) + "…" : m[0];
+        findings.push({ rel, detail: rel + ": " + label + " :: " + frag });
+        if (!rx.global) break;
+      }
+    }
+  }
+  const unwaived = [], waived = [];
+  for (const f of findings) {
+    const ex = checkExceptions(report, ep, "security.secret_scan", f.rel);
+    (ex ? waived : unwaived).push(f.detail);
+  }
+  if (unwaived.length) add("security.secret_scan", "FAIL", unwaived.slice(0, 10).join("; ") + (unwaived.length > 10 ? " (+" + (unwaived.length - 10) + " more)" : ""), "security.secret_scan");
+  else if (waived.length) add("security.secret_scan", "NOT_APPLICABLE", waived.length + " scoped synthetic finding(s) excepted; " + scanned + " files examined", "security.secret_scan");
+  else add("security.secret_scan", "PASS", "scanned " + scanned + " files, no secret-shaped strings", "security.secret_scan");
+
+  const envKeys = new Set();
+  if (isFile(envExample)) for (const line of (readText(envExample) ?? "").split(/\r?\n/)) {
+    const m = line.trim().match(/^([A-Za-z_][A-Za-z0-9_]*)=/); if (m) envKeys.add(m[1]);
+  }
+  const readVars = new Set();
+  for (const fp of iterRepoFiles(root)) {
+    if (![".py", ".go", ".ts", ".js", ".mjs", ".ps1", ".sh"].includes(extnameLower(fp))) continue;
+    const text = readText(fp); if (!text) continue;
+    const rx = /(?:os\.environ(?:\.get)?|os\.getenv|getenv)\(\s*['"]([A-Z][A-Z0-9_]{2,})['"]|process\.env\.([A-Z][A-Z0-9_]{2,})|\$env:([A-Z][A-Z0-9_]{2,})/g;
+    let m; while ((m = rx.exec(text))) readVars.add(m[1] || m[2] || m[3]);
+  }
+  for (const v of [...readVars]) if (/^(PYTHON|SYSTEM|CI_|GITHUB_|PATH|HOME|USER|TMP|TEMP|APPDATA|LOCALAPPDATA|PROGRAM|COMPUTERNAME|OS|SHELL|TERM|LANG|PWD)/.test(v)) readVars.delete(v);
+  if (isFile(envExample)) {
+    const undocumented = [...readVars].filter(v => !envKeys.has(v)).sort();
+    if (undocumented.length) add("config.env_pairing", "WARN", "read but absent from .env.example: " + undocumented.slice(0, 8).join(", "), "configuration.env_example");
+    else add("config.env_pairing", "PASS", envKeys.size + " documented vars consistent with " + readVars.size + " read");
+  } else if (readVars.size) add("config.env_pairing", "UNKNOWN", readVars.size + " env vars read but no .env.example to compare", "configuration.env_example");
+
+  const changelog = join(root, "CHANGELOG.md");
+  if (tier === "A") {
+    if (!isFile(changelog)) add("release.changelog", "WARN", "Tier A without CHANGELOG.md", "release.changelog");
+    else if (/\[\d+\.\d+\.\d+\]\s*[-—]\s*\d{4}-\d{2}-\d{2}/.test(readText(changelog) ?? "")) add("release.changelog", "PASS");
+    else add("release.changelog", "WARN", "CHANGELOG exists but no [version] - date entries", "release.changelog");
+  } else add("release.changelog", "NOT_APPLICABLE", "tier " + tier);
+
+  const migDirs = ["migrations", "alembic", "db/migrations"].filter(d => isDir(join(root, d)));
+  if (migDirs.length) add("db.migrations", "PASS", "migration handling: " + migDirs[0]);
+  else add("db.migrations", "NOT_APPLICABLE", "no migrations directory found (verify DB usage manually)");
+
+  const rollbackHits = [];
+  for (const fp of iterRepoFiles(root)) {
+    if (extnameLower(fp) !== ".md") continue;
+    if (/rollback|回滚/i.test(readText(fp) ?? "")) { rollbackHits.push(relative(root, fp).split(sep).join("/")); if (rollbackHits.length >= 3) break; }
+  }
+  const needRollback = tier === "A" || profiles.includes("saas") || profiles.includes("infrastructure");
+  if (!needRollback) add("ops.rollback", "NOT_APPLICABLE", "tier " + tier + ", profiles " + (profiles.join(",") || "none"));
+  else if (rollbackHits.length) add("ops.rollback", "PASS", "rollback documented in: " + rollbackHits.join(", "));
+  else add("ops.rollback", "WARN", "no doc mentioning rollback/回滚 found", "operations.rollback_plan");
+
+  for (const check of report.checks) {
+    if (["WARN", "FAIL", "UNKNOWN"].includes(check.status) && check.rule && check.rule !== "security.secret_scan") {
+      const ex = checkExceptions(report, ep, check.rule);
+      if (ex) { check.status = "NOT_APPLICABLE"; check.detail += " — exception " + ex + " applied (repo-wide)"; }
+    }
+  }
+
+  if (ep && Array.isArray(ep.exceptions)) {
+    const knownRules = new Set(report.checks.map(c => c.rule).filter(Boolean));
+    const seen = new Set(report.checks.filter(c => c.name.startsWith("exception.")).map(c => c.name.split(".")[1]));
+    for (const ex of ep.exceptions) {
+      if (!ex || typeof ex !== "object") continue;
+      const id = String(ex.id ?? "?");
+      if (seen.has(id)) continue;
+      const until = ex.until ? String(ex.until) : null;
+      if (until && /^\d{4}-\d{2}-\d{2}$/.test(until) && new Date(until) < new Date(new Date().toISOString().slice(0, 10)))
+        add("exception." + id, "FAIL", "exception expired " + until, String(ex.rule ?? ""));
+      else if (ex.rule && !knownRules.has(String(ex.rule)))
+        add("exception." + id, "WARN", "exception references rule '" + ex.rule + "' not checked in this audit", String(ex.rule));
+    }
+  }
+
+  const worst = report.worst();
+  if (json) console.log(JSON.stringify(report.toJSON(), null, 2));
+  else {
+    for (const c of report.checks) console.log(c.status.padEnd(14) + c.name + (c.detail ? " — " + c.detail : ""));
+    console.log("\nAUDIT RESULT: " + worst + "  (" + report.checks.length + " checks)");
+    if (worst === "UNKNOWN") console.log("NOTE: UNKNOWN is not PASS.");
+  }
+  return ["PASS", "NOT_APPLICABLE"].includes(worst) ? 0 : (worst === "FAIL" ? 2 : 1);
+}
+
+// ---------------------------------------------------------------- doctor
+
+function cmdDoctor(argv) {
+  const repoArg = argv.find(a => !a.startsWith("--")) ?? ".";
+  const root = resolve(repoArg);
+  if (!isDir(root)) { console.error("FAIL: not a directory: " + root); return 2; }
+  const findings = [];
+  const add = (kind, location, evidence, recommendation) => findings.push({ kind, location, evidence, recommendation });
+
+  for (const fp of iterRepoFiles(root)) {
+    if (extnameLower(fp) !== ".md") continue;
+    const text = readText(fp); if (!text) continue;
+    const rel = relative(root, fp).split(sep).join("/");
+    const rx = /\[[^\]]+\]\(([^)#?]+?)(?:#[^)]*)?\)/g;
+    let m;
+    while ((m = rx.exec(text))) {
+      const target = m[1].trim();
+      if (!target || /^(https?:|mailto:|#|claude\.ai)/.test(target)) continue;
+      if (/^[A-Z]+[-_a-z0-9]*$/.test(target) || target.includes("<") || target.includes("NNNN") || target.includes("{")) continue;
+      const dest = resolve(dirname(fp), target);
+      if (!dest.startsWith(root + sep) && dest !== root) continue;
+      if (!existsSync(dest)) add("broken-link", rel, "link target missing: " + target, "fix or remove the link");
+    }
+  }
+
+  for (const name of ["AGENTS.md", "CLAUDE.md", "README.md"]) {
+    const f = join(root, name);
+    if (!isFile(f)) continue;
+    const text = readText(f) ?? "";
+    const rx = /(?:```|~~~)(?:powershell|pwsh|sh|bash|shell)?\n([\s\S]*?)(?:```|~~~)/g;
+    let m;
+    while ((m = rx.exec(text))) {
+      for (const line of m[1].split(/\r?\n/)) {
+        const mm = line.trim().match(/^(?:python\s+|py\s+)?([\w./\\-]+\.(?:py|ps1|sh))\b/);
+        if (!mm) continue;
+        const script = mm[1];
+        if (!existsSync(join(root, script)) && !existsSync(join(root, script.replace(/\\/g, "/"))))
+          add("dead-path", name, "documented script does not exist: " + script, "remove or fix the path");
+      }
+    }
+  }
+
+  for (const rel of ["STATE.md", "docs/current-state.md", "docs/reference/current-state.md"]) {
+    const f = join(root, rel);
+    if (!isFile(f)) continue;
+    const m = (readText(f) ?? "").match(/last_verified[:=]\s*(\d{4}-\d{2}-\d{2})/);
+    if (!m) add("stale-truth", rel, "current-truth file has no last_verified date", "add last_verified: YYYY-MM-DD");
+    else {
+      const age = Math.floor((Date.now() - Date.parse(m[1] + "T00:00:00Z")) / 86400000);
+      if (age > 60) add("stale-truth", rel, "last_verified is " + age + "d old (" + m[1] + ")", "re-verify or downgrade the claim");
+    }
+  }
+
+  const envExample = join(root, ".env.example");
+  if (isFile(envExample)) {
+    const keys = new Set((readText(envExample) ?? "").split(/\r?\n/).filter(l => l.trim() && !l.trim().startsWith("#") && l.includes("=")).map(l => l.split("=")[0].trim()));
+    for (const envf of readdirSync(root).filter(n => n.startsWith(".env") && n !== ".env.example" && n !== ".gitignore")) {
+      const local = new Set((readText(join(root, envf)) ?? "").split(/\r?\n/).filter(l => l.trim() && !l.trim().startsWith("#") && l.includes("=")).map(l => l.split("=")[0].trim()));
+      const missing = [...keys].filter(k => !local.has(k));
+      if (missing.length) add("env-drift", envf, "keys in .env.example but missing locally: " + missing.slice(0, 6).join(", "), "copy new keys and set values locally");
+    }
+  }
+
+  if (!findings.length) { console.log("DOCTOR: no drift findings"); return 0; }
+  console.log("DOCTOR: " + findings.length + " finding(s)\n");
+  const byKind = {};
+  for (const f of findings) (byKind[f.kind] ??= []).push(f);
+  for (const kind of Object.keys(byKind).sort()) {
+    console.log("## " + kind + " (" + byKind[kind].length + ")");
+    for (const f of byKind[kind].slice(0, 15)) console.log("- [" + f.location + "] " + f.evidence + "\n  recommendation: " + f.recommendation);
+    if (byKind[kind].length > 15) console.log("  … and " + (byKind[kind].length - 15) + " more");
+    console.log();
+  }
+  return 1;
+}
+
+// ---------------------------------------------------------------- validate-registry
+
+function cmdValidateRegistry() {
+  const errors = validateCatalog();
+  const warns = [];
+  for (const skill of SKILLS) {
+    const dir = join(ROOT, skill.bundle);
+    if (!isDir(dir)) { errors.push(skill.id + ": missing bundle directory " + skill.bundle); continue; }
+    const skillFile = join(dir, "SKILL.md");
+    if (!isFile(skillFile)) { errors.push(skill.id + ": missing SKILL.md"); continue; }
+    const text = readText(skillFile) ?? "";
+    if (!text.startsWith("---\n")) errors.push(skill.id + ": SKILL.md must start with frontmatter");
+    if (!text.includes("\nname: " + skill.id + "\n")) errors.push(skill.id + ": frontmatter name mismatch");
+    if (!/\ndescription:\s*\S/.test(text)) errors.push(skill.id + ": missing description");
+    if (!text.includes("self_contained: true")) errors.push(skill.id + ": must declare self_contained: true");
+    if (/\]\(\.\.\//.test(text)) errors.push(skill.id + ": bundle contains cross-directory links");
+    for (const dep of skill.dependencies) if (!SKILL_IDS.includes(dep)) errors.push(skill.id + ": unknown dependency " + dep);
+  }
+  for (const e of errors) console.log("ERROR: " + e);
+  for (const w of warns) console.log("WARN: " + w);
+  if (errors.length) { console.log("\nvalidate-registry: FAIL (" + errors.length + " errors, " + warns.length + " warnings)"); return 2; }
+  console.log("validate-registry: PASS (" + warns.length + " warnings)");
+  return 0;
+}
+
+// ---------------------------------------------------------------- selftest
+
+function cmdSelftest() {
+  const r = spawnSync(process.execPath, ["--test"], { cwd: ROOT, stdio: "inherit", windowsHide: true });
+  return r.status ?? 1;
+}
+
+// ---------------------------------------------------------------- task
+
+function cmdTask(argv) {
+  const taskId = argv.find(a => !a.startsWith("--")) ?? "feature";
+  const tier = (argv.find(a => a.startsWith("--tier=")) ?? "--tier=B").slice(7);
+  const mode = (argv.find(a => a.startsWith("--mode=")) ?? "--mode=new").slice(7);
+  const type = (argv.find(a => a.startsWith("--type=")) ?? "--type=mini-program").slice(7);
+  const route = composeRoute({ type, task: taskId, tier, mode });
+  console.log("task=" + route.task.id + " (" + route.task.name + ") tier=" + route.tier.id + " mode=" + route.mode);
+  for (const s of route.stages) console.log(String(s.index).padStart(2, "0") + " " + s.id.padEnd(16) + s.role.padEnd(9) + s.focus);
+  console.log("skipped: " + (route.skipped.map(s => s.id).join(", ") || "none"));
+  console.log("evidence: " + route.evidence.join(", "));
+  console.log("skills: " + route.skills.map(s => s.id).join(", "));
+  return 0;
+}
+
+// ---------------------------------------------------------------- main
+
+function usage() {
+  return [
+    "Workbench xeng CLI (Node, offline)",
+    "",
+    "  xeng init <path> --profile a,b --tier A|B|C|D [--task feature] [--mode new|existing] [--dry-run]",
+    "  xeng audit [path] [--json]",
+    "  xeng doctor [path]",
+    "  xeng validate-registry",
+    "  xeng selftest",
+    "  xeng task <type> [--tier=A] [--mode=new] [--type=saas]",
+    "  xeng version",
+    "",
+    "No network access. init never overwrites existing files."
+  ].join("\n");
+}
+
+export function main(argv = process.argv.slice(2)) {
+  const [cmd, ...rest] = argv;
+  if (!cmd || cmd === "--help" || cmd === "-h") { console.log(usage()); return 0; }
+  switch (cmd) {
+    case "init": return cmdInit(rest);
+    case "audit": return cmdAudit(rest);
+    case "doctor": return cmdDoctor(rest);
+    case "validate-registry": return cmdValidateRegistry(rest);
+    case "selftest": return cmdSelftest(rest);
+    case "task": return cmdTask(rest);
+    case "version": console.log(RUNTIME.name + " " + RUNTIME.version); return 0;
+    default: console.error("Unknown command: " + cmd + "\n\n" + usage()); return 2;
+  }
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  try { process.exitCode = main(); }
+  catch (e) { console.error("ERROR: " + e.message); process.exitCode = 2; }
+}

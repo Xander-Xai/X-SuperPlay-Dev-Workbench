@@ -3,9 +3,10 @@ import assert from "node:assert/strict";
 import {assemble} from "../src/engine.mjs";
 import {stageHandoff} from "../src/handoff.mjs";
 import {STAGES} from "../src/catalog.mjs";
-test("all stages can be handed off with evidence and safety gates",()=>{
+test("every routed stage can be handed off with evidence and safety gates",()=>{
   const p=assemble({type:"mini-program",agent:"codex",description:"预约功能"});
-  for(const stage of STAGES){
+  for(const routed of p.stages){
+    const stage=STAGES.find(s=>s.id===routed.id);
     const prompt=stageHandoff(p,stage.id);
     assert.match(prompt,/NOT_RUN/);
     assert.match(prompt,/Skills 安装\/加载状态：UNKNOWN/);
@@ -14,6 +15,10 @@ test("all stages can be handed off with evidence and safety gates",()=>{
     assert.match(prompt,/AGENTS.md/);
     assert.match(prompt,/USER_REQUIREMENT>>>/);
   }
+});
+test("stages outside the selected task route are rejected rather than invented",()=>{
+  const p=assemble({type:"mini-program",task:"bug"});
+  assert.throws(()=>stageHandoff(p,"release"),/Unknown lifecycle stage/);
 });
 test("stage-specific handoff names only relevant candidate skills",()=>{
   const p=assemble({type:"saas",agent:"claude-code"});

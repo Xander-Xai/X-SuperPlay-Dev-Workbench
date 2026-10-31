@@ -1,0 +1,223 @@
+{
+  "migration_id": "eng-os-split-20261031",
+  "created": "2026-10-31",
+  "status": "MIGRATION_PARTIAL",
+  "source": {
+    "repository": "Xander-Xai/X-SuperPlay-AI-Engineering-OS",
+    "commit": "8553124f238ab463d4a50debad34e871ef8de060",
+    "role": "RETIRING_PRIVATE_SOURCE",
+    "access": "OWNER_AUTHORIZED_READ_ONLY",
+    "last_verified": "2026-09-30"
+  },
+  "destination": {
+    "repository": "Xander-Xai/X-SuperPlay-Dev-Workbench",
+    "branch": "feat/engineering-os-runtime-consolidation",
+    "commit": "527499f1ab3befdf5e87af042e746853cbbcf665",
+    "runtime_version": "0.2.0"
+  },
+  "governance_reference": {
+    "repository": "Xander-Xai/AI-Native-Work-Learning-OS",
+    "commit": "f1289d685c95c7fac6f1d50068527a60f080ee1b",
+    "status": "REFERENCE_ONLY_NOT_BUNDLED"
+  },
+  "method": {
+    "kind": "SEMANTIC_REWRITE",
+    "git_subtree": false,
+    "git_submodule": false,
+    "directory_copy": false,
+    "private_bodies_copied": false,
+    "private_paths_published": false,
+    "file_level_scope_review": true
+  },
+  "preserved": {
+    "stages": 11,
+    "tasks": 13,
+    "base_profiles": 14,
+    "overlay_profiles": 3,
+    "skills": 8,
+    "routes": ["saas", "enterprise", "mini-program", "app"],
+    "evidence_default": "NOT_RUN"
+  },
+  "items": [
+    {
+      "id": "lifecycle",
+      "kind": "LIFECYCLE",
+      "source": "private lifecycle and gate documents",
+      "destination": "src/catalog.mjs#STAGES",
+      "mode": "SEMANTIC_REWRITE",
+      "status": "MIGRATED_NOT_VERIFIED"
+    },
+    {
+      "id": "task-router",
+      "kind": "ROUTING",
+      "source": "03-ai-coding/task-router.yaml",
+      "destination": "src/catalog.mjs#TASKS, src/routing.mjs",
+      "mode": "SEMANTIC_REWRITE",
+      "status": "MIGRATED_NOT_VERIFIED"
+    },
+    {
+      "id": "profiles",
+      "kind": "PROFILES",
+      "source": "registry/profiles.yaml, 04-profiles/*/profile.yaml",
+      "destination": "src/catalog.mjs#PROFILES",
+      "mode": "SEMANTIC_REWRITE",
+      "status": "MIGRATED_NOT_VERIFIED"
+    },
+    {
+      "id": "skills",
+      "kind": "SKILLS",
+      "source": "05-skills/*/SKILL.md",
+      "destination": "skills/*/SKILL.md + references/",
+      "mode": "PUBLIC_REWRITE_SELF_CONTAINED",
+      "status": "MIGRATED_NOT_VERIFIED",
+      "note": "Bodies rewritten; no private text copied; all remain candidate."
+    },
+    {
+      "id": "standards",
+      "kind": "STANDARDS",
+      "source": "registry/standards.yaml",
+      "destination": "PROFILES required/recommended fields",
+      "mode": "SEMANTIC_REWRITE",
+      "status": "MIGRATED_NOT_VERIFIED"
+    },
+    {
+      "id": "templates",
+      "kind": "TEMPLATES",
+      "source": "06-templates/*",
+      "destination": "src/starter.mjs, src/workspace.mjs",
+      "mode": "SEMANTIC_REWRITE",
+      "status": "MIGRATED_NOT_VERIFIED"
+    },
+    {
+      "id": "xeng-cli",
+      "kind": "CLI",
+      "source": "tools/xeng.py",
+      "destination": "tools/xeng.mjs",
+      "mode": "NODE_PORT",
+      "status": "MIGRATED_NOT_VERIFIED",
+      "commands": ["init", "audit", "doctor", "validate-registry", "selftest", "task", "version"]
+    },
+    {
+      "id": "skill-installer",
+      "kind": "INSTALLER",
+      "source": "tools/skill-kit.mjs --source <private clone>",
+      "destination": "tools/skill-kit.mjs (bundled)",
+      "mode": "REDESIGN",
+      "status": "MIGRATED_NOT_VERIFIED",
+      "commands": ["list", "plan", "install", "verify", "update", "uninstall", "rollback"]
+    },
+    {
+      "id": "evidence-model",
+      "kind": "EVIDENCE",
+      "source": "private evidence conventions",
+      "destination": "src/evidence.mjs",
+      "mode": "NEW_EXPLICIT_MODEL",
+      "status": "MIGRATED_NOT_VERIFIED"
+    },
+    {
+      "id": "project-probe",
+      "kind": "BASELINE",
+      "source": "private baseline scripts",
+      "destination": "tools/project-probe.mjs",
+      "mode": "READ_ONLY_REDESIGN",
+      "status": "MIGRATED_NOT_VERIFIED"
+    },
+    {
+      "id": "website",
+      "kind": "UI",
+      "source": "curated public metadata snapshot",
+      "destination": "index.html, styles.css, src/app.mjs",
+      "mode": "FIVE_ENTRY_REDESIGN",
+      "status": "MIGRATED_NOT_VERIFIED"
+    }
+  ],
+  "removed_runtime_dependencies": [
+    "python tools/xeng.py",
+    "--source ../X-SuperPlay-AI-Engineering-OS",
+    "05-skills cross-directory references at install time",
+    "private repository as the catalog source of truth"
+  ],
+  "source_inventory": {
+    "snapshot_commit": "8553124f238ab463d4a50debad34e871ef8de060",
+    "total_files": 106,
+    "truncated": false,
+    "categories": {
+      "00-governance": 5,
+      "01-lifecycle": 12,
+      "02-standards": 10,
+      "03-ai-coding": 10,
+      "04-profiles": 18,
+      "05-skills": 9,
+      "06-templates": 8,
+      "07-checklists": 4,
+      "08-automation": 1,
+      "09-reference": 2,
+      "registry": 4,
+      "tools": 2,
+      "root-docs-lab-ci": 20
+    },
+    "reconciliation": "11 module records cover the runtime; no skill dependency was dropped; five constraint gaps recorded",
+    "gaps": [
+      { "id": "G-01", "item": "branching / commits / pull-request / git standards", "status": "DEFERRED", "owner": "workbench-maintainer", "reason": "generic git rules are project-local and CI-enforced" },
+      { "id": "G-02", "item": "worktree and per-agent operating manuals", "status": "EQUIVALENT_REPLACEMENT", "reason": "handoff permissions and stop conditions cover the runtime need" },
+      { "id": "G-03", "item": "postmortem / pull-request / review / external-demand templates", "status": "EQUIVALENT_REPLACEMENT", "reason": "postmortem, review and intake stages cover the semantics" },
+      { "id": "G-04", "item": "AI project and security checklists", "status": "EQUIVALENT_REPLACEMENT", "reason": "profile obligations plus xeng audit checks" },
+      { "id": "G-05", "item": "repositories registry", "status": "HISTORICAL_ONLY", "reason": "organization inventory is not engineering runtime" }
+    ]
+  },
+  "source_pr_5": {
+    "repository": "Xander-Xai/X-SuperPlay-AI-Engineering-OS",
+    "pull_request": 5,
+    "state": "OPEN_NOT_MERGED",
+    "covered": ["tracer ticket vertical slice", "blocked_by", "AC and negative cases", "base SHA", "permission scope"],
+    "partial": ["harness and bounded loop expressed as stop conditions only"],
+    "not_covered": ["iteration budget field", "dual-axis review record", "upstream method adoption guide"]
+  },
+  "contract_alignment": {
+    "contract_id": "ai-native-governance-contract/v1",
+    "source_pr": 57,
+    "source_commit": "2b3013ca8d096bdd25c5ec7d5c7a9b3b02b98735",
+    "contract_blob_sha": "df6f510092b6ac0b894bd8b56acd9ec4cd58d7cd",
+    "manifest": "migration/contract-alignment-v1.json",
+    "document": "docs/CONTRACT_ALIGNMENT.md",
+    "status": "PARTIAL_ALL_SIX",
+    "runtime_dependency": false,
+    "copied_verbatim": false
+  },
+  "local_checks": {
+    "check": "PASS",
+    "scan": "PASS_NO_ACTIVE_DEPENDENCY",
+    "test": "PASS_88_TESTS_87_PASS_1_SKIPPED",
+    "verify": "PASS",
+    "build": "PASS",
+    "browser": "HEADLESS_CHROME_1440_AND_390",
+    "independent_verification": "NOT_RUN"
+  },
+  "evidence_applicability": {
+    "derived_by": "src/routing.mjs#evidencePlanFor",
+    "statuses": ["REQUIRED", "RECOMMENDED", "OPTIONAL", "NOT_APPLICABLE"],
+    "context_missing": "NOT_RUN_OR_UNKNOWN",
+    "tier_demotion": "non-safety only; existing projects are never weakened",
+    "safety_examples": ["security review", "release receipt", "AI/RAG eval", "enterprise integration probe", "device manual probe"]
+  },
+  "acceptance_status": "READY_TO_MERGE",
+  "acceptance_commit": "SEE_PR_12_HEAD",
+  "unresolved": [
+    { "id": "U-01", "item": "destination commit SHA", "status": "PINNED_527499F1AB3BEFDF5E87AF042E746853CBBCF665" },
+    { "id": "U-02", "item": "browser interaction and mobile screenshot review", "status": "VERIFIED_HEADLESS_CHROME_1440_AND_390", "note": "Desktop 1440px and mobile 390px screenshots plus scripted interactions; no real-device review." },
+    { "id": "U-03", "item": "Windows 11 / WSL2 / Claude Code / Codex / OpenCode real loading", "status": "NOT_VERIFIED" },
+    { "id": "U-04", "item": "real project dogfood, device and production release", "status": "NOT_RUN" },
+    { "id": "U-05", "item": "old repository PR #5 and #6 merge state", "status": "NOT_DEPENDED_ON" },
+    { "id": "U-06", "item": "license for redistribution", "status": "UNLICENSED_PROPRIETARY" },
+    { "id": "U-07", "item": "CI and Pages receipts for this branch", "status": "CI_PASS_SEE_PR_12_CHECKS_PAGES_PENDING_MERGE" },
+    { "id": "U-08", "item": "unmigrated engineering constraints G-01..G-05", "status": "RECORDED_NOT_CLAIMED" },
+    { "id": "U-09", "item": "full governance contract implementation", "status": "PARTIAL_ALL_SIX" }
+  ],  "verification_status": "NOT_RUN",
+  "decommission_status": "DECOMMISSION_NOT_VERIFIED",
+  "decommission_authorized": false,
+  "notes": [
+    "The old repositories are read-only inputs to this migration and are not modified.",
+    "This manifest does not authorize archiving or deleting any repository.",
+    "Historical provenance is data, not a live synchronization claim or permission grant."
+  ]
+}

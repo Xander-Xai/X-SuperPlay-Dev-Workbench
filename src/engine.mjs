@@ -1,123 +1,244 @@
-import {SOURCE,TYPES,STACKS,AGENTS,ADDONS,SKILLS,STAGES} from "./catalog.mjs";
-import {normalizeBaseline,baselineSummary} from "./baseline.mjs";
+import {
+  PROVENANCE, OWNER, GOVERNANCE, RUNTIME, TYPES, STACKS, AGENTS, ADDONS,
+  SKILLS, STAGES, PROFILES, PROFILE_IDS, TASKS, TASK_IDS, TIERS, DEFAULT_STACK
+} from "./catalog.mjs";
+import { normalizeBaseline, baselineSummary } from "./baseline.mjs";
+import { composeRoute, validateRoute, stageSkillIds, tierObligations, profileObligations } from "./routing.mjs";
 
-const hasId=(arr,id)=>arr.some(x=>x.id===id);
-const clean=(value,max)=>String(value ?? "").replace(/\0/g,"").trim().slice(0,max);
+const hasId = (arr, id) => arr.some(x => x.id === id);
+const clean = (value, max) => String(value ?? "").replace(/\0/g, "").trim().slice(0, max);
 
 export function slugify(value) {
   return String(value || "").toLowerCase().normalize("NFKC")
-    .replace(/[^a-z0-9\u4e00-\u9fff -]/g,"").trim()
-    .replace(/\s+/g,"-").replace(/-+/g,"-").slice(0,64) || "new-project";
+    .replace(/[^a-z0-9一-鿿 -]/g, "").trim()
+    .replace(/\s+/g, "-").replace(/-+/g, "-").slice(0, 64) || "new-project";
 }
-export function normalizeConfig(config={}) {
-  const normalized={
-    type: Object.hasOwn(TYPES,config.type)?config.type:"mini-program",
-    stack: hasId(STACKS,config.stack)?config.stack:"flutter",
-    agent: hasId(AGENTS,config.agent)?config.agent:"claude-code",
-    addons:[...new Set((Array.isArray(config.addons)?config.addons:[]).filter(x=>hasId(ADDONS,x)))],
-    tier:["A","B","C"].includes(config.tier)?config.tier:"B",
-    mode:config.mode==="existing"?"existing":"new",
-    name:clean(config.name,100)||"我的新项目",
-    description:clean(config.description,2000)
+
+function stackFor(type, stack) {
+  const candidate = stack && STACKS.find(s => s.id === stack && s.appliesTo.includes(type));
+  if (candidate) return candidate.id;
+  return DEFAULT_STACK[type] ?? null;
+}
+
+export function normalizeConfig(config = {}) {
+  const type = Object.hasOwn(TYPES, config.type) ? config.type : "mini-program";
+  const normalized = {
+    type,
+    stack: stackFor(type, config.stack),
+    agent: hasId(AGENTS, config.agent) ? config.agent : "claude-code",
+    addons: [...new Set((Array.isArray(config.addons) ? config.addons : []).filter(x => hasId(ADDONS, x)))],
+    tier: Object.hasOwn(TIERS, config.tier) ? config.tier : "B",
+    mode: config.mode === "existing" ? "existing" : "new",
+    task: TASK_IDS.includes(config.task) ? config.task : "feature",
+    name: clean(config.name, 100) || "我的新项目",
+    description: clean(config.description, 2000)
   };
-  if(config.baseline){
-    const baseline=normalizeBaseline(config.baseline);
-    if(baseline.projectType!==normalized.type)throw new Error("Baseline project type does not match selected route");
-    normalized.baseline=baseline;
+  if (config.baseline) {
+    const baseline = normalizeBaseline(config.baseline);
+    if (baseline.projectType !== normalized.type) throw new Error("Baseline project type does not match selected route");
+    normalized.baseline = baseline;
   }
   return normalized;
 }
-export function assemble(input={}) {
-  const config=normalizeConfig(input), type=TYPES[config.type];
-  const base=config.type==="app" ? STACKS.find(s=>s.id===config.stack).profiles:type.profiles;
-  const profiles=[...new Set([...base,...config.addons.flatMap(id=>ADDONS.find(x=>x.id===id).profiles)])];
-  const stages=STAGES.map((s,i)=>({...s,index:i+1,skills:SKILLS.filter(x=>x.stages.includes(s.id)),state:"NOT_RUN"}));
+
+export function assemble(input = {}) {
+  const config = normalizeConfig(input);
+  const type = TYPES[config.type];
+  const route = composeRoute(config);
+  const errors = validateRoute(route);
+  if (errors.length) throw new Error("Invalid route: " + errors.join("; "));
+
+  const stages = route.stages.map(s => ({
+    ...s,
+    skills: SKILLS.filter(k => stageSkillIds(s.id).includes(k.id))
+  }));
+
   return {
-    schemaVersion:1,kind:"WORKBENCH_PLAN",source:SOURCE,config,slug:slugify(config.name),
-    type,profiles,stages,skills:SKILLS,status:"GENERATED_NOT_EXECUTED"
+    schemaVersion: 2,
+    kind: "WORKBENCH_PLAN",
+    ownership: { historical: PROVENANCE, currentOwner: OWNER, governance: GOVERNANCE, runtime: RUNTIME },
+    config, slug: slugify(config.name),
+    type, task: route.task, tier: route.tier, mode: route.mode, stack: route.stack,
+    profiles: route.profiles,
+    profileObligations: route.profileObligations,
+    stages, skipped: route.skipped,
+    skills: SKILLS, routeSkills: route.skills,
+    evidence: route.evidence,
+    warnings: route.warnings,
+    status: "GENERATED_NOT_EXECUTED"
   };
 }
+
 export function xengDryRun(plan) {
-  if(!plan?.profiles?.every(x=>/^[a-z][a-z-]*$/.test(x))) throw new Error("Invalid profile");
-  return "python tools/xeng.py init ../"+slugify(plan.config.name)+" --profile "+
-    plan.profiles.join(",")+" --tier "+plan.config.tier+" --dry-run";
+  if (!plan?.profiles?.every(x => /^[a-z][a-z-]*$/.test(x))) throw new Error("Invalid profile");
+  const parts = [
+    RUNTIME.cli, "init", "../" + slugify(plan.config.name),
+    "--profile", plan.profiles.join(","),
+    "--tier", plan.config.tier,
+    "--task", plan.config.task,
+    "--mode", plan.config.mode,
+    "--dry-run"
+  ];
+  return parts.join(" ");
 }
-const quote=s=>(s||"尚未填写；请先完成需求发现")
-  .replace(/\r\n/g,"\n").split("\n").map(line=>"> "+line.replace(/\x60/g,"'")).join("\n");
+
+const quote = s => (s || "尚未填写；请先完成需求发现")
+  .replace(/\r\n/g, "\n").split("\n").map(line => "> " + line.replace(/\x60/g, "'")).join("\n");
 
 export function toMarkdown(plan) {
-  const {config,type,profiles,stages}=plan;
-  const lines=[
-    "# "+config.name+" · 开发方案","",
+  const { config, type, profiles, stages, skipped, task, tier } = plan;
+  const lines = [
+    "# " + config.name + " · 开发方案", "",
     "> 状态：GENERATED / NOT_RUN。方案不代表已安装、已测试、已部署或已验收。",
-    "> 来源："+SOURCE.repository+" @ "+SOURCE.commit,
-    "> 私有源仓库为方法论权威；此文件只含公开摘要和生成建议。","",
-    "## 项目需求","",quote(config.description),"",
-    "- 类型："+type.name,
-    "- 模式："+(config.mode==="new"?"从零开发":"已有工程迭代"),
-    "- Agent："+config.agent,
-    "- Tier："+config.tier,
-    "- Profiles："+profiles.join(", "),
-    "- AI 扩展："+(config.addons.join(", ")||"无"),"",
-    ...(config.baseline?[
-      "## 现有工程只读基线","",
-      "- Git HEAD："+config.baseline.headSha,
-      "- 工作树有变更："+(config.baseline.dirty===null?"UNKNOWN":String(config.baseline.dirty)),
-      "- 检测到："+config.baseline.detected.join(", "),
-      "- 验证状态：NOT_RUN（只读文件扫描不代表测试通过）",""
-    ]:[]),
-    "## 工程初始化（先预览）","",
-    "在已授权的 Engineering OS 克隆目录执行：","",
-    "~~~bash",xengDryRun(plan),"~~~","",
-    "仅在确认目标目录和文件差异后，手动移除 --dry-run 执行。","",
-    "## 开发阶段与证据门禁",""
+    "> 当前工程所有者：" + OWNER.repository + "（" + RUNTIME.name + " " + RUNTIME.version + "）",
+    "> 历史来源：" + PROVENANCE.repository + " @ " + PROVENANCE.commit + "（只读溯源，不是运行依赖）",
+    "> 通用治理参考：" + GOVERNANCE.repository + "（未复制正文）", "",
+    "## 项目需求", "", quote(config.description), "",
+    "- 类型：" + type.name,
+    "- 任务类型：" + task.id + " · " + task.name,
+    "- 模式：" + (config.mode === "new" ? "从零开发" : "已有工程迭代"),
+    "- Agent：" + config.agent,
+    "- Tier：" + tier.id + " · " + tier.name,
+    "- 技术路线：" + (plan.stack || "不适用"),
+    "- Profiles：" + profiles.join(", "),
+    "- AI / 支付扩展：" + (config.addons.join(", ") || "无"), "",
+    ...(config.baseline ? [
+      "## 现有工程只读基线", "",
+      "- Git HEAD：" + config.baseline.headSha,
+      "- 工作树有变更：" + (config.baseline.dirty === null ? "UNKNOWN" : String(config.baseline.dirty)),
+      "- 检测到：" + config.baseline.detected.join(", "),
+      "- 验证状态：NOT_RUN（只读文件扫描不代表测试通过）", ""
+    ] : []),
+    "## 任务路线", "",
+    "本次任务只执行以下阶段；其余阶段被明确跳过，不视为已完成。", "",
+    ...stages.map(s => "- " + String(s.index).padStart(2, "0") + " " + s.name + "（" + s.focus + "）"),
+    "", "跳过阶段：" + (skipped.map(s => s.id).join(", ") || "无"), "",
+    "## 工程初始化（先预览）", "",
+    "在本 Workbench 仓库执行（不再需要旧 Engineering OS 克隆）：", "",
+    "~~~bash", xengDryRun(plan), "~~~", "",
+    "仅在确认目标目录和文件差异后，手动移除 --dry-run 执行。", "",
+    "## 阶段与证据门禁", ""
   ];
-  for(const s of stages){
-    lines.push("### "+String(s.index).padStart(2,"0")+" "+s.name,"",
-      "- 目标："+s.goal,"- 交付："+s.deliverable,"- Gate："+s.gate,
-      "- 相关 Skills："+(s.skills.map(x=>x.id+" [candidate, 未安装]").join(", ")||"无"),
-      "- 证据：NOT_RUN","");
+  for (const s of stages) {
+    lines.push(
+      "### " + String(s.index).padStart(2, "0") + " " + s.name + " · " + s.en, "",
+      "- 目标：" + s.goal,
+      "- 本任务重点：" + s.focus,
+      "- 交付：" + s.deliverable,
+      "- Gate：" + s.gate,
+      "- 角色：" + s.role + (s.optionalReason ? "（" + s.optionalReason + "）" : ""),
+      "- 相关 Skills：" + (s.skills.map(x => x.id + " [candidate, 未安装]").join(", ") || "无"),
+      "- 所需证据：" + s.evidence.join(", "),
+      "- 证据状态：NOT_RUN", ""
+    );
   }
-  lines.push("## 平台专属检查","",
-    ...type.checks.map(x=>"- [ ] "+x),"",
-    "**验收标准**："+type.acceptance,"",
-    "## Skills 安装策略","",
-    "私有候选 Skills 不会被公开网页直接下载或安装；应在本地授权环境审查来源 SHA、许可证、工具权限与版本后选择性安装。","",
-    "## 迭代反馈","",
+  lines.push(
+    "## Profiles 义务", "",
+    "- 必需产物：" + (plan.profileObligations.artifacts.join("；") || "无"),
+    "- 必需实践：" + (plan.profileObligations.practices.join("；") || "无"),
+    "- 必需测试：" + (plan.profileObligations.tests.join("；") || "无"),
+    "- 验证面：" + (plan.profileObligations.verification.join("；") || "无"),
+    "- 安全：" + (plan.profileObligations.security.join("；") || "无"),
+    "- 发布：" + (plan.profileObligations.release.join("；") || "无"), "",
+    "## 平台专属检查", "",
+    ...type.checks.map(x => "- [ ] " + x), "",
+    "**验收标准**：" + type.acceptance, "",
+    "## 必需证据", "",
+    ...plan.evidence.map(k => "- " + k), "",
+    "UNKNOWN 不等于 PASS；没有真实回执的证据保持 NOT_RUN。", "",
+    "## 迭代反馈", "",
     "- [ ] 保存真实 PR / CI / 测试 / 设备 / 发布回执",
     "- [ ] 记录失败模式与当前阻碍，不把 UNKNOWN 作为 PASS",
-    "- [ ] 经跨项目复用和实证验证后，再向工程权威源提出 Skill 或 Gate 改进",""
+    "- [ ] 经跨项目复用和实证验证后，再提出 Skill 或 Gate 改进", ""
   );
   return lines.join("\n");
 }
+
 export function toManifest(plan) {
-  const {config,slug,profiles,stages}=plan;
+  const { config, slug, profiles, stages, task, tier } = plan;
   return {
-    schemaVersion:1,status:"GENERATED_NOT_EXECUTED",
-    source:{repository:SOURCE.repository,commit:SOURCE.commit,registryVerified:SOURCE.registryVerified},
-    project:{name:config.name,slug,type:config.type,mode:config.mode,tier:config.tier,
-      description:config.description,stack:config.stack},
-    agent:config.agent,addons:config.addons,profiles,
-    baseline:config.baseline?baselineSummary(config.baseline):null,
-    stages:stages.map(s=>({id:s.id,deliverable:s.deliverable,gate:s.gate,
-      skills:s.skills.map(x=>x.id),evidence:"NOT_RUN"})),
-    skills:plan.skills.map(x=>({id:x.id,status:x.status,installed:false})),
-    xengDryRun:xengDryRun(plan)
+    schemaVersion: 2,
+    kind: "WORKBENCH_PLAN",
+    status: "GENERATED_NOT_EXECUTED",
+    ownership: {
+      historicalProvenance: { repository: PROVENANCE.repository, commit: PROVENANCE.commit, status: PROVENANCE.status },
+      currentEngineeringOwner: { repository: OWNER.repository, role: OWNER.role },
+      genericGovernanceReference: { repository: GOVERNANCE.repository, commit: GOVERNANCE.commit, status: GOVERNANCE.status },
+      publishedRuntime: { name: RUNTIME.name, version: RUNTIME.version, buildSha: RUNTIME.buildSha }
+    },
+    project: {
+      name: config.name, slug, type: config.type, mode: config.mode, tier: config.tier,
+      description: config.description, stack: config.stack, task: config.task
+    },
+    task: { id: task.id, name: task.name, notes: task.notes },
+    agent: config.agent,
+    addons: config.addons,
+    profiles,
+    profileObligations: plan.profileObligations,
+    baseline: config.baseline ? baselineSummary(config.baseline) : null,
+    route: {
+      stages: stages.map(s => ({
+        id: s.id, index: s.index, role: s.role, focus: s.focus,
+        deliverable: s.deliverable, gate: s.gate,
+        skills: s.skills.map(x => x.id), evidence: s.evidence, state: "NOT_RUN"
+      })),
+      skipped: plan.skipped,
+      requiredEvidence: plan.evidence
+    },
+    skills: plan.skills.map(x => ({ id: x.id, status: x.status, installed: false, version: x.version })),
+    commands: {
+      init: xengDryRun(plan),
+      installSkills: "node tools/skill-kit.mjs install --target ../" + slug + " --agent " + config.agent + " --skills <stage-skill-ids>"
+    }
   };
 }
+
 export function validateCatalog() {
-  const errors=[];
-  const profileSet=new Set(["web","saas","backend","ai-application","rag","agent","mini-program","android","ios","react-native","flutter","desktop","cli","infrastructure"]);
-  for(const [id,type] of Object.entries(TYPES)){
-    if(!type.profiles.every(p=>profileSet.has(p))) errors.push("unknown profile in "+id);
-    if(!type.checks?.length) errors.push("empty checks in "+id);
+  const errors = [];
+  for (const [id, type] of Object.entries(TYPES)) {
+    if (!type.profiles.every(p => PROFILE_IDS.includes(p))) errors.push("unknown profile in type " + id);
+    if (!type.checks?.length) errors.push("empty checks in " + id);
   }
-  for(const item of [...STACKS,...ADDONS]){
-    if(!item.profiles.every(p=>profileSet.has(p))) errors.push("unknown profile in "+item.id);
+  for (const item of STACKS) {
+    if (!item.profiles.every(p => PROFILE_IDS.includes(p))) errors.push("unknown profile in stack " + item.id);
+    if (!item.appliesTo.every(t => Object.hasOwn(TYPES, t))) errors.push("unknown type in stack " + item.id);
   }
-  const stageSet=new Set(STAGES.map(x=>x.id));
-  if(stageSet.size!==11) errors.push("lifecycle must contain 11 unique stages");
-  if(new Set(SKILLS.map(x=>x.id)).size!==8) errors.push("skills must contain 8 unique candidates");
-  for(const skill of SKILLS) if(!skill.stages.every(x=>stageSet.has(x))) errors.push("unknown stage in "+skill.id);
+  for (const item of ADDONS)
+    if (!item.profiles.every(p => PROFILE_IDS.includes(p))) errors.push("unknown profile in addon " + item.id);
+
+  if (new Set(PROFILES.map(p => p.id)).size !== PROFILES.length) errors.push("duplicate profile ids");
+  for (const p of PROFILES)
+    for (const key of ["artifacts", "practices", "tests", "verification", "security", "release"])
+      if (!Array.isArray(p.required[key])) errors.push("profile " + p.id + " missing required." + key);
+
+  const stageSet = new Set(STAGES.map(x => x.id));
+  if (stageSet.size !== 11) errors.push("lifecycle must contain 11 unique stages");
+  for (const stage of STAGES) {
+    if (!stage.requiredSkills.every(s => SKILLS.some(k => k.id === s)))
+      errors.push("unknown required skill in stage " + stage.id);
+    if (!stage.recommendedSkills.every(s => SKILLS.some(k => k.id === s)))
+      errors.push("unknown recommended skill in stage " + stage.id);
+    if (!stage.next.every(n => n === "END" || stageSet.has(n)))
+      errors.push("unknown next stage in " + stage.id);
+  }
+
+  if (new Set(TASKS.map(t => t.id)).size !== TASKS.length) errors.push("duplicate task ids");
+  const kinds = ["test", "eval", "integration-probe", "manual-probe", "receipt", "review", "doc-update", "adr"];
+  for (const task of TASKS) {
+    if (!task.stages.every(s => stageSet.has(s))) errors.push("unknown stage in task " + task.id);
+    if (!task.skills.every(s => SKILLS.some(k => k.id === s))) errors.push("unknown skill in task " + task.id);
+    if (!task.evidence.every(e => kinds.includes(e))) errors.push("unknown evidence in task " + task.id);
+  }
+  if (TASKS.length !== 13) errors.push("task router must contain 13 task types");
+
+  if (new Set(SKILLS.map(x => x.id)).size !== 8) errors.push("skills must contain 8 unique candidates");
+  for (const skill of SKILLS) {
+    if (!skill.stages.every(x => stageSet.has(x))) errors.push("unknown stage in skill " + skill.id);
+    if (!skill.dependencies.every(d => SKILLS.some(k => k.id === d))) errors.push("unknown dependency in skill " + skill.id);
+    if (skill.selfContained !== true) errors.push("skill " + skill.id + " must be self-contained");
+  }
+  for (const tier of ["A", "B", "C", "D"]) if (!Object.hasOwn(TIERS, tier)) errors.push("missing tier " + tier);
   return errors;
 }
+
+export { tierObligations, profileObligations };
