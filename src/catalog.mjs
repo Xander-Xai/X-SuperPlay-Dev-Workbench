@@ -1,5 +1,6 @@
 // Public, machine-readable engineering catalog owned by this Workbench.
-// It is a semantic migration of the retired Engineering OS, not a copy of its private bodies.
+// It is a semantic migration of the retiring Engineering OS, not a copy of its private bodies.
+// The source repository is not archived, deleted or modified; retirement is not authorized.
 
 export const PROVENANCE = Object.freeze({
   repository: "Xander-Xai/X-SuperPlay-AI-Engineering-OS",
