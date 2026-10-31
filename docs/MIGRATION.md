@@ -47,7 +47,7 @@ Workbench 现在是工程运行时的所有者。旧 Engineering OS 只保留为
 | 角色 | 仓库 | SHA | 状态 |
 |---|---|---|---|
 | 冻结历史来源 | `Xander-Xai/X-SuperPlay-AI-Engineering-OS` | `8553124f238ab463d4a50debad34e871ef8de060` | `HISTORICAL_PROVENANCE`，永不覆盖 |
-| 来源当前 HEAD（仅观测） | `Xander-Xai/X-SuperPlay-AI-Engineering-OS` | `fa20126e93c57b1faab56d9c4cecc717b1eea46e` | 已标记 superseded 并归档；只读观测，不是同步承诺 |
+| 来源当前 HEAD（仅观测） | `Xander-Xai/X-SuperPlay-AI-Engineering-OS` | `34bce00cfc18db73bac59aa44c4df42ef9110ba9` | 已标记 superseded 并退役；只读观测，不是同步承诺 |
 | 运行时迁移合并 | `Xander-Xai/X-SuperPlay-Dev-Workbench` | `74402bf7172c5896e3610364d32b3279a9c8d851` | PR #12 squash merge |
 | 迁移分支历史头 | `Xander-Xai/X-SuperPlay-Dev-Workbench` | `527499f1ab3befdf5e87af042e746853cbbcf665` | PR #12 head，保留作历史 |
 | Windows 修复合并 | `Xander-Xai/X-SuperPlay-Dev-Workbench` | `32e0342` | PR #13，CI 通过 |
@@ -176,7 +176,7 @@ Workbench 对 PR #5 的覆盖：
 
 ## 退役检查单
 
-旧仓**未归档、未删除**。只有在以下条件全部满足后，才由仓库所有者单独确认退役：
+旧仓已标记 superseded，GitHub 侧处置由所有者决定；本仓只保留历史溯源，不读取旧仓作为依赖。以下条件用于判断工程内容是否真正承接：
 
 - [x] 迁移提交已合并到 main，CI 全绿，Pages 构建成功（`74402bf`、`32e0342`）。
 - [ ] 至少一个真实项目完成从 init → 实现 → 验证 → 发布的完整路径。

@@ -2,7 +2,7 @@
 
 **AI-Native 软件交付工作台。** 从一个真实项目出发，选择项目类型、项目状态与任务类型，组合工程 Profiles 与候选 Skills，得到可执行的十一阶段路线、工作区资产和 Agent 交接。
 
-本仓库是这套工程运行时的**当前所有者**：生命周期、任务路由、Profiles、Skills、xeng CLI 与证据模型都在这里维护。历史 Engineering OS 已被标记为 superseded 并归档，只作为来源记录，不再是运行时依赖。
+本仓库是这套工程运行时的**当前所有者**：生命周期、任务路由、Profiles、Skills、xeng CLI 与证据模型都在这里维护。历史 Engineering OS 已标记为 superseded 并退役，其 GitHub 仓库由所有者决定处置；它只作为来源记录，不再是运行时依赖。
 
 > 生成 ≠ 已安装 ≠ 已测试 ≠ 已发布 ≠ 已验收。所有导出的证据状态默认 `NOT_RUN`。
 
@@ -167,7 +167,7 @@ npm run probe -- --target ../your-project --type saas --output project-baseline.
 
 ## 历史来源与迁移
 
-- 历史来源（只读溯源，不是运行依赖）：`Xander-Xai/X-SuperPlay-AI-Engineering-OS@8553124f238ab463d4a50debad34e871ef8de060`。该仓已标记 superseded 并归档；归档状态不改变冻结快照。
+- 历史来源（只读溯源，不是运行依赖）：`Xander-Xai/X-SuperPlay-AI-Engineering-OS@8553124f238ab463d4a50debad34e871ef8de060`。该仓已标记 superseded 并退役；退役状态不改变冻结快照。
 - 来源当前 HEAD（仅观测）：`fa20126e93c57b1faab56d9c4cecc717b1eea46e`；早期 3 个提交见 [migration/eng-os-delta-audit-20261031.json](migration/eng-os-delta-audit-20261031.json)，安全与归档增量见 [migration/eng-os-post-freeze-increments-20261031.json](migration/eng-os-post-freeze-increments-20261031.json)。
 - 通用治理参考（未复制正文）：`Xander-Xai/AI-Native-Work-Learning-OS@15beebf955d1f2a515e2791dc8b375806598d36a`；PR #57 已于 2026-10-31 合并，契约正文未复制，采用状态仍为 `PARTIAL`。
 - 迁移清单：[migration/eng-os-split-20261031.json](migration/eng-os-split-20261031.json)
@@ -176,7 +176,7 @@ npm run probe -- --target ../your-project --type saas --output project-baseline.
 - 最终迁移审计：[FINAL_ENGINEERING_MIGRATION_AUDIT.md](FINAL_ENGINEERING_MIGRATION_AUDIT.md)
 - 安全与独立验收：[SECURITY_AND_MIGRATION_INDEPENDENT_ACCEPTANCE.md](SECURITY_AND_MIGRATION_INDEPENDENT_ACCEPTANCE.md)
 
-迁移 PR #12 已合并为 `74402bf`；Windows CRLF 修复 PR #13 已合并为 `32e0342`。两者 CI 通过，Pages 已部署。旧仓已由所有者标记 superseded 并归档；Workbench 不依赖其归档内容，删除或进一步处置仍需所有者单独确认。
+迁移 PR #12 已合并为 `74402bf`；Windows CRLF 修复 PR #13 已合并为 `32e0342`。两者 CI 通过，Pages 已部署。旧仓已由所有者标记 superseded 并批准退役；Workbench 不依赖其内容，GitHub 侧的具体处置以所有者决定为准。
 
 ## 验证状态
 

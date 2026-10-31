@@ -9,7 +9,7 @@
 
 > 本审计只判定**工程内容迁移**。真实小程序 / SaaS 运行验收、真机、生产发布与旧仓退役是独立事项，不能用本文的结论替代。
 
-> 后续状态（2026-10-31）：来源仓已标记 superseded 并归档；安全 P0 整改、独立内容复核与跨仓 Git 边界见 [SECURITY_AND_MIGRATION_INDEPENDENT_ACCEPTANCE.md](SECURITY_AND_MIGRATION_INDEPENDENT_ACCEPTANCE.md)。本文件保留为内容迁移阶段的回执，不覆盖后续安全结论。
+> 后续状态（2026-10-31）：来源仓已标记 superseded 并退役；安全 P0 整改、独立内容复核与跨仓 Git 边界见 [SECURITY_AND_MIGRATION_INDEPENDENT_ACCEPTANCE.md](SECURITY_AND_MIGRATION_INDEPENDENT_ACCEPTANCE.md)。本文件保留为内容迁移阶段的回执，不覆盖后续安全结论。
 
 ## 0. 结论摘要
 
@@ -192,7 +192,7 @@ worktree 隔离与 Claude Code / Codex / OpenCode 的操作要点进入 `GIT_WOR
 - 真实设备、商店审核、企业 IdP、支付渠道回执：`NOT_RUN / BLOCKED`。
 - 独立第三方复核：`INDEPENDENT_REVIEW_NOT_RUN`。
 - 许可证：`UNLICENSED-PROPRIETARY`，需所有者确定。
-- 旧仓退役：`DECOMMISSION_NOT_VERIFIED`，未归档、未删除、未授权。
+- 旧仓退役：所有者已批准（`DECOMMISSION_APPROVED`），GitHub 侧处置由所有者执行；本仓不依赖其内容。
 
 ## 8. 最终判定
 

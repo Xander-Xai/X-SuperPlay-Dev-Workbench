@@ -1,6 +1,6 @@
 // Public, machine-readable engineering catalog owned by this Workbench.
 // It is a semantic migration of the retiring Engineering OS, not a copy of its private bodies.
-// The source repository is marked superseded and archived by its owner; it is read-only provenance.
+// The source repository is superseded and retired by its owner; it is read-only provenance.
 
 export const PROVENANCE = Object.freeze({
   repository: "Xander-Xai/X-SuperPlay-AI-Engineering-OS",
@@ -8,15 +8,15 @@ export const PROVENANCE = Object.freeze({
   registryVerified: "2026-09-30",
   captured: "2026-10-31",
   status: "HISTORICAL_PROVENANCE",
-  archiveStatus: "SUPERSEDED_AND_ARCHIVED_OBSERVED_2026-10-31",
+  archiveStatus: "SUPERSEDED_DECOMMISSION_APPROVED_2026-10-31",
   url: "https://github.com/Xander-Xai/X-SuperPlay-AI-Engineering-OS",
   visibility: "PUBLIC_OBSERVED_2026-10-31",
-  currentHeadObserved: "fa20126e93c57b1faab56d9c4cecc717b1eea46e",
+  currentHeadObserved: "34bce00cfc18db73bac59aa44c4df42ef9110ba9",
   currentHeadObservedAt: "2026-10-31",
-  currentHeadStatus: "SUPERSEDED_AND_ARCHIVED",
+  currentHeadStatus: "SUPERSEDED",
   deltaAudit: "migration/eng-os-delta-audit-20261031.json",
   postFreezeAudit: "migration/eng-os-post-freeze-increments-20261031.json",
-  note: "Frozen snapshot used to derive this catalog. The observed current head is archived and recorded separately for delta audit only; it is not a live dependency, sync promise or permission grant."
+  note: "Frozen snapshot used to derive this catalog. The observed current head is retired by its owner and recorded separately for delta audit only; it is not a live dependency, sync promise or permission grant."
 });
 
 export const OWNER = Object.freeze({
