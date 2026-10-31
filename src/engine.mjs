@@ -5,6 +5,8 @@ import {
 } from "./catalog.mjs";
 import { normalizeBaseline, baselineSummary } from "./baseline.mjs";
 import { composeRoute, validateRoute, stageSkillIds, tierObligations, profileObligations } from "./routing.mjs";
+import { validatePlaybooks } from "./playbooks.mjs";
+import { validateGitWorkflow } from "./git-workflow.mjs";
 
 const hasId = (arr, id) => arr.some(x => x.id === id);
 const clean = (value, max) => String(value ?? "").replace(/\0/g, "").trim().slice(0, max);
@@ -288,6 +290,8 @@ export function validateCatalog() {
       errors.push("skill " + skill.id + " cannot advance without real use evidence");
   }
   for (const tier of ["A", "B", "C", "D"]) if (!Object.hasOwn(TIERS, tier)) errors.push("missing tier " + tier);
+  errors.push(...validatePlaybooks());
+  errors.push(...validateGitWorkflow());
   return errors;
 }
 

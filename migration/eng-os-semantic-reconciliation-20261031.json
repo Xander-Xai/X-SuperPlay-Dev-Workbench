@@ -1,0 +1,1103 @@
+{
+  "reconciliation_id": "eng-os-semantic-reconciliation-20261031",
+  "created": "2026-10-31",
+  "method": "FILE_LEVEL_SEMANTIC_MAPPING_AGAINST_FROZEN_SNAPSHOT",
+  "source_repository": "Xander-Xai/X-SuperPlay-AI-Engineering-OS",
+  "source_snapshot_commit": "8553124f238ab463d4a50debad34e871ef8de060",
+  "observed_head": "2b792242894937d303c4680208daf9df97ea0027",
+  "observed_head_note": "Recorded for delta audit only; never a live dependency.",
+  "destination_repository": "Xander-Xai/X-SuperPlay-Dev-Workbench",
+  "governance_reference": "Xander-Xai/AI-Native-Work-Learning-OS",
+  "columns": [
+    "source_path",
+    "source_sha",
+    "semantic_capability",
+    "destination",
+    "implementation",
+    "test",
+    "evidence",
+    "disposition"
+  ],
+  "dispositions": [
+    "MIGRATED_VERIFIED",
+    "EQUIVALENT_VERIFIED",
+    "PARTIAL",
+    "NOT_MIGRATED",
+    "HISTORICAL_ONLY",
+    "NOT_APPLICABLE"
+  ],
+  "summary": {
+    "total_files": 106,
+    "counts": {
+      "EQUIVALENT_VERIFIED": 32,
+      "MIGRATED_VERIFIED": 61,
+      "NOT_APPLICABLE": 5,
+      "HISTORICAL_ONLY": 8
+    },
+    "not_silently_dropped": 106,
+    "runtime_dependency": false,
+    "note": "Every frozen source file has a semantic destination or an explicit historical/not-applicable decision. No file is silently dropped."
+  },
+  "entries": [
+    {
+      "source_path": ".github/workflows/ci.yml",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "CI 验证流水线",
+      "destination": ".github/workflows/ci.yml; .github/workflows/pages.yml",
+      "implementation": ".github/workflows/ci.yml",
+      "test": "N/A (CI itself)",
+      "evidence": "CI run",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": ".gitignore",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "忽略规则",
+      "destination": ".gitignore; tools/xeng.mjs INIT_FILES",
+      "implementation": ".gitignore;tools/xeng.mjs",
+      "test": "test/xeng.test.mjs",
+      "evidence": "npm test",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "00-governance/decision-policy.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "决策纪律：停止条件、可逆性、例外",
+      "destination": "src/catalog.mjs#STAGES.stopWhen; src/handoff.mjs; docs/PLAYBOOKS.md",
+      "implementation": "src/catalog.mjs;src/handoff.mjs",
+      "test": "test/engine.test.mjs;test/handoff.test.mjs",
+      "evidence": "npm test",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "00-governance/engineering-principles.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "工程原则：证据优先、最小变更、安全边界",
+      "destination": "docs/PLAYBOOKS.md; docs/PLAYBOOK.md; src/catalog.mjs#STAGES",
+      "implementation": "docs/PLAYBOOKS.md;src/catalog.mjs",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "00-governance/exception-policy.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "带 scope 与到期日的规则例外",
+      "destination": "src/../tools/xeng.mjs (exceptions); ENGINEERING_PROFILE.yaml exceptions",
+      "implementation": "tools/xeng.mjs",
+      "test": "test/xeng.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "00-governance/maturity-model.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "L0–L6 成熟度作为缺口诊断",
+      "destination": "src/maturity.mjs; tools/xeng.mjs maturity; docs/MATURITY.md",
+      "implementation": "src/maturity.mjs;tools/xeng.mjs",
+      "test": "test/engine.test.mjs;test/xeng.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "00-governance/source-of-truth.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "来源、所有权与当前事实的边界",
+      "destination": "src/catalog.mjs#PROVENANCE/OWNER/GOVERNANCE; docs/ARCHITECTURE.md",
+      "implementation": "src/catalog.mjs;docs/ARCHITECTURE.md",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "01-lifecycle/00-intake.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "生命周期阶段：intake",
+      "destination": "src/catalog.mjs#STAGES; src/routing.mjs; src/workspace.mjs",
+      "implementation": "src/catalog.mjs;src/routing.mjs",
+      "test": "test/engine.test.mjs;test/routing.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "01-lifecycle/01-discovery.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "生命周期阶段：discovery",
+      "destination": "src/catalog.mjs#STAGES; src/routing.mjs; src/workspace.mjs",
+      "implementation": "src/catalog.mjs;src/routing.mjs",
+      "test": "test/engine.test.mjs;test/routing.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "01-lifecycle/02-specification.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "生命周期阶段：specification",
+      "destination": "src/catalog.mjs#STAGES; src/routing.mjs; src/workspace.mjs",
+      "implementation": "src/catalog.mjs;src/routing.mjs",
+      "test": "test/engine.test.mjs;test/routing.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "01-lifecycle/03-architecture.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "生命周期阶段：architecture",
+      "destination": "src/catalog.mjs#STAGES; src/routing.mjs; src/workspace.mjs",
+      "implementation": "src/catalog.mjs;src/routing.mjs",
+      "test": "test/engine.test.mjs;test/routing.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "01-lifecycle/04-planning.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "生命周期阶段：planning",
+      "destination": "src/catalog.mjs#STAGES; src/routing.mjs; src/workspace.mjs",
+      "implementation": "src/catalog.mjs;src/routing.mjs",
+      "test": "test/engine.test.mjs;test/routing.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "01-lifecycle/05-implementation.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "生命周期阶段：implementation",
+      "destination": "src/catalog.mjs#STAGES; src/routing.mjs; src/workspace.mjs",
+      "implementation": "src/catalog.mjs;src/routing.mjs",
+      "test": "test/engine.test.mjs;test/routing.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "01-lifecycle/06-verification.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "生命周期阶段：verification",
+      "destination": "src/catalog.mjs#STAGES; src/routing.mjs; src/workspace.mjs",
+      "implementation": "src/catalog.mjs;src/routing.mjs",
+      "test": "test/engine.test.mjs;test/routing.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "01-lifecycle/07-review.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "生命周期阶段：review",
+      "destination": "src/catalog.mjs#STAGES; src/routing.mjs; src/workspace.mjs",
+      "implementation": "src/catalog.mjs;src/routing.mjs",
+      "test": "test/engine.test.mjs;test/routing.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "01-lifecycle/08-release.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "生命周期阶段：release",
+      "destination": "src/catalog.mjs#STAGES; src/routing.mjs; src/workspace.mjs",
+      "implementation": "src/catalog.mjs;src/routing.mjs",
+      "test": "test/engine.test.mjs;test/routing.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "01-lifecycle/09-operation.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "生命周期阶段：operation",
+      "destination": "src/catalog.mjs#STAGES; src/routing.mjs; src/workspace.mjs",
+      "implementation": "src/catalog.mjs;src/routing.mjs",
+      "test": "test/engine.test.mjs;test/routing.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "01-lifecycle/10-postmortem.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "生命周期阶段：postmortem",
+      "destination": "src/catalog.mjs#STAGES; src/routing.mjs; src/workspace.mjs",
+      "implementation": "src/catalog.mjs;src/routing.mjs",
+      "test": "test/engine.test.mjs;test/routing.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "01-lifecycle/external-market-demand-intake.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "外部需求接入与不自动批准",
+      "destination": "src/catalog.mjs#STAGES.intake; src/workspace.mjs externalDemandBrief",
+      "implementation": "src/workspace.mjs",
+      "test": "test/workspace.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "02-standards/api-design.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "接口契约与兼容性义务",
+      "destination": "src/catalog.mjs#PROFILES(backend).artifacts; docs/PLAYBOOKS.md",
+      "implementation": "src/catalog.mjs",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "02-standards/branching.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "分支模型、短分支、合并纪律",
+      "destination": "src/git-workflow.mjs; docs/GIT_WORKFLOW.md; tools/xeng.mjs init docs/git-workflow.md",
+      "implementation": "src/git-workflow.mjs;tools/xeng.mjs",
+      "test": "test/engine.test.mjs;test/xeng.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "02-standards/commits.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "提交粒度、消息格式、squash 策略",
+      "destination": "src/git-workflow.mjs#commits; docs/GIT_WORKFLOW.md",
+      "implementation": "src/git-workflow.mjs",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "02-standards/configuration.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "配置外置、env 配对、失败关闭",
+      "destination": "src/catalog.mjs#PROFILES.practices; tools/xeng.mjs audit config.env_pairing",
+      "implementation": "src/catalog.mjs;tools/xeng.mjs",
+      "test": "test/xeng.test.mjs",
+      "evidence": "npm test",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "02-standards/documentation.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "文档与真实系统同步",
+      "destination": "skills/documentation-sync; tools/xeng.mjs doctor; src/catalog.mjs#STAGES",
+      "implementation": "skills/documentation-sync;tools/xeng.mjs",
+      "test": "test/xeng.test.mjs;test/install.test.mjs",
+      "evidence": "npm test",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "02-standards/git.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Git 基线、禁止项、worktree 根",
+      "destination": "src/git-workflow.mjs; tools/xeng.mjs audit git checks",
+      "implementation": "src/git-workflow.mjs;tools/xeng.mjs",
+      "test": "test/engine.test.mjs;test/xeng.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "02-standards/observability.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "日志、指标、追踪与告警义务",
+      "destination": "src/catalog.mjs#PROFILES.practices/required; ROUTE_SOPS",
+      "implementation": "src/catalog.mjs",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "02-standards/pull-request.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "PR 必备验证与回滚段",
+      "destination": ".github/pull_request_template.md; src/workspace.mjs pullRequestDocument; tools/xeng.mjs INIT_FILES",
+      "implementation": "src/workspace.mjs;tools/xeng.mjs;.github/pull_request_template.md",
+      "test": "test/workspace.test.mjs;test/xeng.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "02-standards/security.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "密钥扫描、权限、安全评审",
+      "destination": "src/catalog.mjs#PROFILES.security; tools/xeng.mjs secret scan; docs/PLAYBOOKS.md",
+      "implementation": "src/catalog.mjs;tools/xeng.mjs",
+      "test": "test/xeng.test.mjs",
+      "evidence": "npm test",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "02-standards/testing.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "测试层级与必需证据",
+      "destination": "src/catalog.mjs#PROFILES.tests; src/routing.mjs evidencePlanFor; src/evidence.mjs",
+      "implementation": "src/routing.mjs;src/evidence.mjs",
+      "test": "test/routing.test.mjs;test/evidence.test.mjs",
+      "evidence": "npm test",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "03-ai-coding/agent-permissions.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Agent 读写权限、外部动作需授权",
+      "destination": "src/handoff.mjs 执行纪律/禁止动作; docs/GIT_WORKFLOW.md",
+      "implementation": "src/handoff.mjs;docs/GIT_WORKFLOW.md",
+      "test": "test/handoff.test.mjs",
+      "evidence": "npm test",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "03-ai-coding/ai-native-spec-harness-loop.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Spec→Tickets→Harness→有界循环",
+      "destination": "src/starter.mjs iterationBudget/stopConditions/reviewAxes; src/workspace.mjs implementationPlan; docs/PLAYBOOKS.md",
+      "implementation": "src/starter.mjs;src/workspace.mjs",
+      "test": "test/starter.test.mjs;test/workspace.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "03-ai-coding/claude-code.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Claude Code 角色与会话协议",
+      "destination": "src/git-workflow.mjs#agentOperating; docs/AGENT_SKILL_LOAD.md",
+      "implementation": "src/git-workflow.mjs;docs/AGENT_SKILL_LOAD.md",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "03-ai-coding/codex.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Codex 角色与并发纪律",
+      "destination": "src/git-workflow.mjs#agentOperating; docs/AGENT_SKILL_LOAD.md",
+      "implementation": "src/git-workflow.mjs;docs/AGENT_SKILL_LOAD.md",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "03-ai-coding/context-engineering.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "分层加载上下文、避免整仓倾倒",
+      "destination": "src/handoff.mjs; docs/PLAYBOOKS.md",
+      "implementation": "src/handoff.mjs",
+      "test": "test/handoff.test.mjs",
+      "evidence": "npm test",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "03-ai-coding/stop-coding.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "停止编码条件",
+      "destination": "src/catalog.mjs#STAGES.stopWhen; src/handoff.mjs; src/starter.mjs",
+      "implementation": "src/catalog.mjs;src/starter.mjs;src/handoff.mjs",
+      "test": "test/engine.test.mjs;test/starter.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "03-ai-coding/task-router.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "任务类型到工程路线",
+      "destination": "src/catalog.mjs#TASKS; src/routing.mjs",
+      "implementation": "src/catalog.mjs;src/routing.mjs",
+      "test": "test/routing.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "03-ai-coding/task-router.yaml",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "任务类型到工程路线（机器可读）",
+      "destination": "src/catalog.mjs#TASKS; src/routing.mjs",
+      "implementation": "src/catalog.mjs;src/routing.mjs",
+      "test": "test/routing.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "03-ai-coding/verification.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "验证证据与完成定义",
+      "destination": "src/evidence.mjs; skills/verification; src/workspace.mjs verificationPlan",
+      "implementation": "src/evidence.mjs;src/workspace.mjs",
+      "test": "test/evidence.test.mjs;test/workspace.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "03-ai-coding/worktree.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "并行工作的 worktree 隔离",
+      "destination": "src/git-workflow.mjs#worktrees; docs/GIT_WORKFLOW.md",
+      "implementation": "src/git-workflow.mjs;docs/GIT_WORKFLOW.md",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "04-profiles/README.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Profile 目录索引",
+      "destination": "src/catalog.mjs#PROFILES",
+      "implementation": "src/catalog.mjs",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "NOT_APPLICABLE"
+    },
+    {
+      "source_path": "04-profiles/agent/from-zero-playbook.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Agent 从零开发手册",
+      "destination": "src/playbooks.mjs#agent; site Playbook view; tools/xeng.mjs playbook",
+      "implementation": "src/playbooks.mjs;src/app.mjs;tools/xeng.mjs",
+      "test": "test/engine.test.mjs;test/workspace.test.mjs;test/xeng.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "04-profiles/agent/profile.yaml",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Profile 义务：agent",
+      "destination": "src/catalog.mjs#PROFILES",
+      "implementation": "src/catalog.mjs",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "04-profiles/ai-application/daily-development-sop.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "AI 应用日常研发手册",
+      "destination": "src/playbooks.mjs#ai-application; site Playbook view; tools/xeng.mjs playbook",
+      "implementation": "src/playbooks.mjs;src/app.mjs;tools/xeng.mjs",
+      "test": "test/engine.test.mjs;test/workspace.test.mjs;test/xeng.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "04-profiles/ai-application/profile.yaml",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Profile 义务：ai-application",
+      "destination": "src/catalog.mjs#PROFILES",
+      "implementation": "src/catalog.mjs",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "04-profiles/android/profile.yaml",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Profile 义务：android",
+      "destination": "src/catalog.mjs#PROFILES",
+      "implementation": "src/catalog.mjs",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "04-profiles/backend/profile.yaml",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Profile 义务：backend",
+      "destination": "src/catalog.mjs#PROFILES",
+      "implementation": "src/catalog.mjs",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "04-profiles/cli/profile.yaml",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Profile 义务：cli",
+      "destination": "src/catalog.mjs#PROFILES",
+      "implementation": "src/catalog.mjs",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "04-profiles/desktop/profile.yaml",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Profile 义务：desktop",
+      "destination": "src/catalog.mjs#PROFILES",
+      "implementation": "src/catalog.mjs",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "04-profiles/flutter/profile.yaml",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Profile 义务：flutter",
+      "destination": "src/catalog.mjs#PROFILES",
+      "implementation": "src/catalog.mjs",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "04-profiles/infrastructure/profile.yaml",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Profile 义务：infrastructure",
+      "destination": "src/catalog.mjs#PROFILES",
+      "implementation": "src/catalog.mjs",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "04-profiles/ios/profile.yaml",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Profile 义务：ios",
+      "destination": "src/catalog.mjs#PROFILES",
+      "implementation": "src/catalog.mjs",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "04-profiles/mini-program/profile.yaml",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Profile 义务：mini-program",
+      "destination": "src/catalog.mjs#PROFILES",
+      "implementation": "src/catalog.mjs",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "04-profiles/rag/from-zero-playbook.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "RAG 从零构建手册",
+      "destination": "src/playbooks.mjs#rag; site Playbook view; tools/xeng.mjs playbook",
+      "implementation": "src/playbooks.mjs;src/app.mjs;tools/xeng.mjs",
+      "test": "test/engine.test.mjs;test/workspace.test.mjs;test/xeng.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "04-profiles/rag/profile.yaml",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Profile 义务：rag",
+      "destination": "src/catalog.mjs#PROFILES",
+      "implementation": "src/catalog.mjs",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "04-profiles/react-native/profile.yaml",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Profile 义务：react-native",
+      "destination": "src/catalog.mjs#PROFILES",
+      "implementation": "src/catalog.mjs",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "04-profiles/saas/profile.yaml",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Profile 义务：saas",
+      "destination": "src/catalog.mjs#PROFILES",
+      "implementation": "src/catalog.mjs",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "04-profiles/web/profile.yaml",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Profile 义务：web",
+      "destination": "src/catalog.mjs#PROFILES",
+      "implementation": "src/catalog.mjs",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "05-skills/README.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Skill 目录索引",
+      "destination": "skills/*/SKILL.md; src/catalog.mjs#SKILLS",
+      "implementation": "src/catalog.mjs",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "NOT_APPLICABLE"
+    },
+    {
+      "source_path": "05-skills/architecture/SKILL.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Skill bundle：architecture",
+      "destination": "skills/architecture/SKILL.md + references/",
+      "implementation": "skills/architecture",
+      "test": "test/install.test.mjs;node tools/xeng.mjs validate-registry",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "05-skills/code-review/SKILL.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Skill bundle：code-review",
+      "destination": "skills/code-review/SKILL.md + references/",
+      "implementation": "skills/code-review",
+      "test": "test/install.test.mjs;node tools/xeng.mjs validate-registry",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "05-skills/documentation-sync/SKILL.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Skill bundle：documentation-sync",
+      "destination": "skills/documentation-sync/SKILL.md + references/",
+      "implementation": "skills/documentation-sync",
+      "test": "test/install.test.mjs;node tools/xeng.mjs validate-registry",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "05-skills/implementation-plan/SKILL.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Skill bundle：implementation-plan",
+      "destination": "skills/implementation-plan/SKILL.md + references/",
+      "implementation": "skills/implementation-plan",
+      "test": "test/install.test.mjs;node tools/xeng.mjs validate-registry",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "05-skills/project-discovery/SKILL.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Skill bundle：project-discovery",
+      "destination": "skills/project-discovery/SKILL.md + references/",
+      "implementation": "skills/project-discovery",
+      "test": "test/install.test.mjs;node tools/xeng.mjs validate-registry",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "05-skills/specification/SKILL.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Skill bundle：specification",
+      "destination": "skills/specification/SKILL.md + references/",
+      "implementation": "skills/specification",
+      "test": "test/install.test.mjs;node tools/xeng.mjs validate-registry",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "05-skills/systematic-debugging/SKILL.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Skill bundle：systematic-debugging",
+      "destination": "skills/systematic-debugging/SKILL.md + references/",
+      "implementation": "skills/systematic-debugging",
+      "test": "test/install.test.mjs;node tools/xeng.mjs validate-registry",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "05-skills/verification/SKILL.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Skill bundle：verification",
+      "destination": "skills/verification/SKILL.md + references/",
+      "implementation": "skills/verification",
+      "test": "test/install.test.mjs;node tools/xeng.mjs validate-registry",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "06-templates/ENGINEERING_PROFILE.yaml",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "项目工程 Profile 契约",
+      "destination": "src/workspace.mjs engineeringProfileYaml; tools/xeng.mjs composeProfileContract",
+      "implementation": "src/workspace.mjs;tools/xeng.mjs",
+      "test": "test/workspace.test.mjs;test/xeng.test.mjs",
+      "evidence": "npm test",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "06-templates/adr.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "ADR 模板",
+      "destination": "src/workspace.mjs adrTemplate",
+      "implementation": "src/workspace.mjs",
+      "test": "test/workspace.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "06-templates/external-demand-brief.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "外部需求简报模板",
+      "destination": "src/workspace.mjs externalDemandBrief",
+      "implementation": "src/workspace.mjs",
+      "test": "test/workspace.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "06-templates/implementation-plan.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "实施计划模板（假设/切片/预算/停止/回退）",
+      "destination": "src/workspace.mjs implementationPlan",
+      "implementation": "src/workspace.mjs",
+      "test": "test/workspace.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "06-templates/postmortem.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "复盘模板（事实/影响/根因/行动/未验证）",
+      "destination": "src/workspace.mjs postmortemTemplate",
+      "implementation": "src/workspace.mjs",
+      "test": "test/workspace.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "06-templates/pull-request.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "PR 描述模板（命令/结果/跳过/SHA）",
+      "destination": "src/workspace.mjs pullRequestDocument; .github/pull_request_template.md",
+      "implementation": "src/workspace.mjs;.github/pull_request_template.md",
+      "test": "test/workspace.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "06-templates/review.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "双轴 Review 记录",
+      "destination": "src/workspace.mjs reviewRecord",
+      "implementation": "src/workspace.mjs",
+      "test": "test/workspace.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "06-templates/specification.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Spec 与 AC 草案",
+      "destination": "src/starter.mjs starterMarkdown; skills/specification",
+      "implementation": "src/starter.mjs",
+      "test": "test/starter.test.mjs",
+      "evidence": "npm test",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "07-checklists/ai-project.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "AI 项目检查单",
+      "destination": "src/catalog.mjs#PROFILES(ai-application/rag/agent); src/playbooks.mjs",
+      "implementation": "src/catalog.mjs;src/playbooks.mjs",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "07-checklists/release.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "发布检查单",
+      "destination": "src/workspace.mjs releaseChecklist",
+      "implementation": "src/workspace.mjs",
+      "test": "test/workspace.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "07-checklists/security.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "安全检查单",
+      "destination": "src/catalog.mjs#PROFILES.security; tools/xeng.mjs secret scan; src/playbooks.mjs",
+      "implementation": "src/catalog.mjs;tools/xeng.mjs",
+      "test": "test/xeng.test.mjs",
+      "evidence": "npm test",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "07-checklists/verification.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "验证检查单",
+      "destination": "src/workspace.mjs verificationPlan; src/evidence.mjs",
+      "implementation": "src/workspace.mjs;src/evidence.mjs",
+      "test": "test/workspace.test.mjs;test/evidence.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "08-automation/README.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "自动化占位说明",
+      "destination": "NONE",
+      "implementation": "NONE",
+      "test": "NONE",
+      "evidence": "NOT_APPLICABLE",
+      "disposition": "NOT_APPLICABLE"
+    },
+    {
+      "source_path": "09-reference/README.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "参考目录索引",
+      "destination": "docs/MIGRATION.md provenance",
+      "implementation": "NONE",
+      "test": "NONE",
+      "evidence": "NOT_APPLICABLE",
+      "disposition": "HISTORICAL_ONLY"
+    },
+    {
+      "source_path": "09-reference/ai-native-upstream-source-manifest.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "第三方方法来源清单",
+      "destination": "README.md provenance; docs/CONTRACT_ALIGNMENT.md reference",
+      "implementation": "NONE",
+      "test": "NONE",
+      "evidence": "NOT_APPLICABLE",
+      "disposition": "HISTORICAL_ONLY"
+    },
+    {
+      "source_path": "AGENTS.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "仓库 Agent 规则入口",
+      "destination": "AGENTS.md; tools/xeng.mjs INIT_FILES AGENTS.md",
+      "implementation": "AGENTS.md;tools/xeng.mjs",
+      "test": "test/xeng.test.mjs",
+      "evidence": "npm test",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "CHANGELOG.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "旧仓版本历史",
+      "destination": "NONE",
+      "implementation": "NONE",
+      "test": "NONE",
+      "evidence": "NOT_APPLICABLE",
+      "disposition": "NOT_APPLICABLE"
+    },
+    {
+      "source_path": "CLAUDE.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Claude Code 仓库上下文",
+      "destination": "CLAUDE.md; tools/xeng.mjs INIT_FILES CLAUDE.md",
+      "implementation": "CLAUDE.md;tools/xeng.mjs",
+      "test": "test/xeng.test.mjs",
+      "evidence": "npm test",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "ENGINEERING_PROFILE.yaml",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "旧仓自身工程 Profile",
+      "destination": "src/workspace.mjs engineeringProfileYaml; tools/xeng.mjs composeProfileContract",
+      "implementation": "src/workspace.mjs;tools/xeng.mjs",
+      "test": "test/workspace.test.mjs;test/xeng.test.mjs",
+      "evidence": "npm test",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "OPC-LINK.yaml",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "跨仓 OPC 关联",
+      "destination": "NONE (organisation linkage, not engineering runtime)",
+      "implementation": "NONE",
+      "test": "NONE",
+      "evidence": "NOT_APPLICABLE",
+      "disposition": "HISTORICAL_ONLY"
+    },
+    {
+      "source_path": "README.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "旧仓入口与运行时说明",
+      "destination": "README.md (Workbench is current owner)",
+      "implementation": "README.md",
+      "test": "npm run check",
+      "evidence": "npm run verify",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "ROADMAP.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "演进路线",
+      "destination": "docs/ROADMAP.md",
+      "implementation": "docs/ROADMAP.md",
+      "test": "N/A",
+      "evidence": "documentation",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "docs/adoption/pilot-adoption-plan.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "旧试点采纳计划",
+      "destination": "docs/ROADMAP.md v0.3",
+      "implementation": "NONE",
+      "test": "NONE",
+      "evidence": "NOT_APPLICABLE",
+      "disposition": "HISTORICAL_ONLY"
+    },
+    {
+      "source_path": "docs/adr/0001-engineering-os-independent-from-opc-blueprint.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "旧仓与 OPC 的独立性决策",
+      "destination": "docs/ARCHITECTURE.md ownership",
+      "implementation": "docs/ARCHITECTURE.md",
+      "test": "N/A",
+      "evidence": "documentation",
+      "disposition": "HISTORICAL_ONLY"
+    },
+    {
+      "source_path": "docs/adr/0002-central-defaults-plus-local-overrides.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "中央默认值 + 项目本地覆盖",
+      "destination": "src/workspace.mjs ENGINEERING_PROFILE.yaml; xeng init 不覆盖既有文件; AGENTS.md",
+      "implementation": "src/workspace.mjs;tools/xeng.mjs",
+      "test": "test/xeng.test.mjs",
+      "evidence": "npm test",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "docs/adr/0003-profile-based-right-sized-engineering.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "按 Profile/Tier 裁剪工程义务",
+      "destination": "src/catalog.mjs#PROFILES/TIERS; src/routing.mjs",
+      "implementation": "src/catalog.mjs;src/routing.mjs",
+      "test": "test/routing.test.mjs",
+      "evidence": "npm test",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "docs/adr/0004-no-submodules-as-default-distribution.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "不使用 submodule 作为默认分发",
+      "destination": "自包含 skills/ bundle; skill-kit.mjs",
+      "implementation": "tools/skill-kit.mjs;skills/",
+      "test": "test/install.test.mjs",
+      "evidence": "npm test",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "docs/adr/0005-skills-require-repeated-evidence.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Skill 晋级需要重复真实证据",
+      "destination": "src/catalog.mjs#SKILL_STATUSES; docs/PLAYBOOK.md",
+      "implementation": "src/catalog.mjs",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "docs/adr/0006-verification-evidence-required-for-done.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "无验证证据不得 DONE",
+      "destination": "src/evidence.mjs; src/catalog.mjs#EVIDENCE_LAYERS",
+      "implementation": "src/evidence.mjs",
+      "test": "test/evidence.test.mjs",
+      "evidence": "npm test",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "docs/adr/0007-opc-relationship-child-link-founder-gate.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "与 OPC 的父子关系与创始人门禁",
+      "destination": "NONE (organisation governance)",
+      "implementation": "NONE",
+      "test": "NONE",
+      "evidence": "NOT_APPLICABLE",
+      "disposition": "HISTORICAL_ONLY"
+    },
+    {
+      "source_path": "docs/architecture/assumptions.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "架构假设与限制",
+      "destination": "docs/ARCHITECTURE.md",
+      "implementation": "docs/ARCHITECTURE.md",
+      "test": "N/A",
+      "evidence": "documentation",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "docs/architecture/engineering-os.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "旧工程系统架构说明",
+      "destination": "docs/ARCHITECTURE.md (Workbench architecture)",
+      "implementation": "docs/ARCHITECTURE.md",
+      "test": "N/A",
+      "evidence": "documentation",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "docs/audits/repository-portfolio-audit-2026-09-30.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "某日仓库组合审计快照",
+      "destination": "NONE (dated audit)",
+      "implementation": "NONE",
+      "test": "NONE",
+      "evidence": "NOT_APPLICABLE",
+      "disposition": "HISTORICAL_ONLY"
+    },
+    {
+      "source_path": "lab/README.md",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "实验目录占位",
+      "destination": "NONE",
+      "implementation": "NONE",
+      "test": "NONE",
+      "evidence": "NOT_APPLICABLE",
+      "disposition": "NOT_APPLICABLE"
+    },
+    {
+      "source_path": "registry/profiles.yaml",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Profile 注册表",
+      "destination": "src/catalog.mjs#PROFILES",
+      "implementation": "src/catalog.mjs",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "registry/repositories.yaml",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "组织级仓库注册表",
+      "destination": "NONE (G-05: organisation inventory)",
+      "implementation": "NONE",
+      "test": "NONE",
+      "evidence": "NOT_APPLICABLE",
+      "disposition": "HISTORICAL_ONLY"
+    },
+    {
+      "source_path": "registry/skills.yaml",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "Skill 注册表",
+      "destination": "src/catalog.mjs#SKILLS",
+      "implementation": "src/catalog.mjs",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    },
+    {
+      "source_path": "registry/standards.yaml",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "标准注册表",
+      "destination": "src/catalog.mjs#PROFILES required/recommended",
+      "implementation": "src/catalog.mjs",
+      "test": "test/engine.test.mjs",
+      "evidence": "npm test",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "tools/tests/test_xeng.py",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "CLI 行为测试",
+      "destination": "test/xeng.test.mjs; test/assemble.test.mjs",
+      "implementation": "test/xeng.test.mjs;test/assemble.test.mjs",
+      "test": "npm test",
+      "evidence": "npm test",
+      "disposition": "EQUIVALENT_VERIFIED"
+    },
+    {
+      "source_path": "tools/xeng.py",
+      "source_sha": "8553124f238ab463d4a50debad34e871ef8de060",
+      "semantic_capability": "工程 CLI（init/audit/doctor/validate/task）",
+      "destination": "tools/xeng.mjs",
+      "implementation": "tools/xeng.mjs",
+      "test": "test/xeng.test.mjs",
+      "evidence": "npm test",
+      "disposition": "MIGRATED_VERIFIED"
+    }
+  ]
+}

@@ -19,14 +19,15 @@ npm run dev
 
 打开 <http://127.0.0.1:4173>（仅监听本机）。
 
-## 五个入口
+## 六个入口
 
 | 入口 | 作用 |
 |---|---|
 | **项目启动器** | 项目类型 → 新/旧项目 → 任务类型 → Tier / 技术栈 / 扩展 → 生成路线、阶段 Gate、路线 SOP、导出 |
-| **工作流浏览器** | 11 个唯一阶段、4 条路线 SOP、13 种任务路由、17 个 Profile、A/B/C/D 等级义务 |
+| **工作流浏览器** | 11 个唯一阶段、4 条路线 SOP、13 种任务路由、17 个 Profile、Git 工作流、L0–L6 成熟度、A/B/C/D 等级义务 |
 | **Skills 能力库** | 8 个自包含候选 Skill、标准元数据、依赖闭包、按 Agent 生成 dry-run 安装命令 |
-| **项目工作区** | 生成 10 份可审查草案：Manifest、ENGINEERING_PROFILE、Spec/Tickets、ADR、验证计划、发布清单、Agent 交接、路线 SOP、Review 记录、完整资产包 |
+| **项目工作区** | 生成 16 份可审查草案：Manifest、ENGINEERING_PROFILE、Spec/Tickets、ADR、验证计划、发布清单、Agent 交接、路线 SOP、Review 记录、实施计划、复盘、外部需求简报、PR 模板、Git 工作流、工程 Playbook、完整资产包 |
+| **工程 Playbook** | 3 份 Profile 附属操作手册：AI 应用日常研发、企业 RAG 从零构建、企业 Agent 从零开发 |
 | **证据与改进** | 证据状态机、本地报告导入（不上传）、阶段摘要与改进闭环 |
 
 ## 四条路线 SOP
@@ -39,6 +40,16 @@ npm run dev
 - **移动 APP**：在 Flutter / React Native / Android / iOS 中择一，覆盖导航状态、设备权限、安全存储、离线恢复、签名与商店审核；不同时强制四套技术栈。
 
 路线 SOP 会随方案进入工作区资产包；平台不可替代的环节必须标 `BLOCKED` / `NOT_RUN`，不得用本地测试冒充平台回执。
+
+## 三份工程 Playbook
+
+三份操作手册补齐旧 Engineering OS 中仍有使用价值、此前未完整承接的工程内容。它们复用 11 阶段，不建立第二套生命周期：
+
+- **AI 应用日常研发**：Feature / Bug / RAG 质量 / Agent 调错工具 / 性能成本 / 事故的任务分流，接管陌生代码的 Call-chain Map，最小变更合同，分层诊断与 Definition of Done。
+- **企业 RAG 从零**：业务与数据 SPEC、B1–B7 最小端到端链路、Golden Set 与检索/生成/运行指标、企业加固、失败诊断树、发布与回退。
+- **企业 Agent 从零**：P0–P10 阶段、Tool/State/Authorization Spec、HITL 风险分级、L1–L4 评测证据分层、故障恢复与可观测性。
+
+手册状态固定为 `ADVISORY_PLAYBOOK_NOT_VERIFIED`：不新增 Gate、不自动安装 Skill、不提升任何证据状态。网站「工程 Playbook」、`node tools/xeng.mjs playbook <id>` 与工作区 `<slug>-engineering-playbook.md` 使用同一份数据。示例均为合成/脱敏契约。
 
 ## 支持范围
 
@@ -55,11 +66,15 @@ npm run dev
 node tools/xeng.mjs init ../your-project --profile saas,web,backend --tier B --task feature --mode new --dry-run
 node tools/xeng.mjs audit ../your-project --json
 node tools/xeng.mjs doctor ../your-project
+node tools/xeng.mjs maturity ../your-project --json
+node tools/xeng.mjs playbook rag
 node tools/xeng.mjs validate-registry
 node tools/xeng.mjs task bug --type=saas --tier=B
 ~~~
 
-`init` 默认不覆盖任何已有文件；冲突时写入 `*.suggested.md` 供人工合并。`audit` 检查 README、Agent 规则、工程 Profile、测试、CI、密钥、env 配对、迁移、回滚与例外有效期。`doctor` 检查坏链接、失效脚本路径、过期当前事实和 env 漂移。
+`init` 默认不覆盖任何已有文件；冲突时写入 `*.suggested.md` 供人工合并。`audit` 检查 README、Agent 规则、工程 Profile、测试、CI、密钥、env 配对、迁移、回滚与例外有效期。`doctor` 检查坏链接、失效脚本路径、过期当前事实和 env 漂移。`maturity` 复用 audit 的实际检查输出 L0–L6 缺口，不把等级当质量分数，L6 不由静态审计宣称。
+
+`init` 还会生成建议性的 `docs/git-workflow.md` 与 `.github/pull_request_template.md`：前者覆盖 base SHA、分支、worktree、提交粒度、PR 检查与合并后清理；项目本地规则始终优先。
 
 ### 一次装配（组装路线 + 最小 Skills + 目标检查）
 
@@ -135,7 +150,9 @@ npm run probe -- --target ../your-project --type saas --output project-baseline.
 - 来源当前 HEAD（仅观测）：`2b792242894937d303c4680208daf9df97ea0027`；冻结后 3 个提交的增量审计见 [migration/eng-os-delta-audit-20261031.json](migration/eng-os-delta-audit-20261031.json)。
 - 通用治理参考（未复制正文）：`Xander-Xai/AI-Native-Work-Learning-OS@15beebf955d1f2a515e2791dc8b375806598d36a`；PR #57 已于 2026-10-31 合并，契约正文未复制，采用状态仍为 `PARTIAL`。
 - 迁移清单：[migration/eng-os-split-20261031.json](migration/eng-os-split-20261031.json)
+- 文件级语义对账：[migration/eng-os-semantic-reconciliation-20261031.json](migration/eng-os-semantic-reconciliation-20261031.json)（冻结快照 106/106 文件，逐项 `disposition`）
 - 迁移说明：[docs/MIGRATION.md](docs/MIGRATION.md)
+- 最终迁移审计：[FINAL_ENGINEERING_MIGRATION_AUDIT.md](FINAL_ENGINEERING_MIGRATION_AUDIT.md)
 
 迁移 PR #12 已合并为 `74402bf`；Windows CRLF 修复 PR #13 已合并为 `32e0342`。两者 CI 通过，Pages 已部署。旧仓未归档、未删除，退役需要仓库所有者单独确认并完成真实项目验证（当前 `DECOMMISSION_NOT_VERIFIED`）。
 
@@ -148,6 +165,7 @@ npm run probe -- --target ../your-project --type saas --output project-baseline.
 | Windows 11 Skill 安装 / 更新 / 卸载 / 回滚 | 本地 fixture 通过；三个 Agent 的真实加载未全部验证 |
 | 真实项目 Dogfood / 真机 / 生产发布 | `BLOCKED`：没有获得授权的真实小程序 / SaaS 项目 |
 | GitHub Pages | 已部署：<https://xander-xai.github.io/X-SuperPlay-Dev-Workbench/> |
+| 工程内容迁移（G-01…G-05、三份 SOP） | 本次分支完成后按 CI 与 Pages 回执更新；文件级对账 106/106 |
 
 **CI 通过只说明本仓库代码检查通过，不代表用户项目、真实设备或生产交付已验收。**
 
@@ -157,6 +175,9 @@ npm run probe -- --target ../your-project --type saas --output project-baseline.
 - [迁移与兼容表](docs/MIGRATION.md)
 - [跨仓治理契约对齐](docs/CONTRACT_ALIGNMENT.md)
 - [实际开发 SOP](docs/PLAYBOOK.md)
+- [工程 Playbook](docs/PLAYBOOKS.md)
+- [项目级 Git 工作流](docs/GIT_WORKFLOW.md)
+- [工程成熟度 L0–L6](docs/MATURITY.md)
 - [Skill Kit 契约](docs/SKILL_KIT.md)
 - [演进路线](docs/ROADMAP.md)
 

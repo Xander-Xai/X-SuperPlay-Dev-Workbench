@@ -13,7 +13,7 @@ test("Pages artifact only has allowlisted browser files",async()=>{
   assert.deepEqual((await readdir(resolve(root,"dist"))).sort(),
     [".nojekyll","index.html","src","styles.css"].sort());
   assert.deepEqual((await readdir(resolve(root,"dist/src"))).sort(),
-    ["app.mjs","baseline.mjs","catalog.mjs","engine.mjs","evidence-identity.mjs","evidence.mjs","handoff.mjs","identity.mjs","install-contract.mjs","routing.mjs","starter.mjs","workspace.mjs"].sort());
+    FILES.filter(x=>x.startsWith("src/")).map(x=>x.slice(4)).sort());
   const html=await readFile(resolve(root,"dist/index.html"),"utf8");
   assert.match(html,/Content-Security-Policy/);
   assert.doesNotMatch(html,/fonts\.googleapis\.com/);

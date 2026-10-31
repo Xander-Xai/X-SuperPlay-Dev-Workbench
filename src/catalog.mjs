@@ -33,7 +33,7 @@ export const GOVERNANCE = Object.freeze({
 
 export const RUNTIME = Object.freeze({
   name: "x-superplay-dev-workbench",
-  version: "0.2.0",
+  version: "0.3.0",
   buildSha: "UNKNOWN_UNTIL_BUILT",
   cli: "node tools/xeng.mjs",
   skillCli: "node tools/skill-kit.mjs"

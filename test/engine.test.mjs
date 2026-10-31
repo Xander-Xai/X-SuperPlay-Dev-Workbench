@@ -2,6 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {TYPES,STAGES,SKILLS,TASKS,PROFILES,OWNER,PROVENANCE,SOURCE,ROUTE_SOPS,SKILL_STATUSES,skillMetadata} from "../src/catalog.mjs";
 import {slugify,normalizeConfig,assemble,xengDryRun,toMarkdown,toManifest,validateCatalog} from "../src/engine.mjs";
+import {PLAYBOOKS,playbookById,playbookMarkdown,validatePlaybooks} from "../src/playbooks.mjs";
+import {GIT_WORKFLOW,validateGitWorkflow} from "../src/git-workflow.mjs";
+import {MATURITY_LEVELS,maturityReport} from "../src/maturity.mjs";
 
 test("catalog contains the preserved routes, stages, tasks, profiles and skills",()=>{
   assert.equal(Object.keys(TYPES).length,4);
@@ -117,4 +120,35 @@ test("skill metadata is complete and status cannot self-promote",()=>{
     assert.ok(meta.tests.length>0);
     assert.equal(skill.evidence,undefined);
   }
+});
+
+test("three engineering playbooks exist and bind to real profiles",()=>{
+  assert.deepEqual(PLAYBOOKS.map(p=>p.id),["ai-application","rag","agent"]);
+  for(const p of PLAYBOOKS){
+    assert.ok(PROFILES.some(x=>x.id===p.profile),p.id);
+    assert.equal(p.status,"ADVISORY_PLAYBOOK_NOT_VERIFIED");
+    assert.ok(p.phases.length>=5);
+    assert.ok(p.triage.length>=3);
+    assert.ok(playbookById(p.id)===p);
+  }
+  assert.deepEqual(validatePlaybooks(),[]);
+  assert.match(playbookMarkdown(PLAYBOOKS[0]),/11 阶段/);
+});
+
+test("git workflow covers base SHA, worktrees, PR evidence and agent operating notes",()=>{
+  assert.deepEqual(validateGitWorkflow(),[]);
+  assert.equal(GIT_WORKFLOW.status,"ADVISORY_PROJECT_GUIDANCE");
+  const all=JSON.stringify(GIT_WORKFLOW);
+  for(const token of ["base SHA","worktree","命令 + 结果","UNKNOWN","Claude Code","Codex","OpenCode","force-push"])
+    assert.ok(all.toLowerCase().includes(token.toLowerCase()),token);
+});
+
+test("maturity starts at L0 without controls and never auto-claims L6",()=>{
+  assert.equal(MATURITY_LEVELS.length,7);
+  const report=maturityReport([], {tier:"B",profiles:["saas"]});
+  assert.equal(report.level,"L0");
+  assert.equal(report.target,"L2");
+  assert.equal(report.target_met,false);
+  assert.equal(report.l6.status,"NOT_VERIFIABLE");
+  assert.ok(report.missing_controls.some(x=>x.startsWith("L1.reproducible")));
 });

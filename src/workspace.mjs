@@ -4,6 +4,8 @@ import { toManifest } from "./engine.mjs";
 import { starterMarkdown } from "./starter.mjs";
 import { stageHandoff } from "./handoff.mjs";
 import { identityBlock, projectIdentity } from "./identity.mjs";
+import { GIT_WORKFLOW } from "./git-workflow.mjs";
+import { playbooksForProfiles, playbookMarkdown } from "./playbooks.mjs";
 
 const q = v => JSON.stringify(String(v ?? ""));
 
@@ -203,6 +205,219 @@ export function reviewRecord(plan) {
   ].join("\n");
 }
 
+export function implementationPlan(plan) {
+  const tasks = plan.stages.map(s => "[" + s.id + "] " + s.focus);
+  return [
+    identityBlock(plan), "",
+    "# " + plan.config.name + " · 实施计划（草案）", "",
+    "> 状态：DRAFT_NOT_EXECUTED。切片、预算与停止条件均为待确认假设，不代表已开始实现。",
+    "> project_id：" + plan.slug + " · base_sha：" + (plan.config.baseline?.headSha ?? "UNKNOWN"),
+    "> Spec：" + plan.slug + "-spec-and-tickets-draft.md · 执行者：" + plan.config.agent, "",
+    "## 假设（未核实）", "",
+    "- [ ] 需求范围与业务 Owner 已确认",
+    "- [ ] 目标仓库、技术栈与有效测试命令已核实",
+    "- [ ] 外部依赖、权限与发布窗口可获得",
+    "- [ ] 已有接口或测试可复用，不需要重复建设",
+    "", "任何假设被推翻时，先更新本计划，再改代码。", "",
+    "## 待执行的纵切片", "",
+    "| # | 阶段 | 本任务重点 | 验证命令 | 完成证据 |", "|---|---|---|---|---|",
+    ...tasks.map((focus, i) => "| S" + String(i + 1).padStart(2, "0") + " | " + focus + " | 待确认 | NOT_YET_IDENTIFIED | NOT_RUN |"),
+    "",
+    "## 每一切片的完成条件", "",
+    "- 该切片纵向贯通必要的 UI / API / 数据 / 测试，而不是按层分包。",
+    "- 先写失败测试或复现，再实现；真实运行并记录命令、环境与结果。",
+    "- 记录 base SHA 与实现后 SHA；未执行项写 UNKNOWN / NOT_RUN。",
+    "- 行为变更同步更新 Spec 或 ADR，不静默重解释。",
+    "", "## 停止条件", "",
+    "- AC 无法验证或业务方未确认关键范围。",
+    "- 连续两次修复没有产生新证据或新假设。",
+    "- 需要未授权凭据、生产数据、支付或不可逆写入。",
+    "- 超出任务 Owner 设定的迭代/时间/成本预算。",
+    "- 发现安全、权限或数据边界问题。", "",
+    "## 迭代预算", "",
+    "- 每个假设最多 2 次修复尝试；无新证据即停止并汇报。",
+    "- 单执行窗口只允许 1 个活动任务。",
+    "- 预算由任务 Owner 在开始前设定；用尽后转人工判断，不自动扩容。", "",
+    "## 回退", "",
+    "- 代码回退到上一已验证 SHA。",
+    "- 数据库迁移按降级脚本回退；无降级时从已验证备份恢复。",
+    "- 配置/开关回退到变更前快照。",
+    "- 回退后重新执行受影响验证，并记录结果。", "",
+    "## Scope Change", "",
+    "- [ ] 是否扩大了原始目标范围？如有，记录批准人、理由与时间。",
+    "- [ ] 是否用“先这样”掩盖了阻塞问题？",
+    "- [ ] Finding 是否被擅自升级为新需求？", "",
+    "> 生成计划不等于批准实现；只有项目 Owner 确认后才能进入 READY。", ""
+  ].join("\n");
+}
+
+export function postmortemTemplate(plan) {
+  return [
+    identityBlock(plan), "",
+    "# " + plan.config.name + " · 复盘模板", "",
+    "> 状态：TEMPLATE_NOT_EXECUTED。无真实事件证据时不得填写结论。",
+    "> project_id：" + plan.slug + " · base_sha：" + (plan.config.baseline?.headSha ?? "UNKNOWN"), "",
+    "- 日期：YYYY-MM-DD",
+    "- 类别：incident | friction（重复 ≥2 次）",
+    "- 涉及仓库 / 版本 / SHA：UNKNOWN", "",
+    "## 1. 事实与时间线", "",
+    "<只写已发生、可链接证据的事实；推测必须单独标注。>", "",
+    "| 时间 | 事件 | 证据 |", "|---|---|---|", "| UNKNOWN | 待记录 | NOT_RUN |", "",
+    "## 2. 影响", "",
+    "- 用户：", "- 数据：", "- 资金 / 时间：", "- 未受影响范围：", "",
+    "## 3. 根因", "",
+    "<追到流程或假设，不追到个人，也不写“手误”。区分已证实与推测。>", "",
+    "## 4. 哪些控制生效 / 哪些缺失或被忽略", "",
+    "- 生效：", "- 缺失：", "- 被忽略：", "",
+    "## 5. 行动项（核心输出）", "",
+    "| # | 候选改进 | 落地形式（文档/AGENTS/Skill/Hook/Lint/Test/CI Gate/Profile 标准） | 如何让第二次更难发生 | 工作量 | 状态 |",
+    "|---|---|---|---|---|---|",
+    "| 1 | 待填写 | 待选择 | 待说明 | S/M/L | PROPOSED |", "",
+    "如果每个行动项都是“更小心一点”，这次复盘失败，需要重新分类。", "",
+    "## 6. 被推翻的假设", "",
+    "<我们原本相信什么，事实是什么。>", "",
+    "## 7. 未验证项", "",
+    "- [ ] 根因是否已被独立复现？",
+    "- [ ] 行动项是否有负责人、期限与验证方式？",
+    "- [ ] 是否仍有无法解释的现象？",
+    "", "> 复盘不是发布证据；行动项完成前保持 PROPOSED。", ""
+  ].join("\n");
+}
+
+export function externalDemandBrief(plan) {
+  return [
+    identityBlock(plan), "",
+    "# " + plan.config.name + " · 外部需求简报（模板）", "",
+    "> 状态：TEMPLATE_NOT_EXECUTED。来源未经核实，不进入已批准 Spec，除非项目 Owner 明确确认。",
+    "> project_id：" + plan.slug + " · base_sha：" + (plan.config.baseline?.headSha ?? "UNKNOWN"), "",
+    "## 1. 信号来源（引用，不复制个人资料）", "",
+    "- SIGNAL_ID：PENDING",
+    "- CHANNEL：JOB_JD / INTERVIEW_POST / CUSTOMER_INPUT / OTHER",
+    "- 原始链接或事实指针：UNKNOWN",
+    "- 来源发布时间：UNKNOWN",
+    "- 实际核验日：NOT_RUN",
+    "- 事实摘要与本人推测分别注明：NONE / NONE",
+    "- 交叉佐证与去重：NONE",
+    "- 来源可信度：SOURCE_UNVERIFIED / SOURCE_OBSERVED / VERIFIED_INPUT",
+    "- 需求身份：INTERVIEW_KNOWLEDGE / ENGINEERING_HYPOTHESIS / REAL_USER_NEED（默认 ENGINEERING_HYPOTHESIS）", "",
+    "## 2. 接入决策", "",
+    "- TASK_ID / Owner：PENDING",
+    "- 当前是否已有工程仓：UNKNOWN",
+    "- ROUTE：NO_BUILD / LEARNING_LAB / EXISTING_PROJECT_DELTA / NEW_PROJECT_CANDIDATE",
+    "- 归属 repo / base SHA：PENDING",
+    "- 为什么值得做（需列证据）：PENDING",
+    "- 为什么不直接新建仓库：PENDING",
+    "- 用户 / 消费者、使用场景：UNKNOWN",
+    "- MVP 要解决的问题：PENDING",
+    "- NON_GOALS：NONE",
+    "- 影响系统 / 数据 / 模型与许可：UNKNOWN", "",
+    "## 3. 可验证工程规范", "",
+    "- 输入 / 输出 / 接口 / 数据权限：PENDING",
+    "- 必须保持的现有兼容性：UNKNOWN",
+    "- AC-1 正常路径（Given/When/Then）：PENDING",
+    "- AC-2 异常 / 权限 / 失败路径：PENDING",
+    "- AC-3 非功能约束（latency/cost，可选）：PENDING",
+    "- 评测集版本 / 数据来源与授权：UNKNOWN",
+    "- 可复算基线：NOT_MEASURED",
+    "- 所需单元 / 集成 / 端到端 / Eval / 故障注入：PENDING",
+    "- 失败条件 / 停止条件 / 回滚路径：PENDING", "",
+    "## 4. 实施与闭环", "",
+    "- 最小垂直切片及修改文件范围：PENDING",
+    "- 执行者：UNASSIGNED",
+    "- 实际代码 / Tests / PR / exact SHA：NONE",
+    "- CI / 本地环境 / 真实 Consumer 验证：NOT_RUN",
+    "- 实际交付状态：CANDIDATE_NOT_IMPLEMENTED",
+    "- 不能声称：客户需求已验证、本人独立掌握、生产部署、产生收入或命中真实面试。", "",
+    "## 5. 进入已批准 Spec 的条件", "",
+    "- [ ] 项目 Owner 明确确认来源与范围",
+    "- [ ] 每条 AC 绑定可执行检查",
+    "- [ ] 权限、数据与许可边界已核实",
+    "- [ ] 未确认项保持 UNKNOWN，不用假设填充", "",
+    "> 本简报只描述候选任务；它不是需求批准、排期承诺或 Skill 晋级证据。", ""
+  ].join("\n");
+}
+
+export function pullRequestDocument(plan) {
+  return [
+    identityBlock(plan), "",
+    "# " + plan.config.name + " · PR 描述模板", "",
+    "> 状态：TEMPLATE_NOT_EXECUTED。合并前必须填写真实命令与结果；空验证段阻断评审。",
+    "> project_id：" + plan.slug + " · base_sha：" + (plan.config.baseline?.headSha ?? "UNKNOWN"), "",
+    "## Why", "",
+    "<一段话说明问题与目标；链接 Spec / Ticket。>", "",
+    "## Scope", "",
+    "- 变更：<...>",
+    "- 明确不做：<...>", "",
+    "## Base SHA", "",
+    "- Base：`" + (plan.config.baseline?.headSha ?? "UNKNOWN") + "`",
+    "- Head：`<commit sha>`", "",
+    "## Verification", "",
+    "| 检查 | 命令 | 结果 | 跳过 / 未执行原因 |",
+    "|---|---|---|---|",
+    "| 单元测试 | `<command>` | NOT_RUN |  |",
+    "| 集成 / 契约 | `<command>` | NOT_RUN |  |",
+    "| Eval（AI 变更） | `<command>` | NOT_RUN |  |",
+    "| 手工 / 设备探针 | `<step>` | NOT_RUN |  |",
+    "", "- 证据链接：NONE", "",
+    "所有未执行或无法执行的检查必须写 UNKNOWN / NOT_RUN，不能留空。", "",
+    "## Risks", "",
+    "<可能破坏什么；影响半径。>", "",
+    "## Rollback", "",
+    "<revert commit / 迁移降级 / 配置开关；回退后如何验证。>", "",
+    "## Agent provenance（如为 Agent 生成）", "",
+    "- 模型 / 会话：UNKNOWN",
+    "- 遵循的指令 / 文档：UNKNOWN",
+    "- 人工审查人：UNASSIGNED", "",
+    "## 未验证项", "",
+    "- [ ] 真实设备 / 平台回执",
+    "- [ ] 真实消费者验收",
+    "- [ ] 生产发布与监控",
+    "", "> PR 合并 ≠ 已发布 ≠ 已验收。", ""
+  ].join("\n");
+}
+
+export function gitWorkflowMarkdown(plan) {
+  const section = (title, values) => ["## " + title, "", ...values.map(v => "- " + v), ""];
+  return [
+    identityBlock(plan), "",
+    "# " + plan.config.name + " · 项目级 Git 工作流（建议）", "",
+    "> 状态：" + GIT_WORKFLOW.status + "。目标仓库已有的 CONTRIBUTING / AGENTS / 分支保护优先；本文件不覆盖项目规则，也不授权自动推送。",
+    "> project_id：" + plan.slug + " · base_sha：" + (plan.config.baseline?.headSha ?? "UNKNOWN"), "",
+    ...section("Base SHA", GIT_WORKFLOW.baseSha),
+    ...section("分支模型", GIT_WORKFLOW.branches),
+    ...section("Worktree 隔离", GIT_WORKFLOW.worktrees),
+    ...section("提交粒度", GIT_WORKFLOW.commits),
+    ...section("PR 检查", GIT_WORKFLOW.pullRequest),
+    ...section("Review 完成", GIT_WORKFLOW.review),
+    "## 按 Agent 的操作要点", "",
+    ...GIT_WORKFLOW.agentOperating.flatMap(a => ["### " + a.agent, "", ...a.notes.map(n => "- " + n), ""]),
+    ...section("禁止动作", GIT_WORKFLOW.prohibitions),
+    ...section("合并后清理", GIT_WORKFLOW.merge),
+    "> 本文件是建议，不是组织级强制规范；项目本地规则与 CI 门禁始终优先。", ""
+  ].join("\n");
+}
+
+export function engineeringPlaybookMarkdown(plan) {
+  const matched = playbooksForProfiles(plan.profiles);
+  if (!matched.length) {
+    return [
+      identityBlock(plan), "",
+      "# " + plan.config.name + " · 工程 Playbook", "",
+      "> 状态：NO_AI_PLAYBOOK_ATTACHED。",
+      "> 当前 Profiles（" + plan.profiles.join(", ") + "）未包含 AI Application / RAG / Agent；",
+      "> 请以 11 阶段、路线 SOP 与 Profile 义务为准。需要时在启动器中追加对应扩展。", ""
+    ].join("\n");
+  }
+  return [
+    identityBlock(plan), "",
+    "# " + plan.config.name + " · 工程 Playbook", "",
+    "> 状态：" + matched.map(p => p.status).join(", ") + "。",
+    "> 本文件按当前 Profiles 附带操作手册；11 阶段与 Profile 义务仍是权威，手册不新增 Gate。",
+    "> project_id：" + plan.slug + " · base_sha：" + (plan.config.baseline?.headSha ?? "UNKNOWN"), "",
+    ...matched.map(p => playbookMarkdown(p)), ""
+  ].join("\n");
+}
+
 const mediaType = name =>
   name.endsWith(".json") ? "application/json" :
     name.endsWith(".yaml") ? "application/yaml" : "text/markdown";
@@ -218,7 +433,13 @@ export function workspaceBundle(plan) {
     [slug + "-release-checklist.md"]: releaseChecklist(plan),
     [slug + "-agent-handoff.md"]: stageHandoff(plan, plan.stages[0].id),
     [slug + "-route-sop.md"]: routeSopMarkdown(plan),
-    [slug + "-review-record.md"]: reviewRecord(plan)
+    [slug + "-review-record.md"]: reviewRecord(plan),
+    [slug + "-implementation-plan.md"]: implementationPlan(plan),
+    [slug + "-postmortem-template.md"]: postmortemTemplate(plan),
+    [slug + "-external-demand-brief.md"]: externalDemandBrief(plan),
+    [slug + "-pull-request-template.md"]: pullRequestDocument(plan),
+    [slug + "-git-workflow.md"]: gitWorkflowMarkdown(plan),
+    [slug + "-engineering-playbook.md"]: engineeringPlaybookMarkdown(plan)
   };
   const identity = projectIdentity(plan);
   const bundle = {

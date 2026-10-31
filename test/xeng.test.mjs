@@ -22,7 +22,7 @@ test("help and version are offline and non-destructive",()=>{
   assert.match(help.stdout,/xeng init/);
   const version=cli("version");
   assert.equal(version.status,0);
-  assert.match(version.stdout,/0\.2\.0/);
+  assert.match(version.stdout,/0\.3\.0/);
 });
 
 test("init --dry-run writes nothing",()=>withTemp(dir=>{
@@ -37,7 +37,7 @@ test("init creates the expected baseline without overwriting",()=>withTemp(dir=>
   const target=join(dir,"project");
   const r=cli("init",target,"--profile","saas,web","--tier","A","--task","feature","--mode","new");
   assert.equal(r.status,0,r.stderr);
-  for(const file of ["ENGINEERING_PROFILE.yaml","README.md","AGENTS.md","CLAUDE.md",".github/pull_request_template.md","docs/current-state.md",".gitignore"])
+  for(const file of ["ENGINEERING_PROFILE.yaml","README.md","AGENTS.md","CLAUDE.md",".github/pull_request_template.md","docs/current-state.md","docs/git-workflow.md",".gitignore"])
     assert.ok(existsSync(join(target,file)),file);
   assert.ok(existsSync(join(target,"tests")));
   assert.ok(existsSync(join(target,"migrations")));
@@ -46,6 +46,9 @@ test("init creates the expected baseline without overwriting",()=>withTemp(dir=>
   assert.match(profile,/profiles: \[saas, web\]/);
   assert.match(profile,/rollback_plan: required/);
   assert.match(readFileSync(join(target,"docs","current-state.md"),"utf8"),/last_verified: \d{4}-\d{2}-\d{2}/);
+  const pr=readFileSync(join(target,".github","pull_request_template.md"),"utf8");
+  assert.match(pr,/Base SHA/);assert.match(pr,/Unverified/);assert.match(pr,/Rollback/);
+  assert.match(readFileSync(join(target,"docs","git-workflow.md"),"utf8"),/advisory/i);
 
   const before=readFileSync(join(target,"README.md"),"utf8");
   const again=cli("init",target,"--profile","saas","--tier","B");
@@ -129,4 +132,34 @@ test("unknown command exits non-zero",()=>{
   const r=cli("nope");
   assert.equal(r.status,2);
   assert.match(r.stderr,/Unknown command/);
+});
+
+test("maturity reports a gap level from real audit checks and never claims L6",()=>withTemp(dir=>{
+  const target=join(dir,"project");
+  assert.equal(cli("init",target,"--profile","saas,web","--tier","A").status,0);
+  const r=cli("maturity",target,"--json");
+  const report=JSON.parse(r.stdout);
+  assert.equal(report.status,"MATURITY_ASSESSED_FROM_AUDIT");
+  assert.ok(["L0","L1","L2","L3","L4","L5"].includes(report.level));
+  assert.equal(report.target,"L4");
+  assert.equal(report.l6.status,"NOT_VERIFIABLE");
+  assert.ok(Array.isArray(report.missing_controls));
+  const human=cli("maturity",target);
+  assert.match(human.stdout,/MATURITY L\d/);
+  assert.match(human.stdout,/gap indicator/);
+}));
+
+test("playbook lists three manuals and prints an advisory one",()=>{
+  const list=cli("playbook");
+  assert.equal(list.status,0,list.stderr);
+  assert.match(list.stdout,/ai-application/);
+  assert.match(list.stdout,/rag/);
+  assert.match(list.stdout,/agent/);
+  const one=cli("playbook","rag");
+  assert.equal(one.status,0,one.stderr);
+  assert.match(one.stdout,/企业 RAG 从零构建手册/);
+  assert.match(one.stdout,/ADVISORY_PLAYBOOK_NOT_VERIFIED/);
+  assert.match(one.stdout,/Golden Set/);
+  const unknown=cli("playbook","nope");
+  assert.equal(unknown.status,2);
 });

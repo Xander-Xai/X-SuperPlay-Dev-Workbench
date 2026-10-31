@@ -25,11 +25,12 @@
         <button class="nav-item" data-view="workflow" type="button"><span>⌗</span> 工作流浏览器 <small>02</small></button>
         <button class="nav-item" data-view="skills" type="button"><span>◇</span> Skills 能力库 <small>03</small></button>
         <button class="nav-item" data-view="workspace" type="button"><span>▤</span> 项目工作区 <small>04</small></button>
-        <button class="nav-item" data-view="evidence" type="button"><span>◉</span> 证据与改进 <small>05</small></button>
+        <button class="nav-item" data-view="playbooks" type="button"><span>☰</span> 工程 Playbook <small>05</small></button>
+        <button class="nav-item" data-view="evidence" type="button"><span>◉</span> 证据与改进 <small>06</small></button>
       </nav>
       <div class="side-label side-label-second">OWNERSHIP</div>
       <div class="source-tile">
-        <span class="tiny-dot"></span><strong>Workbench 0.2.0</strong>
+        <span class="tiny-dot"></span><strong>Workbench 0.3.0</strong>
         <p>本仓库是当前工程运行时所有者。旧 Engineering OS 仅为历史来源，运行时不依赖它。</p>
         <a href="https://github.com/Xander-Xai/X-SuperPlay-Dev-Workbench" target="_blank" rel="noopener noreferrer">当前工程所有者 ↗</a>
       </div>
@@ -41,7 +42,7 @@
     <div class="workspace">
       <header class="topbar">
         <div class="breadcrumb">X-SUPERPLAY <span>/</span> ENGINEERING <span>/</span> <strong id="breadcrumb">LAUNCHER</strong></div>
-        <div class="top-actions"><span class="build-marker" id="build-marker">RUNTIME 0.2.0</span><a href="https://github.com/Xander-Xai/X-SuperPlay-Dev-Workbench" target="_blank" rel="noopener noreferrer" class="github-link">GitHub ↗</a></div>
+        <div class="top-actions"><span class="build-marker" id="build-marker">RUNTIME 0.3.0</span><a href="https://github.com/Xander-Xai/X-SuperPlay-Dev-Workbench" target="_blank" rel="noopener noreferrer" class="github-link">GitHub ↗</a></div>
       </header>
       <main>
         <!-- 01 · PROJECT LAUNCHER -->
@@ -50,7 +51,7 @@
             <div class="eyebrow"><span class="pulse"></span> AI-NATIVE SOFTWARE DELIVERY SYSTEM</div>
             <h1>从项目类型到可执行路线，<br /><em>一次装配完成。</em></h1>
             <p>选择项目类型、项目状态与任务类型，组合工程 Profiles 与候选 Skills，生成十一阶段路线、工作区资产和 Agent 交接。先验证，再交付。</p>
-            <div class="hero-meta"><span>4 类交付对象</span><i></i><span>11 个工程阶段</span><i></i><span>13 种任务路由</span><i></i><span>8 个候选 Skills</span></div>
+            <div class="hero-meta"><span>4 类交付对象</span><i></i><span>11 个工程阶段</span><i></i><span>13 种任务路由</span><i></i><span>8 个候选 Skills</span><i></i><span>3 份工程 Playbook</span></div>
             <div class="hero-decoration" aria-hidden="true"><div class="globe">◈</div><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div></div>
           </div>
           <div class="content-inner">
@@ -114,6 +115,8 @@
               <button class="tab" data-tab="routes" type="button" role="tab">路线 SOP · 4</button>
               <button class="tab" data-tab="tasks" type="button" role="tab">任务 · 13</button>
               <button class="tab" data-tab="profiles" type="button" role="tab">Profiles · 17</button>
+              <button class="tab" data-tab="git" type="button" role="tab">Git 工作流</button>
+              <button class="tab" data-tab="maturity" type="button" role="tab">成熟度 · L0–L6</button>
               <button class="tab" data-tab="tiers" type="button" role="tab">等级 · A/B/C/D</button>
             </div>
             <div id="workflow-body" class="workflow-body" aria-live="polite"></div>
@@ -137,7 +140,7 @@
 
         <!-- 04 · PROJECT WORKSPACE -->
         <section class="view" id="view-workspace">
-          <div class="plain-hero"><span class="index">04 / PROJECT WORKSPACE</span><h1>项目工作区资产</h1><p>根据当前方案生成 10 份可审查的工作区草案：清单、工程 Profile、Spec/Tickets、ADR、验证计划、发布清单、Agent 交接、路线 SOP、Review 记录与完整资产包。</p></div>
+          <div class="plain-hero"><span class="index">04 / PROJECT WORKSPACE</span><h1>项目工作区资产</h1><p>根据当前方案生成 16 份可审查的工作区草案：清单、工程 Profile、Spec/Tickets、ADR、验证计划、发布清单、Agent 交接、路线 SOP、Review 记录、实施计划、复盘、外部需求简报、PR 模板、Git 工作流、工程 Playbook 与完整资产包。</p></div>
           <div class="content-inner">
             <div class="workspace-layout">
               <div class="file-list" id="workspace-files"></div>
@@ -147,9 +150,22 @@
           </div>
         </section>
 
-        <!-- 05 · EVIDENCE & IMPROVEMENT -->
+        <!-- 05 · ENGINEERING PLAYBOOKS -->
+        <section class="view" id="view-playbooks">
+          <div class="plain-hero"><span class="index">05 / ENGINEERING PLAYBOOKS</span><h1>工程 Playbook</h1><p>三份 Profile 附属操作手册：AI 应用日常研发、企业 RAG 从零构建、企业 Agent 从零开发。它们复用 11 阶段，不新增生命周期。</p></div>
+          <div class="content-inner">
+            <div class="tabs" id="playbook-tabs" role="tablist">
+              <button class="tab active" data-playbook="ai-application" type="button" role="tab">AI 应用日常</button>
+              <button class="tab" data-playbook="rag" type="button" role="tab">RAG 从零</button>
+              <button class="tab" data-playbook="agent" type="button" role="tab">Agent 从零</button>
+            </div>
+            <div id="playbook-body" class="workflow-body" aria-live="polite"></div>
+          </div>
+        </section>
+
+        <!-- 06 · EVIDENCE & IMPROVEMENT -->
         <section class="view" id="view-evidence">
-          <div class="plain-hero"><span class="index">05 / EVIDENCE &amp; IMPROVEMENT</span><h1>证据与改进</h1><p>把“文档准备好”和“真实系统已验证”区分开。导入的本地报告默认 IMPORTED_NOT_TRUSTED，不会自动升级任何阶段。</p></div>
+          <div class="plain-hero"><span class="index">06 / EVIDENCE &amp; IMPROVEMENT</span><h1>证据与改进</h1><p>把“文档准备好”和“真实系统已验证”区分开。导入的本地报告默认 IMPORTED_NOT_TRUSTED，不会自动升级任何阶段。</p></div>
           <div class="content-inner" id="evidence-body"></div>
         </section>
       </main>

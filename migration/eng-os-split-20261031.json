@@ -2,7 +2,7 @@
   "migration_id": "eng-os-split-20261031",
   "created": "2026-10-31",
   "last_updated": "2026-10-31",
-  "status": "MIGRATION_RUNTIME_MERGED_VERIFICATION_PARTIAL",
+  "status": "ENGINEERING_CONTENT_MIGRATED_LOCAL_VERIFIED_CI_PENDING",
   "source": {
     "repository": "Xander-Xai/X-SuperPlay-AI-Engineering-OS",
     "commit": "8553124f238ab463d4a50debad34e871ef8de060",
@@ -26,7 +26,8 @@
     "historical_branch_commit": "527499f1ab3befdf5e87af042e746853cbbcf665",
     "current_main_observed": "32e0342",
     "current_main_observed_at": "2026-10-31",
-    "runtime_version": "0.2.0"
+    "runtime_version": "0.3.0",
+    "current_content_commit": "PENDING_THIS_PR"
   },
   "governance_reference": {
     "repository": "Xander-Xai/AI-Native-Work-Learning-OS",
@@ -53,7 +54,12 @@
     "base_profiles": 14,
     "overlay_profiles": 3,
     "skills": 8,
-    "routes": ["saas", "enterprise", "mini-program", "app"],
+    "routes": [
+      "saas",
+      "enterprise",
+      "mini-program",
+      "app"
+    ],
     "evidence_default": "NOT_RUN"
   },
   "fact_table": [
@@ -186,7 +192,8 @@
       "source": "registry/standards.yaml",
       "destination": "PROFILES required/recommended fields",
       "mode": "SEMANTIC_REWRITE",
-      "status": "MIGRATED_VERIFIED"
+      "status": "MIGRATED_VERIFIED",
+      "note": "Profile obligations plus structured Git/PR workflow."
     },
     {
       "id": "templates",
@@ -194,8 +201,8 @@
       "source": "06-templates/*",
       "destination": "src/starter.mjs, src/workspace.mjs",
       "mode": "SEMANTIC_REWRITE",
-      "status": "MIGRATED_PARTIAL",
-      "note": "Upstream tracer-ticket and implementation-plan templates added after the frozen snapshot are not absorbed; see delta audit."
+      "status": "MIGRATED_VERIFIED",
+      "note": "Implementation plan, postmortem, external demand, PR and review templates are generated as workspace drafts; 16 artifacts total."
     },
     {
       "id": "xeng-cli",
@@ -204,7 +211,15 @@
       "destination": "tools/xeng.mjs",
       "mode": "NODE_PORT",
       "status": "MIGRATED_VERIFIED",
-      "commands": ["init", "audit", "doctor", "validate-registry", "selftest", "task", "version"]
+      "commands": [
+        "init",
+        "audit",
+        "doctor",
+        "validate-registry",
+        "selftest",
+        "task",
+        "version"
+      ]
     },
     {
       "id": "skill-installer",
@@ -213,7 +228,15 @@
       "destination": "tools/skill-kit.mjs (bundled)",
       "mode": "REDESIGN",
       "status": "MIGRATED_VERIFIED",
-      "commands": ["list", "plan", "install", "verify", "update", "uninstall", "rollback"]
+      "commands": [
+        "list",
+        "plan",
+        "install",
+        "verify",
+        "update",
+        "uninstall",
+        "rollback"
+      ]
     },
     {
       "id": "evidence-model",
@@ -238,6 +261,28 @@
       "destination": "index.html, styles.css, src/app.mjs",
       "mode": "FIVE_ENTRY_REDESIGN",
       "status": "MIGRATED_VERIFIED"
+    },
+    {
+      "kind": "PLAYBOOKS",
+      "source": "04-profiles/ai-application/daily-development-sop.md, 04-profiles/rag/from-zero-playbook.md, 04-profiles/agent/from-zero-playbook.md",
+      "destination": "src/playbooks.mjs; site Playbook view; tools/xeng.mjs playbook; workspace <slug>-engineering-playbook.md",
+      "mode": "SEMANTIC_REWRITE_ADVISORY",
+      "status": "MIGRATED_VERIFIED"
+    },
+    {
+      "kind": "STANDARDS",
+      "source": "02-standards/branching.md, commits.md, git.md, pull-request.md; 03-ai-coding/worktree.md, claude-code.md, codex.md",
+      "destination": "src/git-workflow.mjs; docs/GIT_WORKFLOW.md; .github/pull_request_template.md; xeng init docs/git-workflow.md",
+      "mode": "SEMANTIC_REWRITE_ADVISORY",
+      "status": "MIGRATED_VERIFIED"
+    },
+    {
+      "kind": "DIAGNOSTIC",
+      "source": "00-governance/maturity-model.md",
+      "destination": "src/maturity.mjs; tools/xeng.mjs maturity; docs/MATURITY.md",
+      "mode": "ADAPTED_AS_LOCAL_GAP_DIAGNOSTIC",
+      "status": "MIGRATED_VERIFIED",
+      "note": "L6 is NOT_VERIFIABLE by static audit; levels are gap indicators, not scores."
     }
   ],
   "removed_runtime_dependencies": [
@@ -267,11 +312,42 @@
     },
     "reconciliation": "11 module records cover the runtime; no skill dependency was dropped; five constraint gaps recorded and re-assessed in the delta audit",
     "gaps": [
-      { "id": "G-01", "item": "branching / commits / pull-request / git standards", "status": "PARTIAL_EQUIVALENT", "owner": "workbench-maintainer", "reason": "xeng init generates a project PR template; repository-level git standards remain project-local" },
-      { "id": "G-02", "item": "worktree and per-agent operating manuals", "status": "EQUIVALENT_REPLACEMENT", "reason": "handoff permissions and stop conditions cover the runtime need" },
-      { "id": "G-03", "item": "postmortem / pull-request / review / external-demand / tracer-ticket templates", "status": "PARTIAL_REPLACEMENT", "reason": "corrected after delta audit: upstream tracer-ticket and implementation-plan templates are not absorbed" },
-      { "id": "G-04", "item": "AI project and security checklists", "status": "EQUIVALENT_REPLACEMENT", "reason": "profile obligations plus xeng audit checks" },
-      { "id": "G-05", "item": "repositories registry", "status": "HISTORICAL_ONLY", "reason": "organization inventory is not engineering runtime" }
+      {
+        "id": "G-01",
+        "item": "branching / commits / pull-request / git standards",
+        "status": "MIGRATED_VERIFIED_ADVISORY",
+        "owner": "workbench-maintainer",
+        "reason": "src/git-workflow.mjs, docs/GIT_WORKFLOW.md, repository PR template and xeng init project Git guide; project-local rules win",
+        "decided_at": "2026-10-31"
+      },
+      {
+        "id": "G-02",
+        "item": "worktree and per-agent operating manuals",
+        "status": "EQUIVALENT_VERIFIED",
+        "reason": "worktree isolation and Claude Code / Codex / OpenCode operating notes in the same Git workflow data and docs",
+        "decided_at": "2026-10-31"
+      },
+      {
+        "id": "G-03",
+        "item": "postmortem / pull-request / review / external-demand / tracer-ticket templates",
+        "status": "MIGRATED_VERIFIED",
+        "reason": "workspace now emits implementation plan, postmortem, external demand brief and PR template; 16 artifacts total",
+        "decided_at": "2026-10-31"
+      },
+      {
+        "id": "G-04",
+        "item": "AI project and security checklists",
+        "status": "EQUIVALENT_VERIFIED",
+        "reason": "profile obligations + xeng audit + AI/security behaviour in the three playbooks",
+        "decided_at": "2026-10-31"
+      },
+      {
+        "id": "G-05",
+        "item": "repositories registry",
+        "status": "HISTORICAL_ONLY",
+        "reason": "organisation repository registry is not engineering runtime and is not copied",
+        "decided_at": "2026-10-31"
+      }
     ]
   },
   "source_delta_audit": {
@@ -279,10 +355,21 @@
     "frozen_snapshot": "8553124f238ab463d4a50debad34e871ef8de060",
     "observed_head": "2b792242894937d303c4680208daf9df97ea0027",
     "ahead_by": 3,
-    "commits": ["bbd5910fb8169d6372f78c6a73b45992350e3fb4", "f1369b5d39600a82833fcb1bfcb4700f87f4babd", "2b792242894937d303c4680208daf9df97ea0027"],
+    "commits": [
+      "bbd5910fb8169d6372f78c6a73b45992350e3fb4",
+      "f1369b5d39600a82833fcb1bfcb4700f87f4babd",
+      "2b792242894937d303c4680208daf9df97ea0027"
+    ],
     "absorbed": [],
-    "partial": ["PR #5 bounded-loop semantics", "PR #9 project-level PR template via xeng init"],
-    "not_absorbed": ["06-templates/tracer-ticket.md", "06-templates/implementation-plan.md changes", "03-ai-coding/upstream-method-adoption.md"],
+    "partial": [
+      "PR #5 bounded-loop semantics",
+      "PR #9 project-level PR template via xeng init"
+    ],
+    "not_absorbed": [
+      "06-templates/tracer-ticket.md",
+      "06-templates/implementation-plan.md changes",
+      "03-ai-coding/upstream-method-adoption.md"
+    ],
     "conclusion": "No runtime dependency was added. G-03 is corrected to PARTIAL_REPLACEMENT."
   },
   "source_pr_5": {
@@ -291,17 +378,49 @@
     "state": "MERGED",
     "merged_at": "2026-10-31T04:17:52Z",
     "merge_commit": "bbd5910fb8169d6372f78c6a73b45992350e3fb4",
-    "covered": ["tracer ticket vertical slice", "blocked_by", "AC and negative cases", "base SHA", "permission scope"],
-    "partial": ["harness and bounded loop expressed as stop conditions only"],
-    "not_covered": ["iteration budget field", "dual-axis review record", "upstream method adoption guide"],
+    "covered": [
+      "tracer ticket vertical slice",
+      "blocked_by",
+      "AC and negative cases",
+      "base SHA",
+      "permission scope"
+    ],
+    "partial": [
+      "harness and bounded loop expressed as stop conditions only"
+    ],
+    "not_covered": [
+      "iteration budget field",
+      "dual-axis review record",
+      "upstream method adoption guide"
+    ],
     "note": "Merged after the frozen snapshot. Coverage was re-assessed in the delta audit; the previous 'not merged' statement is obsolete."
   },
   "source_repository_prs_observed": [
-    { "number": 3, "state": "MERGED", "merged_at": "2026-10-30T02:55:57Z" },
-    { "number": 4, "state": "MERGED", "merged_at": "2026-10-30T02:50:14Z" },
-    { "number": 5, "state": "MERGED", "merged_at": "2026-10-31T04:17:52Z" },
-    { "number": 6, "state": "MERGED", "merged_at": "2026-10-31T04:19:54Z" },
-    { "number": 9, "state": "MERGED", "merged_at": "2026-10-31T04:21:16Z" }
+    {
+      "number": 3,
+      "state": "MERGED",
+      "merged_at": "2026-10-30T02:55:57Z"
+    },
+    {
+      "number": 4,
+      "state": "MERGED",
+      "merged_at": "2026-10-30T02:50:14Z"
+    },
+    {
+      "number": 5,
+      "state": "MERGED",
+      "merged_at": "2026-10-31T04:17:52Z"
+    },
+    {
+      "number": 6,
+      "state": "MERGED",
+      "merged_at": "2026-10-31T04:19:54Z"
+    },
+    {
+      "number": 9,
+      "state": "MERGED",
+      "merged_at": "2026-10-31T04:21:16Z"
+    }
   ],
   "contract_alignment": {
     "contract_id": "ai-native-governance-contract/v1",
@@ -333,27 +452,81 @@
     "agent_load_opencode": "PASS_1_18_35_DISCOVERY_INVOCATION_REFERENCES_WSL2",
     "remote_ci": "SUCCESS_047FC8E_AND_32E0342",
     "pages": "DEPLOYED_047FC8E",
-    "independent_verification": "NOT_RUN"
+    "independent_verification": "NOT_RUN",
+    "playbooks": "PASS_3_PLAYBOOKS_SITE_CLI_WORKSPACE_TESTS",
+    "git_workflow": "PASS_DATA_DOCS_REPO_PR_TEMPLATE_INIT_GUIDE",
+    "maturity": "PASS_AUDIT_BASED_GAP_DIAGNOSTIC",
+    "runtime_version": "0.3.0"
   },
   "evidence_applicability": {
     "derived_by": "src/routing.mjs#evidencePlanFor",
-    "statuses": ["REQUIRED", "RECOMMENDED", "OPTIONAL", "NOT_APPLICABLE"],
+    "statuses": [
+      "REQUIRED",
+      "RECOMMENDED",
+      "OPTIONAL",
+      "NOT_APPLICABLE"
+    ],
     "context_missing": "NOT_RUN_OR_UNKNOWN",
     "tier_demotion": "non-safety only; existing projects are never weakened",
-    "safety_examples": ["security review", "release receipt", "AI/RAG eval", "enterprise integration probe", "device manual probe"]
+    "safety_examples": [
+      "security review",
+      "release receipt",
+      "AI/RAG eval",
+      "enterprise integration probe",
+      "device manual probe"
+    ]
   },
   "acceptance_status": "MERGED_CI_GREEN_PAGES_DEPLOYED",
   "acceptance_commit": "74402bf7172c5896e3610364d32b3279a9c8d851",
   "unresolved": [
-    { "id": "U-01", "item": "destination commit SHA", "status": "MERGED_74402BF7172C5896E3610364D32B3279A9C8D851", "note": "PR head 527499f was squash-merged as 74402bf; both are preserved." },
-    { "id": "U-02", "item": "browser interaction and mobile screenshot review", "status": "VERIFIED_HEADLESS_CHROME_1440_AND_390", "note": "Desktop 1440px and mobile 390px screenshots plus scripted interactions; no real-device review." },
-    { "id": "U-03", "item": "Windows 11 / WSL2 / Claude Code / Codex / OpenCode real loading", "status": "WINDOWS_11_LOCAL_VERIFIED_AGENT_LOADING_NOT_VERIFIED" },
-    { "id": "U-04", "item": "real project dogfood, device and production release", "status": "BLOCKED_NO_AUTHORIZED_PROJECT" },
-    { "id": "U-05", "item": "old repository PR #5 / #6 / #9 merge state", "status": "MERGED_OBSERVED_2026-10-31", "note": "#5 bbd5910f, #6 f1369b5d, #9 2b792242." },
-    { "id": "U-06", "item": "license for redistribution", "status": "UNLICENSED_PROPRIETARY" },
-    { "id": "U-07", "item": "CI and Pages receipts", "status": "CI_SUCCESS_AND_PAGES_DEPLOYED_FOR_74402BF_AND_32E0342" },
-    { "id": "U-08", "item": "unmigrated engineering constraints G-01..G-05", "status": "REASSESSED_G01_G03_PARTIAL" },
-    { "id": "U-09", "item": "full governance contract implementation", "status": "PARTIAL_ALL_SIX_MERGED_REFERENCE" }
+    {
+      "id": "U-01",
+      "item": "destination commit SHA",
+      "status": "MERGED_74402BF7172C5896E3610364D32B3279A9C8D851",
+      "note": "PR head 527499f was squash-merged as 74402bf; both are preserved."
+    },
+    {
+      "id": "U-02",
+      "item": "browser interaction and mobile screenshot review",
+      "status": "VERIFIED_HEADLESS_CHROME_1440_AND_390",
+      "note": "Desktop 1440px and mobile 390px screenshots plus scripted interactions; no real-device review."
+    },
+    {
+      "id": "U-03",
+      "item": "Windows 11 / WSL2 / Claude Code / Codex / OpenCode real loading",
+      "status": "WINDOWS_11_LOCAL_VERIFIED_AGENT_LOADING_NOT_VERIFIED"
+    },
+    {
+      "id": "U-04",
+      "item": "real project dogfood, device and production release",
+      "status": "BLOCKED_NO_AUTHORIZED_PROJECT"
+    },
+    {
+      "id": "U-05",
+      "item": "old repository PR #5 / #6 / #9 merge state",
+      "status": "MERGED_OBSERVED_2026-10-31",
+      "note": "#5 bbd5910f, #6 f1369b5d, #9 2b792242."
+    },
+    {
+      "id": "U-06",
+      "item": "license for redistribution",
+      "status": "UNLICENSED_PROPRIETARY"
+    },
+    {
+      "id": "U-07",
+      "item": "CI and Pages receipts",
+      "status": "CI_SUCCESS_AND_PAGES_DEPLOYED_FOR_74402BF_AND_32E0342"
+    },
+    {
+      "id": "U-08",
+      "item": "unmigrated engineering constraints G-01..G-05",
+      "status": "G01_G02_G03_MIGRATED_G04_EQUIVALENT_G05_HISTORICAL_L0_L6_DIAGNOSTIC"
+    },
+    {
+      "id": "U-09",
+      "item": "full governance contract implementation",
+      "status": "PARTIAL_ALL_SIX_MERGED_REFERENCE"
+    }
   ],
   "verification_status": "LOCAL_CI_PAGES_VERIFIED_INDEPENDENT_NOT_RUN",
   "decommission_status": "DECOMMISSION_NOT_VERIFIED",
@@ -363,5 +536,19 @@
     "This manifest does not authorize archiving or deleting any repository.",
     "Historical provenance is data, not a live synchronization claim or permission grant.",
     "The source repository is now public; that visibility change does not imply content approval or runtime dependency."
-  ]
+  ],
+  "semantic_reconciliation": {
+    "manifest": "migration/eng-os-semantic-reconciliation-20261031.json",
+    "total_source_files": 106,
+    "counts": {
+      "MIGRATED_VERIFIED": 61,
+      "EQUIVALENT_VERIFIED": 32,
+      "HISTORICAL_ONLY": 8,
+      "NOT_APPLICABLE": 5,
+      "PARTIAL": 0,
+      "NOT_MIGRATED": 0
+    },
+    "independent_review": "NOT_RUN"
+  },
+  "final_audit": "FINAL_ENGINEERING_MIGRATION_AUDIT.md"
 }

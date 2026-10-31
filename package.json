@@ -1,6 +1,6 @@
 {
   "name": "x-superplay-dev-workbench",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "description": "AI-native software delivery workbench: task routing, profiles, bundled skills, xeng CLI",
