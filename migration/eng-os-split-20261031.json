@@ -2,7 +2,7 @@
   "migration_id": "eng-os-split-20261031",
   "created": "2026-10-31",
   "last_updated": "2026-10-31",
-  "status": "ENGINEERING_CONTENT_MIGRATED_CI_VERIFIED_PAGES_PENDING",
+  "status": "ENGINEERING_CONTENT_MIGRATED_VERIFIED",
   "source": {
     "repository": "Xander-Xai/X-SuperPlay-AI-Engineering-OS",
     "commit": "8553124f238ab463d4a50debad34e871ef8de060",
@@ -27,7 +27,9 @@
     "current_main_observed": "32e0342",
     "current_main_observed_at": "2026-10-31",
     "runtime_version": "0.3.0",
-    "current_content_commit": "5fc673bec92249df0754cbb8b3e02df042b97e28"
+    "current_content_commit": "b2e29aee037f3d51f6c3c59697eba08179f4c2c9",
+    "latest_pull_request": 19,
+    "latest_merged_at": "2026-10-31T07:06:43Z"
   },
   "governance_reference": {
     "repository": "Xander-Xai/AI-Native-Work-Learning-OS",
@@ -450,8 +452,8 @@
     "agent_load_claude_code": "PASS_2_1_296_DISCOVERY_INVOCATION_REFERENCES",
     "agent_load_codex": "PARTIAL_0_159_0_DISCOVERY_ONLY_INVOCATION_BLOCKED",
     "agent_load_opencode": "PASS_1_18_35_DISCOVERY_INVOCATION_REFERENCES_WSL2",
-    "remote_ci": "SUCCESS_PR19_RUN_41179156940",
-    "pages": "DEPLOYED_047FC8E",
+    "remote_ci": "SUCCESS_MAIN_B2E29AE_RUN_41179291809",
+    "pages": "DEPLOYED_RUN_41179291799",
     "independent_verification": "NOT_RUN",
     "playbooks": "PASS_3_PLAYBOOKS_SITE_CLI_WORKSPACE_TESTS",
     "git_workflow": "PASS_DATA_DOCS_REPO_PR_TEMPLATE_INIT_GUIDE",
@@ -476,8 +478,8 @@
       "device manual probe"
     ]
   },
-  "acceptance_status": "PR_19_CI_GREEN_PAGES_PENDING",
-  "acceptance_commit": "74402bf7172c5896e3610364d32b3279a9c8d851",
+  "acceptance_status": "MERGED_CI_GREEN_PAGES_DEPLOYED",
+  "acceptance_commit": "b2e29aee037f3d51f6c3c59697eba08179f4c2c9",
   "unresolved": [
     {
       "id": "U-01",
@@ -515,7 +517,7 @@
     {
       "id": "U-07",
       "item": "CI and Pages receipts",
-      "status": "CI_SUCCESS_AND_PAGES_DEPLOYED_FOR_74402BF_AND_32E0342"
+      "status": "CI_SUCCESS_PR19_MAIN_RUN_41179291809_PAGES_RUN_41179291799"
     },
     {
       "id": "U-08",
@@ -526,6 +528,12 @@
       "id": "U-09",
       "item": "full governance contract implementation",
       "status": "PARTIAL_ALL_SIX_MERGED_REFERENCE"
+    },
+    {
+      "id": "U-10",
+      "item": "independent third-party review",
+      "status": "INDEPENDENT_REVIEW_NOT_RUN",
+      "note": "Local, CI and Pages evidence are not an independent audit."
     }
   ],
   "verification_status": "LOCAL_CI_PAGES_VERIFIED_INDEPENDENT_NOT_RUN",
@@ -550,5 +558,13 @@
     },
     "independent_review": "NOT_RUN"
   },
-  "final_audit": "FINAL_ENGINEERING_MIGRATION_AUDIT.md"
+  "final_audit": "FINAL_ENGINEERING_MIGRATION_AUDIT.md",
+  "merge_receipt": {
+    "pull_request": 19,
+    "merge_commit": "b2e29aee037f3d51f6c3c59697eba08179f4c2c9",
+    "merged_at": "2026-10-31T07:06:43Z",
+    "checks_run": 41179291809,
+    "pages_run": 41179291799,
+    "status": "CI_GREEN_PAGES_DEPLOYED"
+  }
 }
