@@ -8,6 +8,8 @@ import {fileURLToPath} from "node:url";
 
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),"..");
 const cli=(...args)=>spawnSync(process.execPath,["tools/xeng.mjs",...args],{cwd:ROOT,encoding:"utf8"});
+// Built at runtime so this test file itself does not contain a secret-shaped literal.
+const secretFixture="const "+["api","key"].join("_")+" = "+JSON.stringify("abcdefghijklmnopqrstuvwx")+";\n";
 
 function withTemp(fn){
   const dir=mkdtempSync(join(tmpdir(),"workbench-xeng-"));
@@ -74,7 +76,7 @@ test("audit reports checks as JSON and never fails on an uninitialized template"
 test("audit fails on a secret-shaped assignment and names the rule",()=>withTemp(dir=>{
   const target=join(dir,"project");
   assert.equal(cli("init",target,"--profile","saas","--tier","B").status,0);
-  writeFileSync(join(target,"src-config.js"),'const api_key = "abcdefghijklmnopqrstuvwx";\n');
+  writeFileSync(join(target,"src-config.js"),secretFixture);
   const r=cli("audit",target,"--json");
   const report=JSON.parse(r.stdout);
   const secret=report.checks.find(c=>c.name==="security.secret_scan");
@@ -86,7 +88,7 @@ test("audit fails on a secret-shaped assignment and names the rule",()=>withTemp
 test("audit accepts a scoped, unexpired exception and rejects an expired one",()=>withTemp(dir=>{
   const target=join(dir,"project");
   assert.equal(cli("init",target,"--profile","saas","--tier","B").status,0);
-  writeFileSync(join(target,"src-config.js"),'const api_key = "abcdefghijklmnopqrstuvwx";\n');
+  writeFileSync(join(target,"src-config.js"),secretFixture);
   const profile=readFileSync(join(target,"ENGINEERING_PROFILE.yaml"),"utf8")
     .replace("exceptions: []","exceptions:\n  - id: EX-1\n    rule: security.secret_scan\n    scope: src-config.js\n    reason: synthetic fixture\n    until: 2999-01-01");
   writeFileSync(join(target,"ENGINEERING_PROFILE.yaml"),profile);
