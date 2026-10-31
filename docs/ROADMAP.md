@@ -79,6 +79,23 @@
 - [ ] 工具层强制 `allowed_files` / `allowed_commands`（当前仅字段）。
 - [ ] 真实项目执行 `CODE_TESTED` → `CONSUMER_ACCEPTED` 证据链。
 
+## v0.2.3 Agent 编排适配（2026-10-31；分支 `feat/agent-orchestration-adapters`，OPEN）
+
+> 目标：让同一套交付契约可选择不同 Agent 执行环境，不新增第二套生命周期。以下 `[x]` 表示已在分支实现并通过本地 `npm run verify`；合入前不代表 `main` 已包含。
+
+- [x] `src/orchestration.mjs`：Orca / Herdr / Multica / Tern 只读能力注册表与 OMP / Claude Code / Codex / OpenCode 运行时清单。
+- [x] 上游核验：固定 commit、许可证、平台与 OMP 支持，逐项标记 `VERIFIED_UPSTREAM / UNVERIFIED / BLOCKED`。
+- [x] `xeng orchestrator list|doctor|plan|receipt`：默认只读；未安装如实报告，不报成功。
+- [x] `PLAN_ONLY / DRY_RUN` 交接计划：复用 16 字段 Ticket Harness 契约；不执行命令、不写文件、不联网。
+- [x] 静态隔离检查：单写入者、`allowed_files` 冲突、依赖成环、审查者独立性。
+- [x] 外部回执导入固定 `UNTRUSTED`；不得自称 `VERIFIED`，不得自动提升证据状态。
+- [x] 安全负例：路径穿越、绝对路径、Shell 链接 / 重定向注入、错误 SHA、未授权组合均被拒绝。
+- [x] `validateOrchestration()` 接入 `validateCatalog()` 与 `npm run check`；网站新增只读「Agent 编排」页签。
+- [ ] 真实 Provider 安装与执行（当前 `REAL_PROVIDER_NOT_TESTED`）。
+- [ ] 运行时锁、自动重试与失败恢复（当前只有计划检查）。
+- [ ] Multica 许可证、部署成本、数据流与鉴权审查通过后再评估可执行依赖。
+- [ ] Tern 结束闭测并给出 Windows / WSL2 支持声明后再评估。
+
 ## v0.3：真实项目 Dogfood
 
 - [ ] 已有微信小程序真实仓库：固定 base SHA，导出 Spec + 3 张可执行 Ticket。

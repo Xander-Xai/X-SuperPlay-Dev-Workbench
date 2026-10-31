@@ -22,6 +22,10 @@ import {
   SKILL_RELATION_POLICY, LEARNING_PATH, deliveryMatrix, activityById, learningPathTickets
 } from "../src/delivery.mjs";
 import { run as runSkillKit } from "./skill-kit.mjs";
+import {
+  PROVIDERS, AGENT_RUNTIMES, PROVIDER_IDS, AGENT_RUNTIME_IDS,
+  listProviders, getProvider, planHandoff, normalizeExternalReceipt, verifyReceiptAgainstPlan
+} from "../src/orchestration.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const LEVEL_ORDER = { not_applicable: 0, optional: 1, recommended: 2, required: 3 };
@@ -1183,6 +1187,213 @@ function cmdSkillsMatrix(argv) {
   return 0;
 }
 
+// ---------------------------------------------------------------- orchestrator
+//
+// Read-only. `list` and `plan` never touch external programs. `doctor` only runs
+// `<binary> --version`; absence is reported as NOT_INSTALLED, never as success.
+// No provider command is ever constructed from ticket fields.
+
+// Resolve a binary on PATH without invoking a shell. On Windows, prefer real
+// executables and .cmd shims over the extensionless POSIX wrapper npm also writes.
+function findOnPath(binary) {
+  const exts = process.platform === "win32" ? [".exe", ".cmd", ".bat", ""] : [""];
+  const sep = process.platform === "win32" ? ";" : ":";
+  for (const dir of String(process.env.PATH ?? "").split(sep)) {
+    if (!dir) continue;
+    for (const ext of exts) {
+      const candidate = join(dir, binary + ext);
+      if (isFile(candidate)) return candidate;
+    }
+  }
+  return null;
+}
+
+function probeBinary(binary) {
+  const found = findOnPath(binary);
+  if (!found) return { status: "NOT_INSTALLED", detail: "not found on PATH" };
+  if (/\.(cmd|bat)$/i.test(found)) return { status: "INSTALLED", detail: found + " (shim; version not probed)" };
+  const r = spawnSync(found, ["--version"], { encoding: "utf8", timeout: 5000, windowsHide: true });
+  if (r.error) return { status: "INSTALLED", detail: found + " (version not probed: " + String(r.error.code ?? "error").slice(0, 40) + ")" };
+  const first = String(r.stdout ?? "").split(/\r?\n/).find(line => line.trim()) ?? "";
+  return { status: "INSTALLED", detail: (first || "exit " + r.status).trim().slice(0, 120) };
+}
+
+const orchestratorUsage = () => [
+  "Usage:",
+  "  xeng orchestrator list [--json]",
+  "  xeng orchestrator doctor [--provider <id>] [--json]",
+  "  xeng orchestrator plan --provider <id> --agent <runtime> [--ticket <file.json>] [--base-sha <sha>] [--project-id <id>] [--repository <owner/repo>] [--platform windows|wsl2|linux|macos] [--json]",
+  "  xeng orchestrator receipt --file <receipt.json> [--plan <plan.json>] [--json]",
+  "",
+  "Providers: " + PROVIDER_IDS.join(", "),
+  "Agent runtimes: " + AGENT_RUNTIME_IDS.join(", "),
+  "All commands are read-only. plan is PLAN_ONLY/DRY_RUN; receipt stays UNTRUSTED."
+].join("\n");
+
+function cmdOrchestrator(argv) {
+  const sub = argv[0];
+  const rest = argv.slice(1);
+  if (!sub || sub === "--help" || sub === "-h") { console.log(orchestratorUsage()); return 0; }
+  if (sub === "list") return orchestratorList(rest);
+  if (sub === "doctor") return orchestratorDoctor(rest);
+  if (sub === "plan") return orchestratorPlan(rest);
+  if (sub === "receipt") return orchestratorReceipt(rest);
+  console.error("Unknown orchestrator subcommand: " + sub + "\n\n" + orchestratorUsage());
+  return 2;
+}
+
+function orchestratorList(argv) {
+  const unknown = argv.filter(a => a.startsWith("--") && a !== "--json");
+  if (unknown.length) { console.error("Unknown option: " + unknown[0]); return 2; }
+  const json = argv.includes("--json");
+  const out = { kind: "ORCHESTRATION_PROVIDER_REGISTRY", status: "READ_ONLY", providers: listProviders(), agentRuntimes: AGENT_RUNTIMES.map(r => ({ id: r.id, name: r.name, binary: r.binary, license: r.license })) };
+  if (json) { console.log(JSON.stringify(out, null, 2)); return 0; }
+  console.log("Agent orchestration providers (read-only registry)");
+  for (const p of PROVIDERS) {
+    console.log("  " + p.provider_id.padEnd(8) + p.priority + "  " + p.name.padEnd(8) + " " + p.license.padEnd(18) + " windows=" + p.platforms.windows.padEnd(18) + " omp=" + p.agent_runtimes.omp);
+  }
+  console.log("\nAgent runtimes: " + AGENT_RUNTIMES.map(r => r.id + "(" + r.binary + ")").join(", "));
+  console.log("Plan only: xeng orchestrator plan --provider <id> --agent <runtime> --ticket <file.json>");
+  return 0;
+}
+
+function orchestratorDoctor(argv) {
+  let filter = null;
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === "--json") continue;
+    if (a === "--provider") {
+      if (!argv[i + 1] || argv[i + 1].startsWith("--")) { console.error("Missing value for --provider"); return 2; }
+      filter = argv[++i];
+      continue;
+    }
+    console.error("Unknown option: " + a);
+    return 2;
+  }
+  if (filter && !PROVIDER_IDS.includes(filter)) { console.error("Unknown provider: " + filter); return 2; }
+  const json = argv.includes("--json");
+  const providerRows = PROVIDERS.filter(p => !filter || p.provider_id === filter).map(p => ({
+    provider_id: p.provider_id, priority: p.priority, binary: p.binary,
+    install: probeBinary(p.binary), adapter_status: p.adapter_status,
+    license_review: p.license_review
+  }));
+  const runtimeRows = AGENT_RUNTIMES.map(r => ({ id: r.id, binary: r.binary, install: probeBinary(r.binary) }));
+  const missing = providerRows.filter(r => r.install.status !== "INSTALLED").map(r => r.provider_id);
+  const out = {
+    kind: "ORCHESTRATION_DOCTOR",
+    status: missing.length ? "PROVIDERS_MISSING" : "PROVIDERS_PRESENT",
+    real_provider_tested: false,
+    providers: providerRows,
+    agentRuntimes: runtimeRows,
+    missing_providers: missing,
+    note: "Installation is not capability verification. A present binary has not been run against a ticket here."
+  };
+  if (json) console.log(JSON.stringify(out, null, 2));
+  else {
+    console.log("ORCHESTRATION DOCTOR (read-only)");
+    for (const r of providerRows) console.log("  " + r.install.status.padEnd(24) + r.provider_id.padEnd(8) + (r.install.detail ?? ""));
+    console.log("\nAgent runtimes:");
+    for (const r of runtimeRows) console.log("  " + r.install.status.padEnd(24) + r.id.padEnd(12) + (r.install.detail ?? ""));
+    console.log("\nREAL PROVIDER TEST: NOT_RUN (no orchestration provider was executed)");
+  }
+  return missing.length ? 1 : 0;
+}
+
+function readJsonFileStrict(file) {
+  const abs = resolve(file);
+  const st = lstatMaybe(abs);
+  if (!st || !st.isFile()) throw new Error("file not found: " + file);
+  if (st.isSymbolicLink()) throw new Error("refusing symlink input: " + file);
+  const text = readText(abs);
+  if (text === null) throw new Error("cannot read file: " + file);
+  let parsed;
+  try { parsed = JSON.parse(text); } catch { throw new Error("invalid JSON: " + file); }
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("expected a JSON object: " + file);
+  return parsed;
+}
+
+function orchestratorPlan(argv) {
+  const opts = { provider: null, agent: null, ticket: null, baseSha: null, projectId: null, repository: null, platform: "windows", json: false };
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === "--json") { opts.json = true; continue; }
+    const key = { "--provider": "provider", "--agent": "agent", "--ticket": "ticket", "--base-sha": "baseSha", "--project-id": "projectId", "--repository": "repository", "--platform": "platform" }[a];
+    if (!key) { console.error("Unknown option: " + a); return 2; }
+    if (!argv[i + 1] || argv[i + 1].startsWith("--")) { console.error("Missing value for " + a); return 2; }
+    opts[key] = argv[++i];
+  }
+  if (!opts.provider || !opts.agent) { console.error("plan requires --provider and --agent\n\n" + orchestratorUsage()); return 2; }
+  if (!PROVIDER_IDS.includes(opts.provider)) { console.error("Unknown provider: " + opts.provider + " (available: " + PROVIDER_IDS.join(", ") + ")"); return 2; }
+  if (!AGENT_RUNTIME_IDS.includes(opts.agent)) { console.error("Unknown agent runtime: " + opts.agent + " (available: " + AGENT_RUNTIME_IDS.join(", ") + ")"); return 2; }
+
+  let ticket = opts.ticket ? readJsonFileStrict(opts.ticket) : {};
+  if (opts.baseSha && (ticket.base_sha === undefined || ticket.base_sha === null)) ticket = { ...ticket, base_sha: opts.baseSha };
+  if (opts.projectId && (ticket.spec_id === undefined || ticket.spec_id === null)) ticket = { ...ticket, spec_id: opts.projectId };
+
+  const provider = getProvider(opts.provider);
+  const install = probeBinary(provider.binary).status;
+  let plan;
+  try {
+    plan = planHandoff({
+      providerId: opts.provider, agentRuntime: opts.agent, ticket,
+      platform: opts.platform, projectId: opts.projectId, repository: opts.repository,
+      installationStatus: install
+    });
+  } catch (e) {
+    console.error("BLOCKED: " + e.message);
+    return 2;
+  }
+
+  if (opts.json) console.log(JSON.stringify(plan, null, 2));
+  else {
+    console.log("ORCHESTRATION HANDOFF PLAN (PLAN_ONLY / DRY_RUN)");
+    console.log("  status: " + plan.status);
+    console.log("  provider: " + plan.provider_id + " @ " + plan.provider_version + "  agent: " + plan.agent_runtime);
+    console.log("  platform: " + plan.platform + "  installation: " + plan.installation_status);
+    console.log("  isolation: " + plan.workspace_policy.isolation + "  enforcement: " + plan.workspace_policy.enforcement + "  verification: " + plan.verification_status);
+    const r = plan.readiness;
+    console.log("  readiness: plan_fields=" + r.plan_fields_complete + " installed=" + r.provider_installed + " executable=" + r.provider_executable + " license_reviewed=" + r.license_reviewed + " owner_authorized=" + r.owner_authorized + " execution_verified=" + r.execution_verified);
+    console.log("  execution_ready: " + (r.execution_ready ? "YES" : "NO") + " — " + plan.status_note);
+    console.log("\nPreflight:");
+    for (const c of plan.preflight) console.log("  " + c.status.padEnd(7) + c.check + " — " + c.detail);
+    if (plan.blocked_reasons.length) console.log("\nBlocked:\n" + plan.blocked_reasons.map(r => "  - " + r).join("\n"));
+    if (plan.warnings.length) console.log("\nWarnings:\n" + plan.warnings.map(r => "  - " + r).join("\n"));
+    console.log("\nNon-actions: " + plan.non_actions.join(" "));
+  }
+  return plan.status === "BLOCKED" ? 2 : 0;
+}
+
+function orchestratorReceipt(argv) {
+  const opts = { file: null, plan: null, json: false };
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === "--json") { opts.json = true; continue; }
+    const key = { "--file": "file", "--plan": "plan" }[a];
+    if (!key) { console.error("Unknown option: " + a); return 2; }
+    if (!argv[i + 1] || argv[i + 1].startsWith("--")) { console.error("Missing value for " + a); return 2; }
+    opts[key] = argv[++i];
+  }
+  if (!opts.file) { console.error("receipt requires --file\n\n" + orchestratorUsage()); return 2; }
+  const raw = readJsonFileStrict(opts.file);
+  const receipt = normalizeExternalReceipt(raw);
+  let verification = null;
+  if (opts.plan) {
+    const plan = readJsonFileStrict(opts.plan);
+    verification = verifyReceiptAgainstPlan(raw, plan);
+  }
+  const out = { kind: "ORCHESTRATION_RECEIPT_IMPORT", receipt, verification, real_provider_tested: false };
+  if (opts.json) console.log(JSON.stringify(out, null, 2));
+  else {
+    console.log("EXTERNAL EXECUTION RECEIPT (UNTRUSTED)");
+    console.log("  provider: " + receipt.provider_id + "  agent: " + receipt.agent_runtime);
+    console.log("  ticket: " + receipt.ticket_id + "  base_sha: " + receipt.base_sha + "  head_sha: " + receipt.head_sha);
+    console.log("  trust: " + receipt.trust + "  evidence_state: " + receipt.evidence_state + "  promotion: " + receipt.promotion);
+    if (verification) console.log("  identity match: " + (verification.ok ? "PASS" : "FAIL — " + verification.mismatches.join("; ")));
+    console.log("  note: " + receipt.note);
+  }
+  return verification && !verification.ok ? 2 : 0;
+}
+
 // ---------------------------------------------------------------- main
 
 function usage() {
@@ -1201,6 +1412,7 @@ function usage() {
     "  xeng matrix [--json]",
     "  xeng delivery [--json]",
     "  xeng skills-matrix [--json]",
+    "  xeng orchestrator list|doctor|plan|receipt [--json]",
     "  xeng assemble --target <dir> --type saas --task feature --tier B --agent codex [--apply --confirm-reviewed]",
     "  xeng agent-check --target <dir> --agent codex",
     "  xeng version",
@@ -1225,6 +1437,7 @@ export function main(argv = process.argv.slice(2)) {
     case "matrix": return cmdMatrix(rest);
     case "delivery": return cmdDelivery(rest);
     case "skills-matrix": return cmdSkillsMatrix(rest);
+    case "orchestrator": return cmdOrchestrator(rest);
     case "assemble": return cmdAssemble(rest);
     case "agent-check": return cmdAgentCheck(rest);
     case "version": console.log(RUNTIME.name + " " + RUNTIME.version); return 0;

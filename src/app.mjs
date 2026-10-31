@@ -13,6 +13,7 @@ import { normalizeEvidenceReport, evidenceSummary, emptyEvidenceReport, evidence
 import { PLAYBOOKS, PLAYBOOK_STATUS } from "./playbooks.mjs";
 import { GIT_WORKFLOW } from "./git-workflow.mjs";
 import { MATURITY_LEVELS, MATURITY_TARGET } from "./maturity.mjs";
+import { listProviders } from "./orchestration.mjs";
 
 const one = selector => document.querySelector(selector);
 const all = selector => [...document.querySelectorAll(selector)];
@@ -376,6 +377,21 @@ function renderWorkflow() {
       MATURITY_LEVELS.map(l => [l.id, l.name, l.meaning, Object.entries(MATURITY_TARGET).filter(([, v]) => v === l.id).map(([k]) => k).join(", ") || "—"])
     ));
     body.append(newElement("p", "install-disclaimer", "运行：node tools/xeng.mjs maturity <path> [--json]。等级按连续达成计算；missing_controls 才是可执行输出。"));
+  } else if (activeWorkflowTab === "orchestrators") {
+    body.append(newElement("p", "muted", "4 个外部多 Agent 编排候选。这里是只读能力注册表，不是已安装或已接入的声明；未安装时 doctor 会如实报告缺失。"));
+    body.append(table(
+      ["Provider", "优先级", "许可证", "Windows", "WSL2", "OMP", "适配状态"],
+      listProviders().map(p => [p.name, p.priority, p.license, p.platforms.windows, p.platforms.wsl2, p.agent_runtimes.omp, p.adapter_status])
+    ));
+    const notes = newElement("ul", "inline-points");
+    [
+      "Orca / Herdr 为 P1 候选；互斥可选，不要求同时安装。",
+      "Multica 为 P2；许可证含附加条件，审查通过前不引入可执行依赖。",
+      "Tern 为 P3 闭测候选；Windows / WSL2 未获支持声明，当前标记 BLOCKED。",
+      "外部运行输出一律 UNTRUSTED；Agent 自称完成不等于 VERIFIED。"
+    ].forEach(v => notes.append(newElement("li", "", v)));
+    body.append(notes);
+    body.append(newElement("p", "install-disclaimer", "生成计划（只读）：node tools/xeng.mjs orchestrator plan --provider orca --agent omp --ticket <file.json>"));
   } else {
     body.append(newElement("p", "muted", "Tier 决定 spec / plan / ADR / review / e2e / rollback / evidence 的最低义务。Tier C/D 可裁剪部分阶段，但必须记录理由。"));
     body.append(table(

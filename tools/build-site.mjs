@@ -15,7 +15,7 @@ export const FILES=[
   "src/app.mjs","src/catalog.mjs","src/routing.mjs","src/engine.mjs",
   "src/install-contract.mjs","src/starter.mjs","src/baseline.mjs",
   "src/handoff.mjs","src/workspace.mjs","src/evidence.mjs","src/identity.mjs","src/evidence-identity.mjs",
-  "src/playbooks.mjs","src/git-workflow.mjs","src/maturity.mjs","src/delivery.mjs"
+  "src/playbooks.mjs","src/git-workflow.mjs","src/maturity.mjs","src/delivery.mjs","src/orchestration.mjs"
 ];
 export async function build(){
   const html=await readFile(resolve(root,"index.html"),"utf8");

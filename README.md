@@ -116,6 +116,24 @@ node tools/xeng.mjs validate-registry
 node tools/xeng.mjs task bug --type=saas --tier=B
 ~~~
 
+## Agent 编排适配（只读注册表）
+
+外部多 Agent 编排候选（Orca / Herdr / Multica / Tern）以只读注册表形式接入，复用同一 11 阶段、Ticket Harness 契约与证据模型。Provider 只是执行环境，不是第二套生命周期。
+
+~~~bash
+node tools/xeng.mjs orchestrator list
+node tools/xeng.mjs orchestrator doctor
+node tools/xeng.mjs orchestrator plan --provider orca --agent omp --ticket ticket.json
+node tools/xeng.mjs orchestrator receipt --file receipt.json --plan plan.json
+~~~
+
+- `plan` 只生成 `PLAN_ONLY / DRY_RUN` 计划；不启动进程、不拼 Shell、不写文件。
+- 外部回执一律 `UNTRUSTED`，不会自动升级为 `VERIFIED`。
+- Orca / Herdr 为 P1 互斥可选；Multica 需许可证审查；Tern 闭测且 Windows/WSL2 标记 `BLOCKED`。
+- 本机未安装任何编排器：真实 Provider 执行状态为 `REAL_PROVIDER_NOT_TESTED`。
+
+上游 pin、许可证与逐项核验见 [docs/ORCHESTRATION.md](docs/ORCHESTRATION.md)。
+
 `init` 默认不覆盖任何已有文件；冲突时写入 `*.suggested.md` 供人工合并。`audit` 检查 README、Agent 规则、工程 Profile、测试、CI、密钥、env 配对、迁移、回滚与例外有效期。`doctor` 检查坏链接、失效脚本路径、过期当前事实和 env 漂移。`maturity` 复用 audit 的实际检查输出 L0–L6 缺口，不把等级当质量分数，L6 不由静态审计宣称。
 
 `init` 还会生成建议性的 `docs/git-workflow.md` 与 `.github/pull_request_template.md`：前者覆盖 base SHA、分支、worktree、提交粒度、PR 检查与合并后清理；项目本地规则始终优先。
@@ -218,6 +236,7 @@ npm run probe -- --target ../your-project --type saas --output project-baseline.
 ## 文档
 
 - [架构与所有权](docs/ARCHITECTURE.md)
+- [Agent 编排适配（只读注册表与 PLAN_ONLY 交接）](docs/ORCHESTRATION.md)
 - [方法视图（8/18/11 与交付 Gate）](docs/METHOD.md)
 - [完整开发流程与 Skills 学习体系](docs/learning/START-HERE.md)
 - [18 活动知识指南](docs/learning/FULLSTACK-LIFECYCLE-GUIDE.md)

@@ -8,6 +8,7 @@ import { composeRoute, validateRoute, stageSkillIds, tierObligations, profileObl
 import { validatePlaybooks } from "./playbooks.mjs";
 import { validateGitWorkflow } from "./git-workflow.mjs";
 import { validateDelivery } from "./delivery.mjs";
+import { validateOrchestration } from "./orchestration.mjs";
 
 const hasId = (arr, id) => arr.some(x => x.id === id);
 const clean = (value, max) => String(value ?? "").replace(/\0/g, "").trim().slice(0, max);
@@ -294,6 +295,7 @@ export function validateCatalog() {
   errors.push(...validatePlaybooks());
   errors.push(...validateGitWorkflow());
   errors.push(...validateDelivery());
+  errors.push(...validateOrchestration());
   return errors;
 }
 
