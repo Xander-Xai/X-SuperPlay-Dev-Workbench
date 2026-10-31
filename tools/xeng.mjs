@@ -6,11 +6,13 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
-  PROFILES, PROFILE_IDS, STAGES, STAGE_IDS, TASKS, TASK_IDS, TIERS, SKILLS, SKILL_IDS,
+  TYPES, PROFILES, PROFILE_IDS, STAGES, STAGE_IDS, TASKS, TASK_IDS, TIERS, SKILLS, SKILL_IDS,
   PROVENANCE, OWNER, GOVERNANCE, RUNTIME
 } from "../src/catalog.mjs";
 import { composeRoute, tierObligations } from "../src/routing.mjs";
 import { validateCatalog } from "../src/engine.mjs";
+import { resolveSkillDependencies } from "../src/install-contract.mjs";
+import { run as runSkillKit } from "./skill-kit.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const LEVEL_ORDER = { not_applicable: 0, optional: 1, recommended: 2, required: 3 };
@@ -673,6 +675,157 @@ function cmdTask(argv) {
   return 0;
 }
 
+// ---------------------------------------------------------------- assemble
+
+function targetRepoState(target) {
+  const git = (args) => spawnSync("git", ["-C", target, ...args], { encoding: "utf8", windowsHide: true });
+  const top = git(["rev-parse", "--show-toplevel"]);
+  if (top.status !== 0) return { gitRoot: null, headSha: "UNKNOWN", dirty: null };
+  const head = git(["rev-parse", "HEAD"]);
+  const status = git(["status", "--porcelain"]);
+  return {
+    gitRoot: resolve(top.stdout.trim()),
+    isGitRoot: resolve(top.stdout.trim()) === resolve(target),
+    headSha: head.status === 0 ? head.stdout.trim() : "UNKNOWN",
+    dirty: status.status === 0 ? status.stdout.trim().length > 0 : null
+  };
+}
+
+function parseAssembleFlags(argv) {
+  const opts = { type: "mini-program", task: "feature", tier: "B", mode: "existing", stack: null, addons: [], apply: false, confirmReviewed: false };
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === "--apply") { opts.apply = true; continue; }
+    if (a === "--confirm-reviewed") { opts.confirmReviewed = true; continue; }
+    if (!["--target", "--type", "--task", "--tier", "--mode", "--stack", "--addons", "--agent"].includes(a))
+      throw new Error("Unknown option: " + a);
+    if (!argv[i + 1] || argv[i + 1].startsWith("--")) throw new Error("Missing value for " + a);
+    opts[a.slice(2)] = argv[++i];
+  }
+  if (!opts.target) throw new Error("assemble requires --target");
+  if (!opts.agent) throw new Error("assemble requires --agent claude-code|codex|opencode");
+  if (!Object.hasOwn(TYPES, opts.type)) throw new Error("Unknown project type: " + opts.type);
+  if (!TASK_IDS.includes(opts.task)) throw new Error("Unknown task: " + opts.task);
+  if (!Object.hasOwn(TIERS, opts.tier)) throw new Error("Tier must be A|B|C|D");
+  if (!["new", "existing"].includes(opts.mode)) throw new Error("Mode must be new|existing");
+  opts.addons = opts.addons ? String(opts.addons).split(",").map(x => x.trim()).filter(Boolean) : [];
+  return opts;
+}
+
+function cmdAssemble(argv) {
+  const opts = parseAssembleFlags(argv);
+  const target = resolve(opts.target);
+  if (!existsSync(target) || !isDir(target)) throw new Error("Target must be an existing directory: " + target);
+  if (lstatSync(target).isSymbolicLink()) throw new Error("Target must not be a symlink");
+
+  const route = composeRoute({
+    type: opts.type, task: opts.task, tier: opts.tier, mode: opts.mode,
+    stack: opts.stack ?? undefined, addons: opts.addons
+  });
+  const stageSkills = route.stages.map(s => ({
+    stage: s.id, name: s.name, role: s.role,
+    skills: [...(STAGES.find(x => x.id === s.id)?.requiredSkills ?? [])]
+  }));
+  const required = [...new Set(stageSkills.flatMap(s => s.skills))];
+  const resolved = resolveSkillDependencies(required.join(","));
+  const plan = runSkillKit(["plan", "--target", target, "--agent", opts.agent, "--skills", resolved.join(",")], { silent: true });
+  const repo = targetRepoState(target);
+  const warnings = [...route.warnings];
+  if (repo.gitRoot && !repo.isGitRoot) warnings.push("Target is inside a Git repo but is not its root");
+  if (!repo.gitRoot) warnings.push("Target is not a Git repository; base SHA is UNKNOWN");
+  warnings.push("Skills are UNLICENSED-PROPRIETARY; confirm target visibility and distribution rights");
+
+  const out = {
+    status: "ASSEMBLY_DRY_RUN",
+    runtime: RUNTIME.name + " " + RUNTIME.version,
+    target: { path: target, ...repo },
+    project: {
+      name: basename(target), type: opts.type, task: route.task.id, tier: route.tier.id,
+      mode: route.mode, stack: route.stack, profiles: route.profiles
+    },
+    route: {
+      stages: stageSkills,
+      skipped: route.skipped.map(s => s.id),
+      sop: { negativeCase: route.routeSop.negativeCase, platformConstraints: route.routeSop.platformConstraints }
+    },
+    skills: {
+      required, resolved,
+      planStatus: plan.status,
+      license: "UNLICENSED-PROPRIETARY",
+      items: plan.skills.map(s => ({ skill: s.skill, path: s.path, conflicts: s.conflicts, alreadyManaged: s.alreadyManaged }))
+    },
+    agent: {
+      id: opts.agent,
+      filesWillInstallTo: plan.directory,
+      runtimeLoad: "NOT_VERIFIED",
+      probeCommand: opts.agent === "opencode"
+        ? "cd <target> && opencode debug skill"
+        : opts.agent === "codex"
+          ? "cd <target> && codex debug prompt-input"
+          : "cd <target> && claude -p \"/<skill> ...\""
+    },
+    next: [
+      "Review the plan and target visibility.",
+      "Re-run with --apply --confirm-reviewed to install files.",
+      "Run: node tools/xeng.mjs agent-check --target <target> --agent " + opts.agent,
+      "Verify the Agent actually discovers the skill before claiming it loaded."
+    ],
+    warnings
+  };
+
+  if (opts.apply) {
+    if (!opts.confirmReviewed) throw new Error("--apply requires --confirm-reviewed after reviewing target visibility and license");
+    const already = plan.skills.filter(s => s.alreadyManaged);
+    if (already.length && already.length !== plan.skills.length)
+      throw new Error("Partial managed install; resolve with skill-kit update before assembling");
+    if (already.length) {
+      out.status = "ALREADY_MANAGED";
+    } else {
+      const install = runSkillKit([
+        "install", "--target", target, "--agent", opts.agent, "--skills", resolved.join(","),
+        "--apply", "--confirm-reviewed"
+      ], { silent: true });
+      out.status = "ASSEMBLY_INSTALLED_NOT_TESTED";
+      out.receipt = install.receipt;
+      out.skills.installed = install.skills;
+    }
+    out.verification = runSkillKit(["verify", "--target", target, "--agent", opts.agent], { silent: true });
+  }
+  console.log(JSON.stringify(out, null, 2));
+  return 0;
+}
+
+function cmdAgentCheck(argv) {
+  const opts = { agent: null, target: null };
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (!["--target", "--agent"].includes(a)) throw new Error("Unknown option: " + a);
+    if (!argv[i + 1] || argv[i + 1].startsWith("--")) throw new Error("Missing value for " + a);
+    opts[a.slice(2)] = argv[++i];
+  }
+  if (!opts.target || !opts.agent) throw new Error("agent-check requires --target and --agent");
+  const target = resolve(opts.target);
+  if (!existsSync(target) || !isDir(target)) throw new Error("Target does not exist: " + target);
+  const verify = runSkillKit(["verify", "--target", target, "--agent", opts.agent], { silent: true });
+  const installed = (verify.skills ?? []).length > 0;
+  const filesOk = verify.status === "VERIFIED_UNCHANGED";
+  const out = {
+    status: !installed ? "NOT_INSTALLED" : filesOk ? "FILES_VERIFIED_RUNTIME_NOT_VERIFIED" : "DRIFT_DETECTED",
+    agent: opts.agent,
+    target,
+    skills: verify.skills ?? [],
+    runtimeLoad: "NOT_VERIFIED",
+    probeCommand: opts.agent === "opencode"
+      ? "cd <target> && opencode debug skill"
+      : opts.agent === "codex"
+        ? "cd <target> && codex debug prompt-input"
+        : "cd <target> && claude -p \"/<skill> ...\"",
+    note: "File hashes do not prove the Agent discovered or executed the skill. Record the probe output separately."
+  };
+  console.log(JSON.stringify(out, null, 2));
+  return installed && filesOk ? 0 : 1;
+}
+
 // ---------------------------------------------------------------- main
 
 function usage() {
@@ -685,9 +838,11 @@ function usage() {
     "  xeng validate-registry",
     "  xeng selftest",
     "  xeng task <type> [--tier=A] [--mode=new] [--type=saas]",
+    "  xeng assemble --target <dir> --type saas --task feature --tier B --agent codex [--apply --confirm-reviewed]",
+    "  xeng agent-check --target <dir> --agent codex",
     "  xeng version",
     "",
-    "No network access. init never overwrites existing files."
+    "No network access. init never overwrites existing files. assemble reuses skill-kit and is dry-run by default."
   ].join("\n");
 }
 
@@ -701,6 +856,8 @@ export function main(argv = process.argv.slice(2)) {
     case "validate-registry": return cmdValidateRegistry(rest);
     case "selftest": return cmdSelftest(rest);
     case "task": return cmdTask(rest);
+    case "assemble": return cmdAssemble(rest);
+    case "agent-check": return cmdAgentCheck(rest);
     case "version": console.log(RUNTIME.name + " " + RUNTIME.version); return 0;
     default: console.error("Unknown command: " + cmd + "\n\n" + usage()); return 2;
   }

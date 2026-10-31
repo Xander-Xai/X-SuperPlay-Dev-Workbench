@@ -1,11 +1,12 @@
 # 跨仓治理契约对齐（`ai-native-governance-contract/v1`）
 
-本文件是对私有治理仓 PR #57 中公开安全契约的**独立摘要与实现对账**，不是该文件的副本，也不构成运行时依赖。契约原文由 AI-Native Work Learning OS 拥有；Workbench 只按自己的语义实现，并在此记录采用、部分采用与未实现的部分。
+本文件是对治理仓 PR #57 中公开安全契约的**独立摘要与实现对账**，不是该文件的副本，也不构成运行时依赖。契约原文由 AI-Native Work Learning OS 拥有；Workbench 只按自己的语义实现，并在此记录采用、部分采用与未实现的部分。
 
 - 对账日期：2026-10-31
-- 契约版本：`v1`
-- 契约来源：AI-Native PR #57 @ `2b3013ca8d096bdd25c5ec7d5c7a9b3b02b98735`（contract blob `df6f5100`）
-- 契约 PR 状态（2026-10-31 观测）：`OPEN`，未作为已合并权威
+- 契约版本：`v1` / revision `1.1`
+- 契约来源：AI-Native PR #57 @ `5a990745f155523bc212969c222b7c596a525c48`（contract blob `592bea79de5f5b5f9b883fb89d65af30186b542e`，size 13823）
+- 契约 PR 状态（2026-10-31 观测）：`OPEN`，`CANDIDATE`，未作为已合并权威
+- 观测到的 head 漂移：`2b3013ca` → `41f27219` → `5a990745`；只固定最新观测，不追随移动 PR
 - Workbench 版本：`0.2.0`
 - 结论：**6 项均为部分实现**；状态词汇兼容已采用；Review Convergence 与 Knowledge Promotion 存在明确的未实现子项；无运行时依赖。
 
@@ -17,11 +18,12 @@
 | 原始目标冻结 | `originalRequest` 原样保存，扩大范围需显式修改 | 部分 |
 | 可验证 AC | Spec 草案与 Ticket 的 AC 字段；业务方确认前为待定 | 部分 |
 | 授权范围 | Ticket 含 `permission`、`agent`、`baseSha`；handoff 限定单阶段 | 部分 |
-| 禁止动作 | handoff 的“执行纪律”列出禁止项，但不是结构化字段 | 部分 |
-| 停止条件 | 阶段 `stopWhen` + handoff 停止条件 | 已覆盖 |
-| 证据计划 | 阶段 `evidence` 种类 + Ticket `testIdea` / `evidence` | 部分 |
+| 禁止动作 | Ticket 的 `forbiddenActions` 与 handoff 执行纪律均结构化列出 | 部分 |
+| 停止条件 | 阶段 `stopWhen` + Ticket `stopConditions` + handoff 停止条件 | 已覆盖 |
+| 证据计划 | 阶段 `evidencePlan` 派生到 Ticket 的 `evidencePlan` | 部分 |
+| 有界迭代 | Ticket 记录 `iterationBudget`（每假设 2 次、无新证据即停止、单活动任务） | 部分 |
 
-缺口：Ticket 没有独立的 `FORBIDDEN_ACTIONS` 与 `EVIDENCE_PLAN` 结构化字段；单执行窗口单任务未在工具层强制（静态规划器不持有执行会话）。
+缺口：单执行窗口单任务仍是纪律约束，不是工具层锁；API token 级权限层级未建模。证据：`src/starter.mjs`、`src/handoff.mjs`、`test/starter.test.mjs`。
 
 ## 2. Evidence / Verification Identity（证据与验证身份）
 
@@ -32,10 +34,10 @@
 | 晋级需直接证据 | `transition()` 要求 command/result/artifact 且层为已执行层 | 已覆盖 |
 | 阶段完成看全部 Gate | `evidenceSummary()` 按阶段必需 Gate 计算，缺失即不完整 | 已覆盖 |
 | 导入声明不可信 | `IMPORTED_NOT_TRUSTED`，`trusted:false`，`promotion:NONE` | 已覆盖 |
-| reviewed candidate 身份 | manifest 记录目标提交，但 Ticket/证据不绑定不可变 digest | 部分 |
-| built / released / runtime / consumer 身份 | 仅有证据层标签，没有逐产物 SHA 链 | 部分 |
+| reviewed candidate 身份 | `src/evidence-identity.mjs` 可记录 `reviewed_candidate` 与 sha256 digest | 部分 |
+| built / released / runtime / consumer 身份 | 五类身份可记录并检查 source commit 一致，但仍未接入构建/发布流水线 | 部分 |
 
-缺口：`reviewed_candidate`、`built_artifact`、`released_artifact`、`runtime_receipt`、`consumer_acceptance` 尚未建模为带 digest 的身份对象。
+缺口：身份链已建模为 `RECORDED_NOT_TRUSTED` 并拒绝混合 source commit，但 stage Gate 仍不要求身份链，构建与发布流水线也未自动写入 digest。证据：`src/evidence-identity.mjs`、`src/evidence.mjs`、`test/evidence.test.mjs`。
 
 ### 状态词汇兼容（§2.3）
 
@@ -72,14 +74,14 @@
 
 | 契约要求 | Workbench 现状 | 状态 |
 |---|---|---|
-| Finding 不自动成为任务 | Review 阶段 Gate 与文档有相关表述 | 部分 |
-| 仅 Mainline Blocker 阻塞 | 未建模 Finding 分类枚举 | 未实现 |
-| 禁止静默提高 AC | 文档要求显式变更；无工具校验 | 部分 |
+| Finding 不自动成为任务 | `review-record.md` 明确 Finding 不自动成为新需求 | 已覆盖 |
+| 仅 Mainline Blocker 阻塞 | Review 模板提供 `MAINLINE_BLOCKER / NON_BLOCKING / QUESTION / SUGGESTION` | 部分 |
+| 禁止静默提高 AC | 文档与 Review 模板要求显式 Scope Change；无工具校验 | 部分 |
 | 独立评审 | Review 阶段要求独立审查；无独立 Agent 编排 | 部分 |
-| 不可变候选 | 未绑定 review candidate digest | 未实现 |
-| 不用 Scope Lock 掩盖问题 | 文档表述；无执行机制 | 部分 |
+| 不可变候选 | Review 模板保留 `reviewed_candidate` 字段，未接入 digest 链 | 部分 |
+| 不用 Scope Lock 掩盖问题 | Review 模板含 Scope Lock 检查项；无执行机制 | 部分 |
 
-缺口：Finding 分类、Scope Change 决策、不可变候选是主要未实现项。
+缺口：Finding 分类与双轴评审已模板化，但 immutable candidate digest 与 Scope Lock 执行仍是人工约束。证据：`src/workspace.mjs#reviewRecord`、`test/workspace.test.mjs`。
 
 ## 6. Knowledge / Pattern Promotion（知识 / 模式晋级）
 
@@ -100,15 +102,15 @@
 
 | 章节 | 状态 | 具名缺口 |
 |---|---|---|
-| Task Contract | PARTIAL | 结构化禁止动作与证据计划；单活动任务 |
-| Evidence Identity | PARTIAL | 产物 digest 身份链 |
+| Task Contract | PARTIAL | 字段已结构化；单活动任务未工具化 |
+| Evidence Identity | PARTIAL | 身份链已建模；未接入 Gate 与流水线 |
 | Status Vocabulary | ADOPTED | — |
 | Agent Permissions | PARTIAL | 结构化权限层级；可执行防绕过 |
 | Context Freshness | PARTIAL | 强制锚点；下游失效 |
-| Review Convergence | PARTIAL | Finding 分类；不可变候选；Scope Lock |
-| Knowledge Promotion | PARTIAL | 晋级数据模型；跨项目证据索引 |
+| Review Convergence | PARTIAL | 不可变候选 digest；Scope Lock 执行 |
+| Knowledge Promotion | PARTIAL | 跨项目证据索引；消费者记录 |
 
-`ADOPTED` 仅用于有本地实现与可复核证据的项；迁移状态、CI 状态和验收状态不互相升级。
+`ADOPTED` 仅用于有本地实现与可复核证据的项；迁移状态、CI 状态和验收状态不互相升级。整份契约在 PR #57 合并前保持 `CANDIDATE`，不是组织级权威。
 
 ## 采用与拒绝
 

@@ -171,6 +171,38 @@ export function routeSopMarkdown(plan) {
   ].join("\n");
 }
 
+export function reviewRecord(plan) {
+  return [
+    identityBlock(plan), "",
+    "# " + plan.config.name + " · Review 记录（草案）", "",
+    "> 状态：NOT_RUN。Review 结论必须来自真实 diff 与证据，不得由计划自动生成。",
+    "> project_id：" + plan.slug + " · base_sha：" + (plan.config.baseline?.headSha ?? "UNKNOWN"), "",
+    "## 双轴评审", "",
+    "| Finding | 轴 | 分类 | 证据 | 阻塞主线 | 决定 |",
+    "|---|---|---|---|---|---|",
+    "| F-01 | Spec / Standards | MAINLINE_BLOCKER / NON_BLOCKING / QUESTION / SUGGESTION | NOT_RUN | 待定 | 待定 |",
+    "",
+    "- **Spec 轴**：逐条核对 AC 是否有实现与证据。",
+    "- **Standards 轴**：安全、边界、测试质量、可维护性、发布与回滚。",
+    "- Finding 不会自动成为新需求；只有“不修就无法诚实满足原始 AC”的问题才默认回到主线。",
+    "",
+    "## Scope Change", "",
+    "- [ ] 是否存在扩大原始目标范围的变更？如有，记录批准人与理由。",
+    "- [ ] 是否用 Scope Lock 掩盖了阻塞问题？",
+    "",
+    "## 候选身份", "",
+    "- reviewed_candidate：NOT_RECORDED（需真实 commit 与内容 digest）",
+    "- 评审人 / Agent：NOT_ASSIGNED",
+    "- 评审结论：NOT_RUN",
+    "",
+    "## 完成条件", "",
+    "- [ ] Mainline Blocker 清零或有明确暂停决定",
+    "- [ ] 每条 AC 的验证证据可查",
+    "- [ ] Standards 轴没有未解释的阻断项",
+    ""
+  ].join("\n");
+}
+
 const mediaType = name =>
   name.endsWith(".json") ? "application/json" :
     name.endsWith(".yaml") ? "application/yaml" : "text/markdown";
@@ -185,7 +217,8 @@ export function workspaceBundle(plan) {
     [slug + "-verification-plan.md"]: verificationPlan(plan),
     [slug + "-release-checklist.md"]: releaseChecklist(plan),
     [slug + "-agent-handoff.md"]: stageHandoff(plan, plan.stages[0].id),
-    [slug + "-route-sop.md"]: routeSopMarkdown(plan)
+    [slug + "-route-sop.md"]: routeSopMarkdown(plan),
+    [slug + "-review-record.md"]: reviewRecord(plan)
   };
   const identity = projectIdentity(plan);
   const bundle = {

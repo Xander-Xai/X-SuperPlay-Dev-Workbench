@@ -24,6 +24,27 @@ const FLOW = {
   ]
 };
 
+const FORBIDDEN_ACTIONS = Object.freeze([
+  "修改目标项目之外的任何仓库或系统",
+  "推送、部署、发布或提交审核",
+  "读取、复制或写入凭证、密钥与生产数据",
+  "删除或弱化测试与断言以换取通过",
+  "自行扩大授权范围或绕过被拒绝的权限"
+]);
+
+const ITERATION_BUDGET = Object.freeze({
+  maxAttemptsPerHypothesis: 2,
+  stopWhenNoNewEvidence: true,
+  requireHypothesisBeforeEdit: true,
+  maxParallelTasks: 1
+});
+
+const REVIEW_AXES = Object.freeze({ specification: "REQUIRED", standards: "REQUIRED" });
+
+function ticketStage(plan, row, index) {
+  return plan.stages.find(s => s.id === row.stage) ?? plan.stages[index] ?? plan.stages[0];
+}
+
 function taskTickets(plan) {
   if (plan.config.task === "feature") {
     return FLOW[plan.config.type].map(([title, outcome, negative, testIdea], i) => ({
@@ -62,16 +83,24 @@ export function makeStarter(plan) {
       "业务数据合规、发布审批和回滚责任人",
       "Given-When-Then 验收和负例的业务方确认"
     ],
-    tickets: rows.map((t, i) => ({
-      id: "T" + String(i + 1).padStart(2, "0"), title: t.title, outcome: t.outcome,
-      negative: t.negative, testIdea: t.testIdea,
-      blockedBy: t.blockedBy, stage: t.stage,
-      status: "PROPOSED_NOT_READY",
-      acceptance: "业务方待确认可执行的 Given/When/Then",
-      testCommand: "NOT_YET_IDENTIFIED", evidence: "NOT_RUN",
-      baseSha: plan.config.baseline?.headSha ?? "UNKNOWN",
-      agent: plan.config.agent, permission: "READ_ONLY_DISCOVERY_FIRST"
-    }))
+    tickets: rows.map((t, i) => {
+      const stage = ticketStage(plan, t, i);
+      return {
+        id: "T" + String(i + 1).padStart(2, "0"), title: t.title, outcome: t.outcome,
+        negative: t.negative, testIdea: t.testIdea,
+        blockedBy: t.blockedBy, stage: t.stage,
+        status: "PROPOSED_NOT_READY",
+        acceptance: "业务方待确认可执行的 Given/When/Then",
+        testCommand: "NOT_YET_IDENTIFIED", evidence: "NOT_RUN",
+        evidencePlan: (stage?.evidencePlan?.required?.length ? stage.evidencePlan.required : [...(stage?.evidence ?? [])]),
+        stopConditions: [...(stage?.stopWhen ?? ["需求不明确", "权限不明", "测试无法完成"])],
+        iterationBudget: { ...ITERATION_BUDGET },
+        reviewAxes: { ...REVIEW_AXES },
+        forbiddenActions: [...FORBIDDEN_ACTIONS],
+        baseSha: plan.config.baseline?.headSha ?? "UNKNOWN",
+        agent: plan.config.agent, permission: "READ_ONLY_DISCOVERY_FIRST"
+      };
+    })
   };
 }
 
@@ -110,7 +139,13 @@ export function starterMarkdown(plan) {
     "- Base SHA：" + t.baseSha,
     "- Agent：" + t.agent,
     "- 权限：" + t.permission,
-    "- 证据：" + t.evidence, ""
+    "- 证据：" + t.evidence,
+    "- 证据计划：" + (t.evidencePlan.join(", ") || "未定义"),
+    "- 停止条件：" + t.stopConditions.join("；"),
+    "- 迭代预算：每个假设最多 " + t.iterationBudget.maxAttemptsPerHypothesis +
+      " 次尝试；无新证据即停止；单执行窗口 1 个活动任务",
+    "- Review 双轴：Spec " + t.reviewAxes.specification + " / Standards " + t.reviewAxes.standards,
+    "- 禁止动作：" + t.forbiddenActions.join("；"), ""
   );
   lines.push("## 下一步", "",
     "- [ ] 由项目 Owner 确认 Spec、业务负例和实际技术约束。",

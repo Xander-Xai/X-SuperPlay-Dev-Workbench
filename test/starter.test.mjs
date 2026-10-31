@@ -36,3 +36,23 @@ test("invalid input cannot masquerade as a plan",()=>{
   assert.throws(()=>makeStarter(null),/Invalid plan/);
   assert.throws(()=>makeStarter({config:{type:"unknown"}}),/Invalid plan/);
 });
+test("tickets carry bounded iteration, dual-axis review, evidence plan and forbidden actions",()=>{
+  for(const type of Object.keys(TYPES)){
+    const plan=assemble({type,task:"feature",name:"Example",agent:"codex"});
+    const tickets=makeStarter(plan).tickets;
+    for(const t of tickets){
+      assert.equal(t.iterationBudget.maxAttemptsPerHypothesis,2);
+      assert.equal(t.iterationBudget.stopWhenNoNewEvidence,true);
+      assert.equal(t.iterationBudget.maxParallelTasks,1);
+      assert.deepEqual(t.reviewAxes,{specification:"REQUIRED",standards:"REQUIRED"});
+      assert.ok(t.evidencePlan.length>0);
+      assert.ok(t.stopConditions.length>0);
+      assert.ok(t.forbiddenActions.some(x=>/凭证/.test(x)));
+      assert.ok(t.forbiddenActions.some(x=>/删除或弱化测试/.test(x)));
+    }
+    const md=starterMarkdown(plan);
+    assert.match(md,/迭代预算/);
+    assert.match(md,/Review 双轴/);
+    assert.match(md,/禁止动作/);
+  }
+});

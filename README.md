@@ -26,7 +26,7 @@ npm run dev
 | **项目启动器** | 项目类型 → 新/旧项目 → 任务类型 → Tier / 技术栈 / 扩展 → 生成路线、阶段 Gate、路线 SOP、导出 |
 | **工作流浏览器** | 11 个唯一阶段、4 条路线 SOP、13 种任务路由、17 个 Profile、A/B/C/D 等级义务 |
 | **Skills 能力库** | 8 个自包含候选 Skill、标准元数据、依赖闭包、按 Agent 生成 dry-run 安装命令 |
-| **项目工作区** | 生成 9 份可审查草案：Manifest、ENGINEERING_PROFILE、Spec/Tickets、ADR、验证计划、发布清单、Agent 交接、路线 SOP、完整资产包 |
+| **项目工作区** | 生成 10 份可审查草案：Manifest、ENGINEERING_PROFILE、Spec/Tickets、ADR、验证计划、发布清单、Agent 交接、路线 SOP、Review 记录、完整资产包 |
 | **证据与改进** | 证据状态机、本地报告导入（不上传）、阶段摘要与改进闭环 |
 
 ## 四条路线 SOP
@@ -60,6 +60,26 @@ node tools/xeng.mjs task bug --type=saas --tier=B
 ~~~
 
 `init` 默认不覆盖任何已有文件；冲突时写入 `*.suggested.md` 供人工合并。`audit` 检查 README、Agent 规则、工程 Profile、测试、CI、密钥、env 配对、迁移、回滚与例外有效期。`doctor` 检查坏链接、失效脚本路径、过期当前事实和 env 漂移。
+
+### 一次装配（组装路线 + 最小 Skills + 目标检查）
+
+~~~bash
+# 预览：不改目标项目
+node tools/xeng.mjs assemble --target ../your-project --type saas --task feature --tier B --agent codex
+
+# 受控安装：必须显式确认已审查
+node tools/xeng.mjs assemble --target ../your-project --type saas --task feature --tier B --agent codex --apply --confirm-reviewed
+
+# 校验已安装文件与回执（不代表 Agent 真的加载了 Skill）
+node tools/xeng.mjs agent-check --target ../your-project --agent codex
+~~~
+
+`assemble` 只安装该路线阶段真正需要的 Skill（含依赖闭包），默认 dry-run；目标目录必须是已存在的非符号链接目录。`--apply` 需要 `--confirm-reviewed`，遇到已存在且非受管的文件直接拒绝且不写锁。输出区分：
+
+- `ASSEMBLY_DRY_RUN`：仅预览，零写入。
+- `ASSEMBLY_INSTALLED_NOT_TESTED`：文件已安装且哈希校验通过，**运行时加载未验证**。
+- `ALREADY_MANAGED`：幂等重复安装，未重复改动。
+- `agent-check` 的 `FILES_VERIFIED_RUNTIME_NOT_VERIFIED` 只证明磁盘文件与锁一致；Agent 发现/调用需按 [docs/AGENT_SKILL_LOAD.md](docs/AGENT_SKILL_LOAD.md) 的探针命令单独验证。没有真实 Agent 回执时一律 `NOT_VERIFIED`。
 
 ## Skills：自包含 bundle
 
