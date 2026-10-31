@@ -61,9 +61,9 @@
 
 状态：`METHOD_DOCUMENTED_AND_ROUTED`（仓库方法与入口层；与真实执行分层）；`HARNESS_LOOP_RUNTIME_NOT_IMPLEMENTED`；`REAL_PROJECT_DOGFOOD_NOT_RUN`。详情见[方法定义](methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md)。
 
-## v0.2.2 AI-Native 全栈交付整合（2026-10-31）
+## v0.2.2 AI-Native 全栈交付整合（2026-10-31；已合入 PR #31）
 
-> 分支 `docs/ai-native-learning-system`（PR #31，OPEN）。以下 `[x]` 表示已在分支实现并通过本地 `npm run verify`；合并前不代表 `main` 已包含，远端检查尚未报告。
+> 分支 `docs/ai-native-learning-system` 已合入 `main`（merge commit `1b5cfc8`）。`[x]` 表示已实现并通过 CI `verify` 与本地 `npm run verify`。
 
 目标：在方法文档之上补齐可执行的兼容视图；不新增第二套生命周期。
 
@@ -79,9 +79,9 @@
 - [ ] 工具层强制 `allowed_files` / `allowed_commands`（当前仅字段）。
 - [ ] 真实项目执行 `CODE_TESTED` → `CONSUMER_ACCEPTED` 证据链。
 
-## v0.2.3 Agent 编排适配（2026-10-31；分支 `feat/agent-orchestration-adapters`，OPEN）
+## v0.2.3 Agent 编排适配（2026-10-31；已合入 PR #32）
 
-> 目标：让同一套交付契约可选择不同 Agent 执行环境，不新增第二套生命周期。以下 `[x]` 表示已在分支实现并通过本地 `npm run verify`；合入前不代表 `main` 已包含。
+> 目标：让同一套交付契约可选择不同 Agent 执行环境，不新增第二套生命周期。`[x]` 表示已实现并通过 CI `verify` 与本地 `npm run verify`（merge commit `1f9ebf0`）。
 
 - [x] `src/orchestration.mjs`：Orca / Herdr / Multica / Tern 只读能力注册表与 OMP / Claude Code / Codex / OpenCode 运行时清单。
 - [x] 上游核验：固定 commit、许可证、平台与 OMP 支持，逐项标记 `VERIFIED_UPSTREAM / UNVERIFIED / BLOCKED`。

@@ -21,6 +21,15 @@ This public repository owns the **website, public engineering methodology/adapta
 - This repository may generate Markdown and JSON drafts with safe profile names and dry-run commands only.
 - Source commit and date in src/catalog.mjs are pinned metadata; they do NOT imply live synchronization.
 
+## Repository governance
+
+- **Merge conditions**: a PR merges only when the required `verify` check (Workbench checks) is green on its head commit, it has no conflicts with `main`, the PR template's verification section names commands and results, and no secrets or private data are included. `main` accepts changes only through pull requests; force pushes and branch deletion are blocked. Fix a failing check; do not bypass it.
+- **Stacked PRs**: keep a downstream PR's base on its upstream branch. Retarget to `main` and wait for real Actions only after the upstream PR merges; never retarget early just to trigger CI.
+- **Issue closure**: close only when every acceptance item has evidence in the issue (command, environment, exact SHA, result). `PLAN_ONLY`, `PARTIAL`, `NOT_RUN`, `BLOCKED` and `UNKNOWN` are not `DONE`. Keep the issue open with the remaining items listed rather than hiding a capability gap.
+- **Branches**: short-lived `feat/` `fix/` `chore/` `docs/`; merged branches are deleted (`delete_branch_on_merge` is enabled). Do not force-push a shared branch, and keep a Dependabot branch while its PR is open.
+- **Dependabot**: merge one PR at a time and re-check the next PR's diff and CI after each merge. Before merging, confirm the pinned SHA equals the upstream release tag, read the release notes for breaking changes, confirm no permission expansion, and require the `verify` check. Never batch-merge dependency PRs.
+- **Evidence boundary**: a green CI run, a merged PR and a successful Pages deploy prove only this repository's build, tests and static publish. They are not real-project acceptance, real-device validation or customer sign-off.
+
 ## Acceptance
 
 No evidence, no DONE. PR merged does not mean site published. Agent outputs are proposals until the user and project verify them.
