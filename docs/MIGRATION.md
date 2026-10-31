@@ -1,10 +1,11 @@
 # Engineering OS → Workbench 语义迁移
 
-迁移 ID：`eng-os-split-20261031`  
-机器可读清单：[migration/eng-os-split-20261031.json](../migration/eng-os-split-20261031.json)  
-文件级语义对账：[migration/eng-os-semantic-reconciliation-20261031.json](../migration/eng-os-semantic-reconciliation-20261031.json)（冻结快照 106/106 文件）  
-冻结后增量审计：[migration/eng-os-delta-audit-20261031.json](../migration/eng-os-delta-audit-20261031.json)  
-最终审计：[FINAL_ENGINEERING_MIGRATION_AUDIT.md](../FINAL_ENGINEERING_MIGRATION_AUDIT.md)
+- 迁移 ID：`eng-os-split-20261031`
+- 机器可读清单：[migration/eng-os-split-20261031.json](../migration/eng-os-split-20261031.json)
+- 文件级语义对账：[migration/eng-os-semantic-reconciliation-20261031.json](../migration/eng-os-semantic-reconciliation-20261031.json)（冻结快照 106/106 文件）
+- 冻结后增量审计：[migration/eng-os-delta-audit-20261031.json](../migration/eng-os-delta-audit-20261031.json)
+- 冻结后安全/归档增量：[migration/eng-os-post-freeze-increments-20261031.json](../migration/eng-os-post-freeze-increments-20261031.json)
+- 最终审计：[FINAL_ENGINEERING_MIGRATION_AUDIT.md](../FINAL_ENGINEERING_MIGRATION_AUDIT.md)
 
 ## 结论
 
@@ -46,7 +47,7 @@ Workbench 现在是工程运行时的所有者。旧 Engineering OS 只保留为
 | 角色 | 仓库 | SHA | 状态 |
 |---|---|---|---|
 | 冻结历史来源 | `Xander-Xai/X-SuperPlay-AI-Engineering-OS` | `8553124f238ab463d4a50debad34e871ef8de060` | `HISTORICAL_PROVENANCE`，永不覆盖 |
-| 来源当前 HEAD（仅观测） | `Xander-Xai/X-SuperPlay-AI-Engineering-OS` | `2b792242894937d303c4680208daf9df97ea0027` | public，只读观测，不是同步承诺 |
+| 来源当前 HEAD（仅观测） | `Xander-Xai/X-SuperPlay-AI-Engineering-OS` | `fa20126e93c57b1faab56d9c4cecc717b1eea46e` | 已标记 superseded 并归档；只读观测，不是同步承诺 |
 | 运行时迁移合并 | `Xander-Xai/X-SuperPlay-Dev-Workbench` | `74402bf7172c5896e3610364d32b3279a9c8d851` | PR #12 squash merge |
 | 迁移分支历史头 | `Xander-Xai/X-SuperPlay-Dev-Workbench` | `527499f1ab3befdf5e87af042e746853cbbcf665` | PR #12 head，保留作历史 |
 | Windows 修复合并 | `Xander-Xai/X-SuperPlay-Dev-Workbench` | `32e0342` | PR #13，CI 通过 |
@@ -112,17 +113,26 @@ Workbench 现在是工程运行时的所有者。旧 Engineering OS 只保留为
 
 结论：**106/106 文件均有明确语义去向**，没有静默丢弃；8 个 Skill 的依赖闭包在 `src/routing.mjs` 中重建。历史与不适用项均显式记录。
 
-### 冻结快照之后的 delta audit
+### 早期 delta audit（冻结后 3 个提交）
 
-来源仓在冻结快照后前进 **3 个提交**（`ahead_by: 3`）：
+来源仓在冻结快照后曾前进 **3 个提交**（`ahead_by: 3`）：
 
 | 提交 | PR | 变更 | 处置 |
 |---|---|---|---|
 | `bbd5910f` | #5 | 修改 `03-ai-coding/ai-native-spec-harness-loop.md`；新增 `upstream-method-adoption.md`、`06-templates/tracer-ticket.md`；修改 `06-templates/implementation-plan.md` | 部分覆盖：bounded loop 由 handoff 停止条件与证据模型表达；模板正文未吸收 |
 | `f1369b5d` | #6 | 修改 README，说明仓库职责与跨仓交接 | 不适用于运行时 |
-| `2b792242` | #9 | 新增 `.github/pull_request_template.md` | 部分等效：`xeng init` 为目标项目生成 PR 模板；本仓库自身未携带 |
+| `2b792242` | #9 | 新增 `.github/pull_request_template.md` | 已承接：本仓库现已携带仓库级 PR 模板；`xeng init` 也为目标项目生成 |
 
 结论：没有新增运行时依赖。最后轮迁移后，`tracer-ticket.md` 的字段（纵向切片、blocked_by、AC/负例、base SHA、权限、停止条件、迭代预算、双轴 Review）已由 starter/workspace 承接；`implementation-plan.md` 由 `implementationPlan()` 承接；`upstream-method-adoption.md` 的 Spec–Tickets–Harness–Bounded Loop 语义由工作区产物、handoff 与三份 Playbook 承接。未复制任何第三方正文。
+
+### 安全与归档增量（#10、#12–#17）
+
+来源仓随后继续前进到 `fa20126e93c57b1faab56d9c4cecc717b1eea46e`（`ahead_by: 10`）。这些增量单独记录在 [eng-os-post-freeze-increments-20261031.json](../migration/eng-os-post-freeze-increments-20261031.json)，不修改冻结快照 106 文件的任何 disposition：
+
+- **#10 安全加固**：密钥输出脱敏、fail-closed 门禁、扩展密钥形态、Agent 配置扫描、密钥文件扫描、symlink-safe `init`、密钥文件忽略、`SECURITY.md`、CI 最小权限/并发/超时/固定 action SHA、actions-only Dependabot，均已在 Workbench 实现并有负例测试。
+- **#12 / #13 依赖升级**：来源仓的 action 版本升级；Workbench 使用自己的固定 SHA 与 Dependabot 策略，不继承来源工作流；无 Python 运行时。
+- **#14 公开/私有分离**：Workbench 不复制私有仓库注册表、客户证据、审计细节或 `OPC-LINK.yaml`。来源改用 MIT，但 Workbench 许可证仍为 `UNLICENSED-PROPRIETARY`，需所有者单独决定。
+- **#15–#17 归档**：来源仓已标记 superseded 并新增归档索引。Workbench 仍为当前运行时所有者，不读取归档作为依赖。
 
 ### 缺口最终处置
 

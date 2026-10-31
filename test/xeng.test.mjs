@@ -49,6 +49,10 @@ test("init creates the expected baseline without overwriting",()=>withTemp(dir=>
   const pr=readFileSync(join(target,".github","pull_request_template.md"),"utf8");
   assert.match(pr,/Base SHA/);assert.match(pr,/Unverified/);assert.match(pr,/Rollback/);
   assert.match(readFileSync(join(target,"docs","git-workflow.md"),"utf8"),/advisory/i);
+  const gitGuide=readFileSync(join(target,"docs","git-workflow.md"),"utf8");
+  assert.match(gitGuide,/治理边界/);
+  assert.match(gitGuide,/Xander-Xai\/X-SuperPlay-OPC-Blueprint/);
+  assert.match(gitGuide,/Agent 默认分工/);
 
   const before=readFileSync(join(target,"README.md"),"utf8");
   const again=cli("init",target,"--profile","saas","--tier","B");
@@ -88,19 +92,21 @@ test("audit fails on a secret-shaped assignment and names the rule",()=>withTemp
   assert.equal(r.status,2);
 }));
 
-test("audit accepts a scoped, unexpired exception and rejects an expired one",()=>withTemp(dir=>{
+test("audit applies a non-security exception and rejects an expired one",()=>withTemp(dir=>{
   const target=join(dir,"project");
   assert.equal(cli("init",target,"--profile","saas","--tier","B").status,0);
-  writeFileSync(join(target,"src-config.js"),secretFixture);
+  rmSync(join(target,"AGENTS.md"));
   const profile=readFileSync(join(target,"ENGINEERING_PROFILE.yaml"),"utf8")
-    .replace("exceptions: []","exceptions:\n  - id: EX-1\n    rule: security.secret_scan\n    scope: src-config.js\n    reason: synthetic fixture\n    until: 2999-01-01");
+    .replace("exceptions: []","exceptions:\n  - id: EX-1\n    rule: governance.agents\n    scope: /\n    reason: intentionally absent\n    until: 2999-01-01");
   writeFileSync(join(target,"ENGINEERING_PROFILE.yaml"),profile);
   const ok=JSON.parse(cli("audit",target,"--json").stdout);
+  assert.equal(ok.checks.find(c=>c.name==="agents.md").status,"NOT_APPLICABLE");
   assert.ok(ok.checks.every(c=>c.status!=="FAIL"));
 
   writeFileSync(join(target,"ENGINEERING_PROFILE.yaml"),profile.replace("2999-01-01","2000-01-01"));
   const expired=JSON.parse(cli("audit",target,"--json").stdout);
   assert.ok(expired.checks.some(c=>c.status==="FAIL"&&c.name.startsWith("exception.")));
+  assert.equal(expired.checks.find(c=>c.name==="agents.md").status,"WARN");
 }));
 
 test("doctor detects broken relative links and dead documented scripts",()=>withTemp(dir=>{

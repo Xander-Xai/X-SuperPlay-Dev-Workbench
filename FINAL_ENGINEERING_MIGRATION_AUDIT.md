@@ -9,6 +9,8 @@
 
 > 本审计只判定**工程内容迁移**。真实小程序 / SaaS 运行验收、真机、生产发布与旧仓退役是独立事项，不能用本文的结论替代。
 
+> 后续状态（2026-10-31）：来源仓已标记 superseded 并归档；安全 P0 整改、独立内容复核与跨仓 Git 边界见 [SECURITY_AND_MIGRATION_INDEPENDENT_ACCEPTANCE.md](SECURITY_AND_MIGRATION_INDEPENDENT_ACCEPTANCE.md)。本文件保留为内容迁移阶段的回执，不覆盖后续安全结论。
+
 ## 0. 结论摘要
 
 | 项 | 结论 |

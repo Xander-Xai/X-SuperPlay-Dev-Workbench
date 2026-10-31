@@ -256,6 +256,7 @@ export function postmortemTemplate(plan) {
     identityBlock(plan), "",
     "# " + plan.config.name + " · 复盘模板", "",
     "> 状态：TEMPLATE_NOT_EXECUTED。无真实事件证据时不得填写结论。",
+    "> 无责复盘（Blameless）；一页为主，核心输出是第 5 节；日期化后属于历史快照。",
     "> project_id：" + plan.slug + " · base_sha：" + (plan.config.baseline?.headSha ?? "UNKNOWN"), "",
     "- 日期：YYYY-MM-DD",
     "- 类别：incident | friction（重复 ≥2 次）",
