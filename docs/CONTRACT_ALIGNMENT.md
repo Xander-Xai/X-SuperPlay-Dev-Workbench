@@ -5,7 +5,7 @@
 - 对账日期：2026-10-31
 - 契约版本：`v1` / revision `1.1`
 - 契约来源：AI-Native PR #57 @ `5a990745f155523bc212969c222b7c596a525c48`（contract blob `592bea79de5f5b5f9b883fb89d65af30186b542e`，size 13823）
-- 契约 PR 状态（2026-10-31 观测）：`OPEN`，`CANDIDATE`，未作为已合并权威
+- 契约 PR 状态（2026-10-31 观测）：`MERGED`（merge commit `15beebf955d1f2a515e2791dc8b375806598d36a`，2026-10-31T05:51:20Z）；合并后 blob 未变
 - 观测到的 head 漂移：`2b3013ca` → `41f27219` → `5a990745`；只固定最新观测，不追随移动 PR
 - Workbench 版本：`0.2.0`
 - 结论：**6 项均为部分实现**；状态词汇兼容已采用；Review Convergence 与 Knowledge Promotion 存在明确的未实现子项；无运行时依赖。
@@ -110,7 +110,7 @@
 | Review Convergence | PARTIAL | 不可变候选 digest；Scope Lock 执行 |
 | Knowledge Promotion | PARTIAL | 跨项目证据索引；消费者记录 |
 
-`ADOPTED` 仅用于有本地实现与可复核证据的项；迁移状态、CI 状态和验收状态不互相升级。整份契约在 PR #57 合并前保持 `CANDIDATE`，不是组织级权威。
+`ADOPTED` 仅用于有本地实现与可复核证据的项；迁移状态、CI 状态和验收状态不互相升级。PR #57 已合并，因此本文件引用的是合并后的契约；但 Workbench 的 `adoption_status` 仍为 `PARTIAL`，未实现的项不以合并事实冒充本地实现。
 
 ## 采用与拒绝
 

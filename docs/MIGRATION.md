@@ -15,7 +15,7 @@ Workbench 现在是工程运行时的所有者。旧 Engineering OS 只保留为
 - 该提交上的 CI 与 Pages 部署成功；Pages 地址为 <https://xander-xai.github.io/X-SuperPlay-Dev-Workbench/>。
 - Windows CRLF Skill frontmatter 修复已作为 PR #13 合并，提交 `32e0342`，远端 CI 通过。
 - 旧仓 PR #5、#6、#9 均已合并；迁移清单中“#5 未合并”的旧表述已作废。
-- Learning OS PR #57 仍为 OPEN，未作为已合并契约权威。
+- Learning OS PR #57 已于 2026-10-31 合并（`15beebf`）；Workbench 对契约的采用仍为 `PARTIAL`，无运行时依赖。
 
 本迁移是**语义重写**，不是 subtree、submodule 或目录复制：
 
@@ -33,7 +33,7 @@ Workbench 现在是工程运行时的所有者。旧 Engineering OS 只保留为
 | 运行时迁移合并 | `Xander-Xai/X-SuperPlay-Dev-Workbench` | `74402bf7172c5896e3610364d32b3279a9c8d851` | PR #12 squash merge |
 | 迁移分支历史头 | `Xander-Xai/X-SuperPlay-Dev-Workbench` | `527499f1ab3befdf5e87af042e746853cbbcf665` | PR #12 head，保留作历史 |
 | Windows 修复合并 | `Xander-Xai/X-SuperPlay-Dev-Workbench` | `32e0342` | PR #13，CI 通过 |
-| 通用治理参考 | `Xander-Xai/AI-Native-Work-Learning-OS` | `f1289d685c95c7fac6f1d50068527a60f080ee1b` | PR #57 OPEN，仅引用 |
+| 通用治理参考 | `Xander-Xai/AI-Native-Work-Learning-OS` | `15beebf955d1f2a515e2791dc8b375806598d36a` | PR #57 已合并，仅引用 |
 
 模块级 `source_repo / source_sha / destination_repo / destination_sha / module / ownership / migration_status / verification_status / evidence` 见清单 `fact_table` 字段。
 
@@ -131,7 +131,7 @@ Workbench 对 PR #5 的覆盖：
 
 ## 跨仓契约对齐
 
-`ai-native-governance-contract/v1` revision `1.1`（PR #57 @ `5a990745`，contract blob `592bea79`，2026-10-31 观测）的六类契约对账见 [CONTRACT_ALIGNMENT.md](CONTRACT_ALIGNMENT.md) 与 [migration/contract-alignment-v1.json](../migration/contract-alignment-v1.json)。结论：6 项均为部分实现，状态词汇兼容已采用；无运行时依赖。Task Contract 的禁止动作/证据计划/迭代预算已结构化，Evidence Identity 已可记录 sha256 身份链，Review Record 已区分 Spec/Standards 双轴。PR #57 在 2026-10-31 仍为 OPEN，因此整份契约保持 `CANDIDATE`，不是组织级权威。
+`ai-native-governance-contract/v1` revision `1.1`（PR #57 @ `5a990745`，contract blob `592bea79`，2026-10-31 观测）的六类契约对账见 [CONTRACT_ALIGNMENT.md](CONTRACT_ALIGNMENT.md) 与 [migration/contract-alignment-v1.json](../migration/contract-alignment-v1.json)。结论：6 项均为部分实现，状态词汇兼容已采用；无运行时依赖。Task Contract 的禁止动作/证据计划/迭代预算已结构化，Evidence Identity 已可记录 sha256 身份链，Review Record 已区分 Spec/Standards 双轴。PR #57 已于 2026-10-31 合并；本仓库引用合并后的契约，但采用状态仍是 `PARTIAL`，未实现的子项保持显式缺口。
 
 ## 未解决项
 
@@ -145,7 +145,7 @@ Workbench 对 PR #5 的覆盖：
 | U-06 | 许可证 | `UNLICENSED-PROPRIETARY`，需所有者确定 |
 | U-07 | CI 与 Pages 部署回执 | `74402bf` 与 `32e0342` 上 CI 成功、Pages 已部署 |
 | U-08 | 未迁入的工程约束（G-01…G-05） | G-01/G-03 为部分替代；G-02/G-04/G-05 维持；不宣称覆盖 |
-| U-09 | 治理契约完整实现 | 6 项均为部分实现；Finding 分类与身份链已建模，不可变候选绑定、Scope Lock 执行与跨项目证据索引未实现；PR #57 仍 OPEN |
+| U-09 | 治理契约完整实现 | 6 项均为部分实现；Finding 分类与身份链已建模，不可变候选绑定、Scope Lock 执行与跨项目证据索引未实现；PR #57 已合并；采用仍为 PARTIAL |
 
 ## 退役检查单
 
