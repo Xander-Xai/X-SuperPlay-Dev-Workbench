@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {assemble} from "../src/engine.mjs";
 import {
-  engineeringProfileYaml,adrTemplate,verificationPlan,releaseChecklist,routeSopMarkdown,workspaceBundle
+  engineeringProfileYaml,adrTemplate,verificationPlan,releaseChecklist,routeSopMarkdown,reviewRecord,workspaceBundle
 } from "../src/workspace.mjs";
 
 const plan=()=>assemble({type:"saas",task:"feature",name:"Demo",description:"Build it",agent:"codex"});
@@ -12,10 +12,10 @@ const baselinePlan=()=>assemble({
     name:"Demo",projectType:"saas",headSha:"a".repeat(40),dirty:false,detected:["git"]}
 });
 
-test("workspace emits nine reviewable artifacts",()=>{
+test("workspace emits ten reviewable artifacts",()=>{
   const bundle=workspaceBundle(plan());
   const names=Object.keys(bundle);
-  assert.equal(names.length,9);
+  assert.equal(names.length,10);
   assert.ok(names.every(n=>bundle[n].length>0));
   assert.ok(names.some(n=>n.endsWith("-manifest.json")));
   assert.ok(names.some(n=>n.endsWith("-ENGINEERING_PROFILE.yaml")));
@@ -25,13 +25,14 @@ test("workspace emits nine reviewable artifacts",()=>{
   assert.ok(names.some(n=>n.endsWith("-release-checklist.md")));
   assert.ok(names.some(n=>n.endsWith("-agent-handoff.md")));
   assert.ok(names.some(n=>n.endsWith("-route-sop.md")));
+  assert.ok(names.some(n=>n.endsWith("-review-record.md")));
   assert.ok(names.some(n=>n.endsWith("-bundle.json")));
 });
 test("every artifact shares one project id and base SHA",()=>{
   const p=baselinePlan();
   const bundle=workspaceBundle(p);
   const artifacts=Object.entries(bundle).filter(([n])=>!n.endsWith("-bundle.json")&&!n.endsWith("-manifest.json"));
-  assert.equal(artifacts.length,7);
+  assert.equal(artifacts.length,8);
   for(const [name,text] of artifacts){
     assert.match(text,new RegExp('project_id: "?'+p.slug),name);
     assert.match(text,new RegExp('base_sha: "?'+"a".repeat(40)),name);
@@ -42,7 +43,7 @@ test("every artifact shares one project id and base SHA",()=>{
   assert.equal(pack.status,"DRAFT_NOT_EXECUTED");
   assert.equal(pack.identity.projectId,p.slug);
   assert.equal(pack.identity.baseSha,"a".repeat(40));
-  assert.equal(pack.files.length,8);
+  assert.equal(pack.files.length,9);
   for(const f of pack.files){
     assert.ok(f.content.includes(p.slug),f.name);
     assert.ok(f.content.includes("a".repeat(40)),f.name);
@@ -64,6 +65,16 @@ test("route SOPs are distinct and carry platform limits",()=>{
   assert.match(app,/商店审核/);
   assert.equal(new Set([saas,enterprise,mini,app]).size,4);
   for(const text of [saas,enterprise,mini,app]) assert.match(text,/NOT_RUN/);
+});
+test("review record separates Spec and Standards axes and finding classes",()=>{
+  const text=reviewRecord(plan());
+  assert.match(text,/NOT_RUN/);
+  assert.match(text,/Spec 轴/);
+  assert.match(text,/Standards 轴/);
+  assert.match(text,/MAINLINE_BLOCKER/);
+  assert.match(text,/NON_BLOCKING/);
+  assert.match(text,/Scope Change/);
+  assert.match(text,/reviewed_candidate：NOT_RECORDED/);
 });
 test("manifest artifact is the same safe manifest used by exports",()=>{
   const p=plan();

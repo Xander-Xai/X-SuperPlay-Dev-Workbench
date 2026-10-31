@@ -175,3 +175,24 @@ test("empty report is explicit and cannot promote anything",()=>{
   assert.ok(Object.values(summary.stages).every(s=>s.complete===false));
   assert.equal(summary.trusted,false);
 });
+
+test("evidence identities are recorded but never trusted or promoted",()=>{
+  const digest="a".repeat(64), commit="c".repeat(40);
+  const report={...reportOf([verifiedItem()]),identities:[
+    {kind:"reviewed_candidate",algorithm:"sha256",digest,sourceCommit:commit,locator:"artifacts/build.tar.gz",recordedAt:"2026-10-31"},
+    {kind:"built_artifact",algorithm:"sha256",digest:"b".repeat(64),sourceCommit:commit,locator:"dist/app.js"}
+  ]};
+  const normalized=normalizeEvidenceReport(report);
+  assert.equal(normalized.identityChain.status,"RECORDED_NOT_TRUSTED");
+  assert.equal(normalized.identityChain.missing.includes("runtime_receipt"),true);
+  const summary=evidenceSummary(report);
+  assert.equal(summary.identityStatus,"RECORDED_NOT_TRUSTED");
+  assert.equal(summary.trusted,false);
+  assert.equal(summary.promotion,"NONE");
+});
+test("invalid or mixed evidence identities are rejected",()=>{
+  const base={kind:"reviewed_candidate",algorithm:"sha256",digest:"a".repeat(64),sourceCommit:"c".repeat(40),locator:"x"};
+  assert.throws(()=>normalizeEvidenceReport({...reportOf([]),identities:[{...base,digest:"short"}]}),/sha256 digest/);
+  assert.throws(()=>normalizeEvidenceReport({...reportOf([]),identities:[base,{...base,sourceCommit:"d".repeat(40)}]}),/mixes source commits/);
+  assert.throws(()=>normalizeEvidenceReport({...reportOf([]),identities:[{...base,kind:"unknown"}]}),/Unknown evidence identity kind/);
+});

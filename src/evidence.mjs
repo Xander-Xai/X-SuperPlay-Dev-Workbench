@@ -1,5 +1,6 @@
 // Evidence model. A state can only advance with a matching, inspectable record.
 import { EVIDENCE_STATES, EVIDENCE_KINDS, EVIDENCE_LAYERS, STAGE_IDS } from "./catalog.mjs";
+import { identityChain } from "./evidence-identity.mjs";
 
 export const TRANSITIONS = Object.freeze({
   NOT_RUN: ["IN_PROGRESS", "BLOCKED"],
@@ -61,10 +62,16 @@ export function normalizeEvidenceReport(input) {
       artifact: cap(item.artifact, 500), recordedAt: cap(item.recordedAt, 40) || "UNRECORDED"
     };
   });
+  const identities = input.identities === undefined ? [] : input.identities;
+  if (!Array.isArray(identities) || identities.length > 50)
+    throw new Error("Invalid evidence identities");
+  const chain = identityChain(identities);
   return Object.freeze({
     schemaVersion: 1, kind: "LOCAL_EVIDENCE_REPORT", status: "IMPORTED_NOT_TRUSTED",
     source: "LOCAL_READ_ONLY_IMPORT",
     items,
+    identities: chain.identities,
+    identityChain: chain,
     note: "Imported evidence is a claim, not a verified fact. Code check, real environment and consumer acceptance are distinct layers."
   });
 }
@@ -146,6 +153,8 @@ export function evidenceSummary(report, options = {}) {
   }
   return {
     stages, layers: EVIDENCE_LAYERS, items: normalized.items,
+    identities: normalized.identities,
+    identityStatus: normalized.identityChain.status,
     trusted: false, promotion: "NONE",
     context: hasContext ? "KNOWN" : "UNKNOWN",
     note: hasContext
@@ -169,7 +178,7 @@ export function evidenceDisplayState(stage) {
 export function emptyEvidenceReport() {
   return Object.freeze({
     schemaVersion: 1, kind: "LOCAL_EVIDENCE_REPORT", status: "IMPORTED_NOT_TRUSTED",
-    source: "NONE", items: [],
+    source: "NONE", items: [], identities: [],
     note: "No evidence imported. Every stage stays NOT_RUN."
   });
 }

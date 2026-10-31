@@ -526,6 +526,8 @@ function switchView(view) {
 }
 
 function init() {
+  const commit = one('meta[name="workbench-commit"]')?.content || "DEV_UNCOMMITTED";
+  one("#build-marker").textContent = "RUNTIME " + RUNTIME.version + " · " + commit.slice(0, 10);
   renderSelects();
   renderAddons();
   renderSkillAgentSelect();

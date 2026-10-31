@@ -19,6 +19,27 @@ node tools/skill-kit.mjs rollback  --target ../your-project --receipt .x-superpl
 
 `--apply` 必须搭配 `--confirm-reviewed`。该标志表示操作者已检查目标仓库可见性、许可证、受影响路径和 bundle 内容。CLI 本身不验证许可证或私有/公开状态。
 
+## 一次装配入口（推荐）
+
+`xeng assemble` 是 Skill Kit 之上的路线装配门面，不是第二套安装器：它解析路线阶段必需的 Skill，复用同一依赖闭包、锁文件与回执逻辑。
+
+~~~bash
+node tools/xeng.mjs assemble --target ../your-project --type saas --task feature --tier B --agent codex
+node tools/xeng.mjs assemble --target ../your-project --type saas --task feature --tier B --agent codex --apply --confirm-reviewed
+node tools/xeng.mjs agent-check --target ../your-project --agent codex
+~~~
+
+状态含义：
+
+| 输出 | 含义 |
+|---|---|
+| `ASSEMBLY_DRY_RUN` | 仅预览，零写入 |
+| `ASSEMBLY_INSTALLED_NOT_TESTED` | 文件已写入并校验，运行时加载未验证 |
+| `ALREADY_MANAGED` | 幂等重复安装，无改动 |
+| `FILES_VERIFIED_RUNTIME_NOT_VERIFIED` | `agent-check` 只证明文件与锁一致 |
+
+`agent-check` 的 `runtimeLoad` 永远不是 `VERIFIED`；真实加载必须按 [AGENT_SKILL_LOAD.md](AGENT_SKILL_LOAD.md) 在对应 Agent 中执行并记录回执。
+
 ## Bundle 布局
 
 每个 Skill 是 `skills/<id>/` 下的完整目录：

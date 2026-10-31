@@ -131,7 +131,7 @@ Workbench 对 PR #5 的覆盖：
 
 ## 跨仓契约对齐
 
-`ai-native-governance-contract/v1`（PR #57 @ `2b3013ca`，contract blob `df6f5100`）的六类契约对账见 [CONTRACT_ALIGNMENT.md](CONTRACT_ALIGNMENT.md) 与 [migration/contract-alignment-v1.json](../migration/contract-alignment-v1.json)。结论：6 项均为部分实现，状态词汇兼容已采用；无运行时依赖；Review Convergence 与 Knowledge Promotion 有明确未实现子项。PR #57 在 2026-10-31 仍为 OPEN，本文件不对未合并契约作权威声明。
+`ai-native-governance-contract/v1` revision `1.1`（PR #57 @ `5a990745`，contract blob `592bea79`，2026-10-31 观测）的六类契约对账见 [CONTRACT_ALIGNMENT.md](CONTRACT_ALIGNMENT.md) 与 [migration/contract-alignment-v1.json](../migration/contract-alignment-v1.json)。结论：6 项均为部分实现，状态词汇兼容已采用；无运行时依赖。Task Contract 的禁止动作/证据计划/迭代预算已结构化，Evidence Identity 已可记录 sha256 身份链，Review Record 已区分 Spec/Standards 双轴。PR #57 在 2026-10-31 仍为 OPEN，因此整份契约保持 `CANDIDATE`，不是组织级权威。
 
 ## 未解决项
 
@@ -145,7 +145,7 @@ Workbench 对 PR #5 的覆盖：
 | U-06 | 许可证 | `UNLICENSED-PROPRIETARY`，需所有者确定 |
 | U-07 | CI 与 Pages 部署回执 | `74402bf` 与 `32e0342` 上 CI 成功、Pages 已部署 |
 | U-08 | 未迁入的工程约束（G-01…G-05） | G-01/G-03 为部分替代；G-02/G-04/G-05 维持；不宣称覆盖 |
-| U-09 | 治理契约完整实现 | 6 项均为部分实现；Finding 分类、不可变候选、晋级阶梯未实现 |
+| U-09 | 治理契约完整实现 | 6 项均为部分实现；Finding 分类与身份链已建模，不可变候选绑定、Scope Lock 执行与跨项目证据索引未实现；PR #57 仍 OPEN |
 
 ## 退役检查单
 
