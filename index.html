@@ -110,6 +110,7 @@
           <div class="content-inner">
             <div class="tabs" id="workflow-tabs" role="tablist">
               <button class="tab active" data-tab="stages" type="button" role="tab">阶段 · 11</button>
+              <button class="tab" data-tab="routes" type="button" role="tab">路线 SOP · 4</button>
               <button class="tab" data-tab="tasks" type="button" role="tab">任务 · 13</button>
               <button class="tab" data-tab="profiles" type="button" role="tab">Profiles · 17</button>
               <button class="tab" data-tab="tiers" type="button" role="tab">等级 · A/B/C/D</button>
@@ -135,11 +136,11 @@
 
         <!-- 04 · PROJECT WORKSPACE -->
         <section class="view" id="view-workspace">
-          <div class="plain-hero"><span class="index">04 / PROJECT WORKSPACE</span><h1>项目工作区资产</h1><p>根据当前方案生成 7 份可审查的工作区草案：清单、工程 Profile、Spec/Tickets、ADR、验证计划、发布清单与 Agent 交接。</p></div>
+          <div class="plain-hero"><span class="index">04 / PROJECT WORKSPACE</span><h1>项目工作区资产</h1><p>根据当前方案生成 9 份可审查的工作区草案：清单、工程 Profile、Spec/Tickets、ADR、验证计划、发布清单、Agent 交接、路线 SOP 与完整资产包。</p></div>
           <div class="content-inner">
             <div class="workspace-layout">
               <div class="file-list" id="workspace-files"></div>
-              <section class="card workspace-preview"><div class="card-title"><strong id="workspace-file-name">选择文件</strong><span>PREVIEW</span></div><pre id="workspace-preview">从左侧选择一份工作区文件。</pre><div class="export-row"><span>生成内容默认为草案，不代表已执行。</span><button class="outline-button" id="download-workspace-file" type="button">↓ 下载当前文件</button></div></section>
+              <section class="card workspace-preview"><div class="card-title"><strong id="workspace-file-name">选择文件</strong><span>PREVIEW</span></div><pre id="workspace-preview">从左侧选择一份工作区文件。</pre><div class="export-row"><span>生成内容默认为草案，不代表已执行。所有文件共享同一 project_id 与 base_sha。</span><div class="export-buttons"><button class="outline-button" id="download-workspace-file" type="button">↓ 下载当前文件</button><button class="outline-button" id="download-bundle" type="button">↓ 完整资产包 (JSON)</button></div></div></section>
             </div>
             <div class="info-panel"><strong>工作区不等于已安装</strong><p>这些文件是供项目仓库审查后提交的草案。它们不会自动写入磁盘，也不会把任何证据提升为 VERIFIED。</p></div>
           </div>

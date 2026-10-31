@@ -1,7 +1,7 @@
 ---
 name: architecture
 description: Make and record boundary or component decisions as ADRs with options, consequences and a falsifier. Use when adding a service, a dependency class, a cross-repo boundary, or any choice that would cost days to reverse.
-status: candidate
+status: CANDIDATE
 version: 0.2.0
 license: UNLICENSED-PROPRIETARY
 provenance: Xander-Xai/X-SuperPlay-AI-Engineering-OS@8553124f238ab463d4a50debad34e871ef8de060

@@ -3,6 +3,7 @@ import { PROVENANCE, OWNER, RUNTIME, TIERS } from "./catalog.mjs";
 import { toManifest } from "./engine.mjs";
 import { starterMarkdown } from "./starter.mjs";
 import { stageHandoff } from "./handoff.mjs";
+import { identityBlock, projectIdentity } from "./identity.mjs";
 
 const q = v => JSON.stringify(String(v ?? ""));
 
@@ -32,7 +33,9 @@ export function engineeringProfileYaml(plan) {
     "  governance_reference: " + q("AI-Native-Work-Learning-OS (reference only)"),
     "  runtime: " + q(RUNTIME.name + " " + RUNTIME.version),
     "project:",
+    "  project_id: " + q(plan.slug),
     "  name: " + q(config.name),
+    "  base_sha: " + q(plan.config.baseline?.headSha ?? "UNKNOWN"),
     "  tier: " + q(tier.id),
     "  task: " + q(task.id),
     "  mode: " + q(config.mode),
@@ -60,10 +63,13 @@ export function engineeringProfileYaml(plan) {
 
 export function adrTemplate(plan) {
   return [
+    identityBlock(plan), "",
     "# ADR-NNNN · <决策标题>",
     "",
     "> 状态：PROPOSED / NOT_RUN。由 Workbench 生成草案，未经过评审。",
-    "> 项目：" + plan.config.name + " · 任务：" + plan.task.id,
+    "> 项目：" + plan.config.name + " · project_id：" + plan.slug +
+      " · base_sha：" + (plan.config.baseline?.headSha ?? "UNKNOWN") +
+      " · 任务：" + plan.task.id,
     "",
     "## 背景",
     "",
@@ -99,12 +105,16 @@ export function adrTemplate(plan) {
 
 export function verificationPlan(plan) {
   const lines = [
+    identityBlock(plan), "",
     "# " + plan.config.name + " · 验证计划（草案）", "",
-    "> 状态：NOT_RUN。本文件只定义需要什么证据，不代表已执行。", "",
-    "| 阶段 | 本任务重点 | 必需证据 | 状态 |", "|---|---|---|---|"
+    "> 状态：NOT_RUN。本文件只定义需要什么证据，不代表已执行。",
+    "> project_id：" + plan.slug + " · base_sha：" + (plan.config.baseline?.headSha ?? "UNKNOWN"), "",
+    "| 阶段 | 本任务重点 | 必需证据 | 角色 | 状态 |", "|---|---|---|---|---|"
   ];
-  for (const s of plan.stages)
-    lines.push("| " + s.name + " | " + s.focus + " | " + s.evidence.join(", ") + " | NOT_RUN |");
+  for (const s of plan.stages) {
+    const required = s.evidencePlan?.required ?? s.evidence;
+    lines.push("| " + s.name + " | " + s.focus + " | " + (required.join(", ") || "无") + " | " + s.role + " | NOT_RUN |");
+  }
   lines.push("",
     "## 证据分层", "",
     "- 代码检查：测试、静态检查、契约测试。",
@@ -117,8 +127,10 @@ export function verificationPlan(plan) {
 
 export function releaseChecklist(plan) {
   const lines = [
+    identityBlock(plan), "",
     "# " + plan.config.name + " · 发布检查单（草案）", "",
-    "> 状态：NOT_RUN。发布需要明确授权与真实回执。", "",
+    "> 状态：NOT_RUN。发布需要明确授权与真实回执。",
+    "> project_id：" + plan.slug + " · base_sha：" + (plan.config.baseline?.headSha ?? "UNKNOWN"), "",
     "- [ ] 验证证据齐备且没有未解释的 UNKNOWN",
     "- [ ] 数据库迁移与降级路径已在副本上验证",
     "- [ ] 备份已验证，恢复步骤可执行",
@@ -132,15 +144,65 @@ export function releaseChecklist(plan) {
   return lines.join("\n");
 }
 
+export function routeSopMarkdown(plan) {
+  const sop = plan.routeSop;
+  const section = (title, values, checkbox = false) => [
+    "## " + title, "",
+    ...values.map(v => (checkbox ? "- [ ] " : "- ") + v), ""
+  ];
+  return [
+    identityBlock(plan), "",
+    "# " + plan.config.name + " · 路线 SOP · " + sop.name, "",
+    "> 状态：GENERATED / NOT_RUN。复用 11 阶段生命周期，本文件只补充该路线的特有义务。",
+    "> project_id：" + plan.slug + " · base_sha：" + (plan.config.baseline?.headSha ?? "UNKNOWN"),
+    "> 当前所有者：" + OWNER.repository + " · 运行时：" + RUNTIME.name + " " + RUNTIME.version, "",
+    ...section("前置条件", sop.prerequisites, true),
+    ...section("本地不可替代的平台环节", sop.platformConstraints),
+    ...section("Skills 安装前检查", sop.preInstallChecks, true),
+    "## 必须覆盖的负例", "", "- " + sop.negativeCase, "",
+    ...section("交付资产", sop.deliverables),
+    ...section("验收 Gate", sop.gates, true),
+    ...section("失败处理", sop.failureHandling),
+    ...section("回退方式", sop.rollback),
+    ...section("可选分支与跳过理由", sop.optionalBranches),
+    "## 关键 Skills", "",
+    "- " + sop.keySkills.join(", "),
+    "- 所有 Skill 初始为 CANDIDATE 且未安装；安装文件不等于已执行、已验证或已验收。", ""
+  ].join("\n");
+}
+
+const mediaType = name =>
+  name.endsWith(".json") ? "application/json" :
+    name.endsWith(".yaml") ? "application/yaml" : "text/markdown";
+
 export function workspaceBundle(plan) {
   const slug = plan.slug;
-  return {
+  const files = {
     [slug + "-manifest.json"]: JSON.stringify(plan.manifest ?? toManifest(plan), null, 2) + "\n",
     [slug + "-ENGINEERING_PROFILE.yaml"]: engineeringProfileYaml(plan),
     [slug + "-spec-and-tickets-draft.md"]: starterMarkdown(plan),
     [slug + "-adr-draft.md"]: adrTemplate(plan),
     [slug + "-verification-plan.md"]: verificationPlan(plan),
     [slug + "-release-checklist.md"]: releaseChecklist(plan),
-    [slug + "-agent-handoff.md"]: stageHandoff(plan, plan.stages[0].id)
+    [slug + "-agent-handoff.md"]: stageHandoff(plan, plan.stages[0].id),
+    [slug + "-route-sop.md"]: routeSopMarkdown(plan)
+  };
+  const identity = projectIdentity(plan);
+  const bundle = {
+    schemaVersion: 1,
+    kind: "WORKBENCH_PROJECT_BUNDLE",
+    status: "DRAFT_NOT_EXECUTED",
+    identity,
+    files: Object.entries(files).map(([name, content]) => ({
+      name,
+      media_type: mediaType(name),
+      bytes: new TextEncoder().encode(content).length,
+      content
+    })),
+    note: "All artifacts share one project_id and base_sha. Nothing here was installed, tested or deployed."
+  };
+  return {
+    ...files,
+    [slug + "-bundle.json"]: JSON.stringify(bundle, null, 2) + "\n"
   };
 }

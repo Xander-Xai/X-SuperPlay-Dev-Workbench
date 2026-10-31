@@ -1,7 +1,7 @@
 ---
 name: verification
 description: Produce the evidence that proves work is done before claiming it is done. Use at the end of every task, before a PR, and before any release or completion claim.
-status: candidate
+status: CANDIDATE
 version: 0.2.0
 license: UNLICENSED-PROPRIETARY
 provenance: Xander-Xai/X-SuperPlay-AI-Engineering-OS@8553124f238ab463d4a50debad34e871ef8de060

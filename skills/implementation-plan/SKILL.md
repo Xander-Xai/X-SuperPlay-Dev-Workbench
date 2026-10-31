@@ -1,7 +1,7 @@
 ---
 name: implementation-plan
 description: Turn a verified specification into ordered vertical slices, each ending in a runnable, verifiable state. Use after specification and before implementation for any multi-step change.
-status: candidate
+status: CANDIDATE
 version: 0.2.0
 license: UNLICENSED-PROPRIETARY
 provenance: Xander-Xai/X-SuperPlay-AI-Engineering-OS@8553124f238ab463d4a50debad34e871ef8de060

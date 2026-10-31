@@ -636,6 +636,10 @@ function cmdValidateRegistry() {
     if (!text.includes("\nname: " + skill.id + "\n")) errors.push(skill.id + ": frontmatter name mismatch");
     if (!/\ndescription:\s*\S/.test(text)) errors.push(skill.id + ": missing description");
     if (!text.includes("self_contained: true")) errors.push(skill.id + ": must declare self_contained: true");
+    const statusLine = (text.match(/\nstatus:\s*(\S+)/) ?? [])[1];
+    if (statusLine !== skill.status) errors.push(skill.id + ": frontmatter status does not match catalog");
+    const licenseLine = (text.match(/\nlicense:\s*(\S+)/) ?? [])[1];
+    if (licenseLine !== skill.license) errors.push(skill.id + ": frontmatter license does not match catalog");
     if (/\]\(\.\.\//.test(text)) errors.push(skill.id + ": bundle contains cross-directory links");
     for (const dep of skill.dependencies) if (!SKILL_IDS.includes(dep)) errors.push(skill.id + ": unknown dependency " + dep);
   }

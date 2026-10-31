@@ -7,7 +7,7 @@ export const FILES=[
   "index.html","styles.css",
   "src/app.mjs","src/catalog.mjs","src/routing.mjs","src/engine.mjs",
   "src/install-contract.mjs","src/starter.mjs","src/baseline.mjs",
-  "src/handoff.mjs","src/workspace.mjs","src/evidence.mjs"
+  "src/handoff.mjs","src/workspace.mjs","src/evidence.mjs","src/identity.mjs"
 ];
 export async function build(){
   const html=await readFile(resolve(root,"index.html"),"utf8");

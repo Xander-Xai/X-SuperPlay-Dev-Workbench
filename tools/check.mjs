@@ -11,14 +11,14 @@ const essential=[
   "addon-list","stage-list","stage-inspector","init-command","download-md","download-json",
   "skills-grid","skill-search","skill-agent","skill-install-command","download-starter",
   "baseline-file","baseline-state","workflow-tabs","workflow-body",
-  "workspace-files","workspace-preview","download-workspace-file",
+  "workspace-files","workspace-preview","download-workspace-file","download-bundle",
   "evidence-body","install-command","copy-install"
 ];
 for(const id of essential) if(!html.includes('id="'+id+'"'))failures.push("missing DOM id "+id);
 const required=[
   "styles.css","src/catalog.mjs","src/routing.mjs","src/engine.mjs","src/app.mjs",
   "src/install-contract.mjs","src/starter.mjs","src/baseline.mjs","src/handoff.mjs",
-  "src/workspace.mjs","src/evidence.mjs",
+  "src/workspace.mjs","src/evidence.mjs","src/identity.mjs",
   "tools/project-probe.mjs","tools/skill-kit.mjs","tools/xeng.mjs",
   "README.md","docs/ARCHITECTURE.md","docs/MIGRATION.md",
   "migration/eng-os-split-20261031.json"
