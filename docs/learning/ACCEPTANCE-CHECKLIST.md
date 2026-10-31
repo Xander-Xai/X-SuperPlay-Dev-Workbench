@@ -64,7 +64,9 @@
 | `SKILL_USAGE_GUIDE_DOCUMENTED` | PASS | 18 份提示词 + 调用说明 |
 | `LEARNING_PATH_DOCUMENTED` | PASS | L1–L6 + 30/60 天 |
 | `RESEARCH_RECONCILIATION` | PARTIAL | R1/R2/R3 全文 `SOURCE_UNAVAILABLE` |
-| `RUNTIME_IMPLEMENTATION` | UNCHANGED | 本轮未修改 `src/`、`tools/`、`skills/`、`test/` |
+| `DELIVERY_COMPATIBILITY_VIEW` | IMPLEMENTED | `src/delivery.mjs`；`xeng method / matrix / delivery / skills-matrix`；`validateDelivery()` 已接入 `npm run check`；Ticket 契约字段已生成 |
+| `HARNESS_LOOP_RUNTIME` | NOT_IMPLEMENTED | `allowed_files` / `allowed_commands` 仅字段；无文件锁、命令白名单执行或 Loop Runner |
+| `RUNTIME_DOCS_COMMIT` | UNCHANGED_BY_DOCS_COMMIT | 本次文档提交未修改 `src/`、`tools/`、`skills/`、`test/`；分支已包含 delivery 兼容视图改动 |
 | `REAL_PROJECT_DOGFOOD` | NOT_RUN / BLOCKED | 无授权真实项目 |
 
 ## 5. 仍未验证
@@ -76,6 +78,7 @@
 
 ## 6. 本轮不修改的内容
 
-- `src/`、`tools/`、`skills/`、`test/` 的运行逻辑。
+- 文档提交本身不修改 `src/`、`tools/`、`skills/`、`test/`；分支中已有的 delivery 兼容视图改动见 §4。
 - 未安装、未 Vendor、未执行任何第三方 Skill。
+- 未实现 Harness 文件锁 / 命令白名单强制与 Loop Runner。
 - 未部署、未发布、未自动合并。

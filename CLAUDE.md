@@ -10,11 +10,18 @@ The current owner of the engineering runtime: 11-stage lifecycle, task routing, 
 
 - `src/catalog.mjs` — lifecycle, tasks, profiles, skills, route SOPs, maturity/tier data.
 - `src/routing.mjs` — type × task × mode × tier → stages, skills and evidence plan.
+- `src/engine.mjs` — plan composition, export and catalog validation.
+- `src/starter.mjs` — Spec, tracer tickets and ticket-harness contract fields.
 - `src/workspace.mjs` — generated project artifacts (16 entries).
+- `src/handoff.mjs` — per-stage Agent handoff.
+- `src/delivery.mjs` — 8 macro stages / 18 activities / delivery gates / skills matrix (compatibility view).
+- `src/evidence.mjs` / `src/evidence-identity.mjs` — evidence state machine and sha256 identities.
 - `src/playbooks.mjs` — AI application / RAG / Agent operating manuals.
 - `src/git-workflow.mjs` — advisory project Git guidance and per-agent notes.
 - `src/maturity.mjs` — L0–L6 gap diagnostic.
-- `tools/xeng.mjs` — init / audit / doctor / maturity / playbook / **method** / task / assemble.
+- `tools/xeng.mjs` — init / audit / doctor / maturity / playbook / **method** / matrix / delivery / skills-matrix / assemble / task.
+- `docs/METHOD.md` — 8/18/11 compatibility view and delivery gates.
+- `docs/learning/START-HERE.md` — learning entry; 18-activity guide, stage-to-skill matrix, prompts, product guides, L1–L6 and 30+60-day routes.
 - `docs/methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md` — canonical local synthesis; source/version caveats.
 - `docs/methods/UPSTREAM-SOURCES.md` — pinned Matt Pocock / OpenAI Harness / Ralph reference.
 - `docs/methods/AI-NATIVE-PRODUCT-AGENT-DESIGN.md` — product discovery and Agent architecture card.
@@ -31,11 +38,15 @@ npm run build      # audited Pages artifact
 node tools/xeng.mjs playbook --json
 node tools/xeng.mjs method design
 node tools/xeng.mjs method skills
+node tools/xeng.mjs method activities      # G0–G7 / A01–A18
+node tools/xeng.mjs delivery --json        # delivery states, loop, ticket contract
+node tools/xeng.mjs skills-matrix --json   # local/external skills and verification layers
 ~~~
 
 ## Rules that matter here
 
 - Generated artifacts stay `DRAFT_NOT_EXECUTED`; evidence starts `NOT_RUN`.
+- The 8 macro stages / 18 activities are a compatibility view; they must map back to the 11 canonical stages and must not become a second lifecycle or state machine.
 - Do not add a runtime dependency on `X-SuperPlay-AI-Engineering-OS`.
 - Do not add client-side tokens, remote installers or deployment actions.
 - Project-local rules in a target repository win over the advisory Git/playbook guidance.

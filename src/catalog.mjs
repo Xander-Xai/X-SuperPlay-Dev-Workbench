@@ -28,10 +28,16 @@ export const OWNER = Object.freeze({
 
 export const GOVERNANCE = Object.freeze({
   repository: "Xander-Xai/AI-Native-Work-Learning-OS",
-  commit: "f1289d685c95c7fac6f1d50068527a60f080ee1b",
+  commit: "15beebf955d1f2a515e2791dc8b375806598d36a",
   role: "GENERIC_GOVERNANCE_REFERENCE",
   status: "REFERENCE_ONLY_NOT_BUNDLED",
-  note: "Generic human-AI governance semantics. Not copied here; only applied to software delivery."
+  contract: "ai-native-governance-contract/v1",
+  contractPr: 57,
+  contractMergedAt: "2026-10-31T05:51:20Z",
+  adoption: "PARTIAL",
+  observedHead: "78c72b3510e0abbbdf23274cc42006428d2ab35d",
+  observedHeadAt: "2026-10-31",
+  note: "Generic human-AI governance semantics. PR #57 was merged at the pinned commit; the contract body is not copied here, adoption remains PARTIAL, and this is not a runtime dependency."
 });
 
 export const RUNTIME = Object.freeze({
@@ -126,7 +132,7 @@ export const PROFILES = Object.freeze([
       release: ["发布说明记录评测阈值", "提示词/模型版本可热切换回滚"]
     },
     ["提示词变体 A/B 分桶", "按功能成本看板", "离线评测样本留存"],
-    ["verification", "code-review", "systematic-debugging"], { dirs: ["evals"] }),
+    ["verification", "code-review", "systematic-debugging"], { dirs: ["evals"], overlay: true }),
 
   P("rag", "RAG 知识库", "检索增强生成、向量库与检索管线",
     {
@@ -138,7 +144,7 @@ export const PROFILES = Object.freeze([
       release: ["发布说明含评测数字与索引版本"]
     },
     ["向量/BM25/混合检索消融", "语料新鲜度与重建触发策略"],
-    ["verification", "systematic-debugging"], { dirs: ["evals"] }),
+    ["verification", "systematic-debugging"], { dirs: ["evals"], overlay: true }),
 
   P("agent", "Agent 智能体", "多步工具调用与自主执行系统",
     {
@@ -150,7 +156,7 @@ export const PROFILES = Object.freeze([
       release: ["启用新能力前评审门禁配置"]
     },
     ["端到端任务完成率评测", "每次运行成本预算与强制"],
-    ["verification", "systematic-debugging"], { dirs: ["evals"] }),
+    ["verification", "systematic-debugging"], { dirs: ["evals"], overlay: true }),
 
   P("mini-program", "微信小程序", "微信或其他国内平台小程序",
     {

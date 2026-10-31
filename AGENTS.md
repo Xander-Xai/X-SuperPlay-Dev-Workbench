@@ -4,7 +4,7 @@ This public repository owns the **website, public engineering methodology/adapta
 
 ## Required workflow
 
-- Read README.md, docs/ARCHITECTURE.md, src/catalog.mjs, src/engine.mjs, tests before changes. For AI-native methodology changes also read docs/methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md, docs/methods/UPSTREAM-SOURCES.md and docs/methods/PROJECT-PILOT.md.
+- Read README.md, docs/ARCHITECTURE.md, docs/METHOD.md, src/catalog.mjs, src/engine.mjs, tests before changes. For AI-native methodology or learning-content changes also read docs/methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md, docs/methods/UPSTREAM-SOURCES.md, docs/methods/PROJECT-PILOT.md and docs/learning/START-HERE.md.
 - For a catalog update, confirm the authoritative Engineering OS commit and registry via authorized access. Do NOT copy private normative documents or SKILL.md bodies.
 - Preserve 11 unique stages, 8 candidate skills, and the four original routes unless an authorized source change justifies migration.
 - Compatibility views (8 macro stages, 18 activities, delivery gates) must map back to the 11 canonical stages; never introduce a second lifecycle or state machine.

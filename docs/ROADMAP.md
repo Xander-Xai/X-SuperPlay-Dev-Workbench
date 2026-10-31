@@ -12,7 +12,7 @@
 
 目标：把旧私有 Engineering OS 的运行时能力语义迁移进 Workbench，并消除运行时依赖。
 
-- [x] 11 阶段 / 13 任务 / 14 基础 + 3 叠加 Profiles / 8 候选 Skills 在 `src/catalog.mjs` 中重建。
+- [x] 11 阶段 / 13 任务 / 17 个 Profile（13 基础 + 4 叠加）/ 8 候选 Skills 在 `src/catalog.mjs` 中重建。
 - [x] 任务路由：type × task × tier × mode × stack → 有序阶段 + Skill 依赖闭包（`src/routing.mjs`）。
 - [x] 显式证据状态机与本地报告导入，全部初始 `NOT_RUN`（`src/evidence.mjs`）。
 - [x] 7 件项目工作区产物：manifest、ENGINEERING_PROFILE.yaml、Spec、Tickets、ADR、验证计划、发布检查单（`src/workspace.mjs`）。
@@ -62,6 +62,8 @@
 状态：`METHOD_DOCUMENTED_AND_ROUTED`（仓库方法与入口层；与真实执行分层）；`HARNESS_LOOP_RUNTIME_NOT_IMPLEMENTED`；`REAL_PROJECT_DOGFOOD_NOT_RUN`。详情见[方法定义](methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md)。
 
 ## v0.2.2 AI-Native 全栈交付整合（2026-10-31）
+
+> 分支 `docs/ai-native-learning-system`（PR #31，OPEN）。以下 `[x]` 表示已在分支实现并通过本地 `npm run verify`；合并前不代表 `main` 已包含，远端检查尚未报告。
 
 目标：在方法文档之上补齐可执行的兼容视图；不新增第二套生命周期。
 
