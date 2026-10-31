@@ -6,6 +6,23 @@
 
 > 生成 ≠ 已安装 ≠ 已测试 ≠ 已发布 ≠ 已验收。所有导出的证据状态默认 `NOT_RUN`。
 
+## 完整开发范式：AI-Native Spec-Driven Harness & Loop Engineering
+
+**中文：AI 原生规格驱动的 Harness–Skills–Loop 全栈工程范式。** 本仓已维护完整的 [方法定义与 Workbench 映射](docs/methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md)、[Matt Pocock / Harness / Ralph 的固定版本上游参考](docs/methods/UPSTREAM-SOURCES.md)、[真实全栈灯塔项目试点 SOP 和模板](docs/methods/PROJECT-PILOT.md)。它不是原作者或招聘方的官方命名，也不是新的第二套生命周期。
+
+```text
+需求 → Discovery → Spec/AC → Tracer Tickets → Skills → Harness
+     → 单任务 Bounded Loop（实现→测试→双轴评审→证据）→ 全栈 Demo → 授权发布/复盘
+```
+
+```bash
+node tools/xeng.mjs method          # 完整范式（只读）
+node tools/xeng.mjs method sources  # 上游固定版本、许可与对应关系
+node tools/xeng.mjs method pilot    # 项目纵切 SOP、Harness/Loop 记录模板与启动提示词
+```
+
+**完成度边界**：方法导航和 CLI 已落盘；Harness/Loop 独立 Runner **未实现**；外部 Skills **未安装**；真实项目 Dogfood、Provider/设备与消费者验收仍为 `NOT_RUN`。文档和 CI 不证明产品已交付。
+
 ## 三分钟运行
 
 需要 Node.js 20+。零运行时依赖，无需 `npm install`，无需数据库或 API Key。
@@ -69,6 +86,7 @@ node tools/xeng.mjs audit ../your-project --json
 node tools/xeng.mjs doctor ../your-project
 node tools/xeng.mjs maturity ../your-project --json
 node tools/xeng.mjs playbook rag
+node tools/xeng.mjs method
 node tools/xeng.mjs validate-registry
 node tools/xeng.mjs task bug --type=saas --tier=B
 ~~~
@@ -177,6 +195,9 @@ npm run probe -- --target ../your-project --type saas --output project-baseline.
 - [迁移与兼容表](docs/MIGRATION.md)
 - [跨仓治理契约对齐](docs/CONTRACT_ALIGNMENT.md)
 - [实际开发 SOP](docs/PLAYBOOK.md)
+- [AI 原生 Spec–Skills–Harness–Loop 完整开发范式](docs/methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md)
+- [Matt Pocock / Harness / Ralph 固定上游来源](docs/methods/UPSTREAM-SOURCES.md)
+- [灯塔项目全栈实战及验收模板](docs/methods/PROJECT-PILOT.md)
 - [工程 Playbook](docs/PLAYBOOKS.md)
 - [项目级 Git 工作流](docs/GIT_WORKFLOW.md)
 - [工程成熟度 L0–L6](docs/MATURITY.md)
