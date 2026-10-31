@@ -13,18 +13,20 @@ const baselinePlan=()=>assemble({
     name:"Demo",projectType:"saas",headSha:"a".repeat(40),dirty:false,detected:["git"]}
 });
 
-test("workspace emits sixteen reviewable artifacts",()=>{
+test("workspace emits eighteen reviewable artifacts",()=>{
   const bundle=workspaceBundle(plan());
   const names=Object.keys(bundle);
-  assert.equal(names.length,16);
+  assert.equal(names.length,18);
   assert.ok(names.every(n=>bundle[n].length>0));
   assert.ok(names.some(n=>n.endsWith("-manifest.json")));
   assert.ok(names.some(n=>n.endsWith("-ENGINEERING_PROFILE.yaml")));
+  assert.ok(names.some(n=>n.endsWith("-intent.md")));
   assert.ok(names.some(n=>n.endsWith("-spec-and-tickets-draft.md")));
   assert.ok(names.some(n=>n.endsWith("-adr-draft.md")));
   assert.ok(names.some(n=>n.endsWith("-verification-plan.md")));
   assert.ok(names.some(n=>n.endsWith("-release-checklist.md")));
   assert.ok(names.some(n=>n.endsWith("-agent-handoff.md")));
+  assert.ok(names.some(n=>n.endsWith("-delegation-plan.md")));
   assert.ok(names.some(n=>n.endsWith("-route-sop.md")));
   assert.ok(names.some(n=>n.endsWith("-review-record.md")));
   assert.ok(names.some(n=>n.endsWith("-implementation-plan.md")));
@@ -39,18 +41,20 @@ test("every artifact shares one project id and base SHA",()=>{
   const p=baselinePlan();
   const bundle=workspaceBundle(p);
   const artifacts=Object.entries(bundle).filter(([n])=>!n.endsWith("-bundle.json")&&!n.endsWith("-manifest.json"));
-  assert.equal(artifacts.length,14);
+  assert.equal(artifacts.length,16);
   for(const [name,text] of artifacts){
     assert.match(text,new RegExp('project_id: "?'+p.slug),name);
     assert.match(text,new RegExp('base_sha: "?'+"a".repeat(40)),name);
   }
   assert.match(bundle[p.slug+"-spec-and-tickets-draft.md"],/baseSha|base_sha/);
+  assert.match(bundle[p.slug+"-intent.md"],/## 开放问题/);
+  assert.match(bundle[p.slug+"-delegation-plan.md"],/independent-reviewer/);
   const pack=JSON.parse(bundle[p.slug+"-bundle.json"]);
   assert.equal(pack.kind,"WORKBENCH_PROJECT_BUNDLE");
   assert.equal(pack.status,"DRAFT_NOT_EXECUTED");
   assert.equal(pack.identity.projectId,p.slug);
   assert.equal(pack.identity.baseSha,"a".repeat(40));
-  assert.equal(pack.files.length,15);
+  assert.equal(pack.files.length,17);
   for(const f of pack.files){
     assert.ok(f.content.includes(p.slug),f.name);
     assert.ok(f.content.includes("a".repeat(40)),f.name);

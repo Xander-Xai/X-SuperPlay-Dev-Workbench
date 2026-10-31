@@ -1,35 +1,79 @@
 ---
 name: project-discovery
-description: Rapidly build an accurate, evidence-based mental model of a repository before changing it. Use at project intake, when onboarding an unfamiliar codebase, or when docs and reality may disagree.
-status: CANDIDATE
-version: 0.2.0
+description: Use when entering an unfamiliar repository, starting intake, or when documentation may have drifted from code. Covers minimal context, one-question-at-a-time discovery, baseline evidence, and intent capture.
 license: UNLICENSED-PROPRIETARY
-provenance: Xander-Xai/X-SuperPlay-AI-Engineering-OS@8553124f238ab463d4a50debad34e871ef8de060
-self_contained: true
+metadata:
+  version: "0.4.0"
+  status: CANDIDATE
+  owner: Xander-Xai/X-SuperPlay-Dev-Workbench
+  provenance: Xander-Xai/X-SuperPlay-AI-Engineering-OS@8553124f238ab463d4a50debad34e871ef8de060
+  self_contained: true
+  lifecycle_stage: intake
+  supported_agents: claude-code,codex,opencode
+  prerequisites: none
+  dependencies: none
+  install_method: node tools/skill-kit.mjs install --target <project> --agent <agent> --skills project-discovery
+  tests: static frontmatter, catalog mapping, install dry-run, agent discovery, real-project effect
+  upstream_equivalents: repo-intake-and-plan,context-engineering,brainstorming,interview-me
 ---
 
 # Project Discovery
 
-Build an honest model of what the repository **is**, not what its README claims.
+## Core principle
 
-## Steps
+**Read enough to change behavior, not enough to write a tour.** Context is expensive. A repository overview that restates the directory tree usually adds cost without changing the next action.
 
-1. **Read the governance layer first.** README, AGENTS.md (including nested), CLAUDE.md, ENGINEERING_PROFILE.yaml. Note contradictions instead of resolving them silently.
-2. **Read the reality layer.** Directory tree, task runner targets (`package.json` scripts, Makefile, pyproject), test layout, CI workflows, `.env.example`.
-3. **Audit current truth.** Find the file that answers "what is true now". Check its `last_verified` date. Treat dated reports as historical snapshots, never current fact.
-4. **Verify one command.** Run the cheapest documented test or lint command. A broken documented command is a primary finding.
-5. **Map boundaries.** Upstream/downstream repositories, external services (env vars), generated artifacts.
-6. **Write a discovery note.** Dated, at most one page: what this repo is, what is true, what is stale, what is risky. See `references/discovery-note.md`.
+## Intake sequence
 
-## Outputs
+1. **Find the governing rules.** Read the nearest `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, CI config, and branch protection. Project-local rules win over generic advice.
+2. **Establish the real state.** Record `git rev-parse HEAD`, `git status --short`, the default branch, and the last CI result. Dirty or unknown state is a finding, not a footnote.
+3. **Run the cheapest real command.** `npm test`, `make test`, `pytest -q`, or the documented smoke command. A command that fails is more informative than a README that claims it passes.
+4. **Trace one path.** Follow a single user-visible flow from entrypoint to storage. This reveals the actual architecture faster than a diagram.
+5. **List facts, assumptions, and UNKNOWNs separately.** Do not let a plausible inference become a fact.
 
-- A dated discovery note.
-- A list of drift items for the project owner.
-- Explicit UNKNOWN items with the next verification step.
+## Interrogate the intent
 
-## Failure modes
+Ask one question at a time, and challenge the first answer:
 
-- Trusting the README before running one command.
-- Treating an old audit as current truth.
-- Reading code before knowing which tests are green.
-- Presenting assumptions as facts.
+- What problem is this for, and who feels it?
+- What happens if we do nothing?
+- What is explicitly out of scope?
+- What must never happen (security, data, money, reputation)?
+- What is the smallest observable outcome that proves success?
+- What authorization, budget, or deadline constrains us?
+
+Stop when the answers are specific enough to write a testable acceptance criterion.
+
+## Minimal context rules
+
+- Do not write a directory tree or dependency inventory that can be regenerated.
+- Do not restate framework documentation.
+- Do write rules that change execution: commands, constraints, ownership, forbidden actions, current incidents.
+- Link to files instead of pasting them.
+- Keep `current-state` facts dated with `last_verified`.
+
+## Output
+
+- `project-brief.md`: problem, users, scope, constraints, authorization, stop conditions.
+- `intent.md`: problem, expected outcome, impacted surfaces, constraints, open questions.
+- `baseline.json`: HEAD, dirty state, detected stack, commands run.
+- Drift list: documentation claims contradicted by code or commands.
+- UNKNOWN list with the next verification action.
+
+## Anti-rationalization
+
+| Excuse | Reality |
+|---|---|
+| "I'll read the whole repo first" | Whole-repo reading burns context and rarely changes the first action. Trace one path. |
+| "The README says it works" | Documentation is a claim. Run the command. |
+| "The requirement is obvious" | Obvious to whom? Write it as a testable AC or it is still an assumption. |
+| "I don't need to ask, I can infer" | Inferences are allowed, but must be labeled and verified. |
+| "Git state doesn't matter" | Dirty or detached state changes what evidence means. Record it. |
+
+## Red flags
+
+- Editing before reading project-local rules.
+- Treating a code comment or README as verified behavior.
+- No baseline SHA or command output.
+- Context notes that restate discoverable structure.
+- Skipping user intent and jumping to a solution.

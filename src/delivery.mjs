@@ -7,7 +7,7 @@
 //
 // Browser-safe: pure data + pure functions, no Node imports.
 
-import { STAGE_IDS, SKILL_IDS, ROUTE_SOPS, TYPES, EVIDENCE_STATES } from "./catalog.mjs";
+import { STAGE_IDS, SKILL_IDS, SKILLS, ROUTE_SOPS, TYPES, EVIDENCE_STATES } from "./catalog.mjs";
 
 // ---------------------------------------------------------------------------
 // G0–G7 macro stages. Linear, non-authoritative grouping of the 11 stages.
@@ -93,6 +93,7 @@ export const ACTIVITIES = Object.freeze([
     humanDecisions: ["AI 是否必要", "不可接受的自动化程度", "HITL 边界"],
     agentOperations: ["起草 AI-native UX 方案", "列出降级与兜底路径", "标注评测需求"],
     primarySkill: "specification", alternateSkills: ["architecture"],
+    coverageException: "AI-native 产品设计横跨 specification/architecture；主用 specification，architecture 负责边界与失败模式，故不单列 AI 设计 Skill。",
     skillNote: LOCAL_SKILL_NOTE + " " + EXTERNAL_SKILL_NOTE,
     tools: ["xeng playbook ai-application", "xeng playbook rag", "xeng playbook agent"],
     outputs: ["ai-product-design.md", "eval-plan.md"],
@@ -127,6 +128,7 @@ export const ACTIVITIES = Object.freeze([
     humanDecisions: ["视觉方向", "关键交互取舍", "可访问性底线"],
     agentOperations: ["绘制页面/状态清单", "实现可运行原型", "截图与移动宽度检查"],
     primarySkill: "specification", alternateSkills: ["architecture"],
+    coverageException: "UI/UX 是产物质量维度而非独立生命周期；检查项嵌入 specification 与 verification，浏览器证据由 verification 产出。",
     skillNote: LOCAL_SKILL_NOTE + " 本地无专用 UI Skill；外部设计 Skill 仅为候选。" + EXTERNAL_SKILL_NOTE,
     tools: ["浏览器截图", "Playwright", "移动宽度 390px 检查"],
     outputs: ["ui-states.md", "screenshots/"],
@@ -161,6 +163,7 @@ export const ACTIVITIES = Object.freeze([
     humanDecisions: ["数据归属", "角色与数据域", "迁移窗口"],
     agentOperations: ["起草 schema 与迁移", "实现 API 与授权检查", "写越权负例"],
     primarySkill: "architecture", alternateSkills: ["code-review"],
+    coverageException: "数据库/API/认证权限横跨 architecture 与 implementation；主用 architecture，安全审查由 security-review 在架构与评审阶段补位。",
     skillNote: LOCAL_SKILL_NOTE,
     tools: ["PostgreSQL", "Prisma/Drizzle", "OpenAPI", "SSO/RBAC"],
     outputs: ["schema.sql", "migrations/", "api-contract.yaml", "authz-matrix.md"],
@@ -194,7 +197,8 @@ export const ACTIVITIES = Object.freeze([
     inputs: ["Ticket 契约", "项目本地规则", "真实测试/ lint 命令"],
     humanDecisions: ["允许命令与文件范围", "外部成本预算", "升级条件"],
     agentOperations: ["准备只读上下文", "配置测试/lint/type 检查", "记录反馈与停止原因"],
-    primarySkill: "implementation-plan", alternateSkills: ["systematic-debugging"],
+    primarySkill: "implementation-plan", alternateSkills: ["systematic-debugging", "agent-collaboration"],
+    coverageException: "Harness 是 planning/implementation 的执行环境契约；主用 implementation-plan，协作与权限边界由 agent-collaboration 补位。",
     skillNote: LOCAL_SKILL_NOTE,
     tools: ["AGENTS.md/CLAUDE.md", "npm test", "lint", "typecheck", "sandbox"],
     outputs: ["harness-contract.md", "allowed-commands.txt"],
@@ -211,7 +215,7 @@ export const ACTIVITIES = Object.freeze([
     inputs: ["Tracer Ticket", "项目本地规则", "已批准权限"],
     humanDecisions: ["实现取舍", "技术债接受", "范围变更"],
     agentOperations: ["写失败测试", "最小实现", "运行真实测试并记录"],
-    primarySkill: "implementation-plan", alternateSkills: ["systematic-debugging"],
+    primarySkill: "implementation", alternateSkills: ["systematic-debugging"],
     skillNote: LOCAL_SKILL_NOTE + " 本地无 implement/tdd Skill；上游 implement/tdd 仅为候选。" + EXTERNAL_SKILL_NOTE,
     tools: ["node --test", "vitest/jest", "playwright", "git"],
     outputs: ["commit", "test-output.txt"],
@@ -228,7 +232,7 @@ export const ACTIVITIES = Object.freeze([
     inputs: ["AC 与负例", "API 契约", "真实依赖或可控替身"],
     humanDecisions: ["测试阈值", "可接受替身范围", "阻塞标准"],
     agentOperations: ["写契约/集成测试", "验证失败路径", "区分 mock 与真实依赖"],
-    primarySkill: "verification", alternateSkills: ["systematic-debugging"],
+    primarySkill: "implementation", alternateSkills: ["verification", "systematic-debugging"],
     skillNote: LOCAL_SKILL_NOTE,
     tools: ["node --test", "supertest", "testcontainers", "OpenAPI diff"],
     outputs: ["test-report.md", "contract-diff.json"],
@@ -263,6 +267,7 @@ export const ACTIVITIES = Object.freeze([
     humanDecisions: ["止血 vs 根因修复", "生产操作授权", "回滚决策"],
     agentOperations: ["稳定复现", "提出并验证假设", "补回归测试"],
     primarySkill: "systematic-debugging", alternateSkills: ["verification"],
+    coverageException: "故障诊断横跨 discovery/implementation/operation；主用 systematic-debugging，运营侧由 incident-response 接管。",
     skillNote: LOCAL_SKILL_NOTE,
     tools: ["日志", "OpenTelemetry", "git bisect", "调试器"],
     outputs: ["rca.md", "regression-test"],
@@ -296,7 +301,7 @@ export const ACTIVITIES = Object.freeze([
     inputs: ["权限矩阵", "数据流", "依赖清单"],
     humanDecisions: ["风险接受", "合规边界", "安全阻断"],
     agentOperations: ["跑密钥/依赖扫描", "写越权与注入负例", "检查日志脱敏"],
-    primarySkill: "code-review", alternateSkills: ["verification"],
+    primarySkill: "security-review", alternateSkills: ["code-review", "verification"],
     skillNote: LOCAL_SKILL_NOTE,
     tools: ["npm run security", "dependency-scan", "SAST（可选）", "威胁建模模板"],
     outputs: ["security-review.md", "scan-receipt.json"],
@@ -313,7 +318,7 @@ export const ACTIVITIES = Object.freeze([
     inputs: ["Review 结论", "发布检查单", "授权与回滚方案"],
     humanDecisions: ["发布授权", "窗口与灰度", "回滚触发条件"],
     agentOperations: ["配置 CI", "验证构建与迁移", "保存发布回执"],
-    primarySkill: "verification", alternateSkills: ["documentation-sync"],
+    primarySkill: "release-engineering", alternateSkills: ["verification", "documentation-sync"],
     skillNote: LOCAL_SKILL_NOTE,
     tools: ["GitHub Actions", "构建产物", "迁移脚本", "健康检查"],
     outputs: ["ci-run-receipt.json", "release-receipt.md", "changelog.md"],
@@ -330,7 +335,7 @@ export const ACTIVITIES = Object.freeze([
     inputs: ["发布回执", "监控配置", "用户反馈"],
     humanDecisions: ["SLO/告警阈值", "事故等级", "恢复授权"],
     agentOperations: ["观察指标", "记录事件台账", "起草恢复步骤"],
-    primarySkill: "systematic-debugging", alternateSkills: ["documentation-sync"],
+    primarySkill: "incident-response", alternateSkills: ["systematic-debugging", "documentation-sync"],
     skillNote: LOCAL_SKILL_NOTE,
     tools: ["OpenTelemetry", "Sentry", "告警平台", "Runbook"],
     outputs: ["ops-log.md", "incident-ledger.md", "runbook.md"],
@@ -347,7 +352,7 @@ export const ACTIVITIES = Object.freeze([
     inputs: ["事件台账", "验证与发布证据", "失败模式"],
     humanDecisions: ["改进优先级", "规则/测试/Gate 取舍", "复用判定"],
     agentOperations: ["更新当前事实", "写复盘与改进候选", "检查链接与命令"],
-    primarySkill: "documentation-sync", alternateSkills: ["code-review"],
+    primarySkill: "incident-response", alternateSkills: ["documentation-sync", "code-review"],
     skillNote: LOCAL_SKILL_NOTE,
     tools: ["link check", "xeng doctor", "postmortem 模板"],
     outputs: ["postmortem.md", "handover.md", "improvement-candidates.md"],
@@ -374,27 +379,27 @@ const BRANCH = (o) => Object.freeze({
 export const PLATFORM_BRANCHES = Object.freeze([
   BRANCH({
     id: "saas", name: "SaaS / Micro-SaaS", routeSop: "saas",
-    coverage: ["认证与会话", "租户隔离", "数据库迁移", "订阅权益", "支付 Webhook（仅确有需求）", "配额", "日志", "备份与恢复"],
-    negative: ["跨租户读写", "会话失效", "重复回调", "配额绕过"],
-    platformGates: ["支付渠道回执", "生产租户数据验收"]
+    coverage: ["认证与会话", "租户隔离", "数据库迁移", "订阅权益", "支付 Webhook（仅确有需求）", "配额", "日志", "备份与恢复", "OIDC/SAML SSO", "SCIM", "审计保留", "DPA/数据驻留", "DSAR", "Webhook 签名/重放保护"],
+    negative: ["跨租户读写", "会话失效", "重复回调", "配额绕过", "Webhook 重放"],
+    platformGates: ["支付渠道回执", "生产租户数据验收", "审计与 DSAR 证据"]
   }),
   BRANCH({
     id: "enterprise", name: "企业 Web / 管理系统", routeSop: "enterprise",
-    coverage: ["业务流程图", "RBAC", "角色与数据域", "字段级授权", "SSO", "审批状态机", "ERP/CRM 集成", "审计日志", "超时与幂等", "UAT", "交接"],
-    negative: ["越权审批", "过期会话", "审计日志静默删除", "集成重复回调"],
-    platformGates: ["企业 IdP 联调", "业务方 UAT 签收"]
+    coverage: ["业务流程图", "RBAC", "角色与数据域", "字段级授权", "SSO", "审批状态机", "ERP/CRM 集成", "审计日志", "超时与幂等", "UAT", "交接", "OIDC/SAML 选型", "SCIM 开通/停用", "职责分离", "审计 WORM", "电子签收", "双跑切换", "供应商退出"],
+    negative: ["越权审批", "过期会话", "审计日志静默删除", "集成重复回调", "SCIM 停用残留"],
+    platformGates: ["企业 IdP 联调", "业务方 UAT 签收", "审计 WORM 与电子签收回执"]
   }),
   BRANCH({
     id: "mini-program", name: "微信小程序", routeSop: "mini-program",
-    coverage: ["主体与类目", "AppID", "备案适用性", "合法域名", "登录态", "隐私授权", "真机", "体验版", "平台审核", "发布回执"],
-    negative: ["无会话", "非法域名", "越权读取", "审核未过却称已发布"],
-    platformGates: ["微信公众平台审核回执", "真机验证"]
+    coverage: ["主体与类目", "AppID", "ICP 备案", "公安备案", "付费认证", "合法域名", "登录态", "隐私授权", "隐私保护指引 1:1", "wx.requirePrivacyAuthorize", "内容安全 API", "主包/分包体积", "TLS 1.2+ 全链", "iOS 虚拟支付", "真机", "体验版", "平台审核", "灰度发布", "发布回执"],
+    negative: ["无会话", "非法域名", "越权读取", "审核未过却称已发布", "未声明隐私接口", "默认勾选/强制绑定", "UGC 未过内容安全"],
+    platformGates: ["微信公众平台审核回执", "ICP/公安备案与主体一致", "真机验证", "内容安全与隐私弹窗回执"]
   }),
   BRANCH({
     id: "app", name: "移动 APP", routeSop: "app",
-    coverage: ["技术栈择一", "路由与状态", "离线状态", "安全存储", "设备权限", "签名", "构建", "TestFlight/测试轨道", "商店审核", "灰度", "回滚"],
-    negative: ["断网丢状态", "权限拒绝崩溃", "未签名发布", "单平台证据冒充另一平台"],
-    platformGates: ["商店审核回执", "真实设备安装"]
+    coverage: ["技术栈择一", "路由与状态", "离线状态", "安全存储", "设备权限", "签名", "构建", "TestFlight/测试轨道", "商店审核", "灰度", "回滚", "Android API 36", "16 KB page size", "AAB", "Xcode 26/iOS 26 SDK", "隐私清单/营养标签/ATT", "Data Safety", "账号删除 URL", "UGC/年龄分级", "COPPA", "AI 提供商同意"],
+    negative: ["断网丢状态", "权限拒绝崩溃", "未签名发布", "单平台证据冒充另一平台", "商店声明与运行时不一致", "儿童数据无同意"],
+    platformGates: ["商店审核回执", "真实设备安装", "隐私清单/Data Safety 一致性", "目标 API/SDK 检查"]
   })
 ]);
 
@@ -403,7 +408,22 @@ export const AI_OVERLAY = Object.freeze({
   name: "AI 横向扩展",
   capabilities: Object.freeze(["LLM", "RAG", "Agent", "多 Agent", "自动化工作流", "AI-native UX"]),
   rule: "AI Overlay 不能绕过底层 Web/SaaS/企业平台的权限 Gate。",
-  requiredEvidence: Object.freeze(["eval", "integration-probe", "review"]),
+  requiredEvidence: Object.freeze(["eval", "integration-probe", "review", "manual-probe"]),
+  governance: Object.freeze([
+    "AI 注册表：系统、模型、提示词、工具、数据源与负责人",
+    "风险分类：EU AI Act 禁止/高风险/透明义务/通用模型边界",
+    "人类监督：不可逆动作与高风险决策必须有人工批准",
+    "日志：记录模型/提示词版本、工具调用、输入输出摘要与 run id",
+    "技术文档：用途、数据治理、鲁棒性、网络安全与上市后监测",
+    "Article 50 披露：用户知道自己在与 AI 交互或查看 AI 生成内容"
+  ]),
+  evaluation: Object.freeze([
+    "分层 eval：确定性检查 → rubric/LLM judge → 红队/canary",
+    "数据集版本化、golden set 与回归阈值",
+    "RAG 引用与 groundedness；无答案时明确拒绝",
+    "Agent 轨迹、工具调用、步数/成本/延迟预算",
+    "OWASP LLM Top 10 与提示词注入负例"
+  ]),
   cannotSubstitute: "脚本假模型、静态扫描或 CI 通过不得替代真实模型评测或用户验收。"
 });
 
@@ -492,7 +512,7 @@ export const ACCEPTANCE_TEST_POLICY = Object.freeze({
 // ---------------------------------------------------------------------------
 // Skills selection and conflict matrix. Upstream metadata verified 2026-10-31.
 
-const DEFAULT_SKILL_ACCEPTANCE = "安装校验 + Agent 发现 + 沙箱真实调用 + 真实项目效果；四层分别留证，缺一不晋级。";
+const DEFAULT_SKILL_ACCEPTANCE = "安装校验 + Agent 发现 + 沙箱真实调用 + 真实项目效果；五层（STATIC_CHECK / INSTALL / AGENT_DISCOVERY / AGENT_INVOCATION / REAL_PROJECT_EFFECT）分别留证，缺一不晋级。";
 
 const XS = (o) => Object.freeze({
   id: o.id, repo: o.repo, version: o.version, commit: o.commit, license: o.license,
@@ -625,6 +645,15 @@ export function macroStageFor(stageId) {
   return MACRO_STAGES.find(m => m.canonicalStages.includes(stageId)) ?? null;
 }
 
+export const SDLC_CROSSWALK = Object.freeze([
+  Object.freeze({ id: "plan", name: "Plan", artifacts: ["intent.md", "spec.md"], stages: ["intake", "discovery", "specification"], activities: ["A01", "A02", "A04"] }),
+  Object.freeze({ id: "design", name: "Design", artifacts: ["adr/NNNN-*.md", "api-contract.yaml"], stages: ["architecture"], activities: ["A03", "A05", "A06"] }),
+  Object.freeze({ id: "build", name: "Build", artifacts: ["plan.md", "tickets.json", "commit", "test-output.txt"], stages: ["planning", "implementation"], activities: ["A07", "A08", "A09", "A10", "A11"] }),
+  Object.freeze({ id: "test", name: "Test", artifacts: ["test-report.md", "e2e-report.md", "review.md", "evidence.json"], stages: ["verification", "review"], activities: ["A12", "A14"] }),
+  Object.freeze({ id: "deploy", name: "Deploy", artifacts: ["release-receipt.md", "changelog.md"], stages: ["release"], activities: ["A16"] }),
+  Object.freeze({ id: "maintain", name: "Maintain", artifacts: ["ops-log.md", "incident-ledger.md", "postmortem.md"], stages: ["operation", "postmortem"], activities: ["A13", "A17", "A18"] })
+]);
+
 export function deliveryMatrix() {
   const rows = {};
   for (const stageId of STAGE_IDS) {
@@ -697,6 +726,18 @@ export function validateDelivery() {
   });
   for (const s of STAGE_IDS) if (!macroCovered.has(s)) errors.push("delivery: canonical stage " + s + " has no macro stage (orphan)");
 
+  // Six-stage crosswalk is a view: it must cover every canonical stage and reference real activities.
+  if (SDLC_CROSSWALK.length !== 6) errors.push("delivery: expected 6 crosswalk stages");
+  const crossStages = new Set();
+  for (const row of SDLC_CROSSWALK) {
+    for (const s of row.stages) {
+      if (!STAGE_IDS.includes(s)) errors.push("delivery: crosswalk " + row.id + " references unknown stage " + s);
+      else crossStages.add(s);
+    }
+    for (const a of row.activities) if (!activityById(a)) errors.push("delivery: crosswalk " + row.id + " references unknown activity " + a);
+  }
+  for (const s of STAGE_IDS) if (!crossStages.has(s)) errors.push("delivery: crosswalk misses canonical stage " + s);
+
   // Activities: 18, sequential, all fields, all stages covered.
   if (ACTIVITIES.length !== 18) errors.push("delivery: expected 18 activities");
   if (new Set(ACTIVITIES.map(a => a.id)).size !== ACTIVITIES.length) errors.push("delivery: duplicate activity ids");
@@ -714,6 +755,11 @@ export function validateDelivery() {
       else activityCovered.add(s);
     }
     if (!SKILL_IDS.includes(a.primarySkill)) errors.push("delivery: activity " + a.id + " primary skill is not a local candidate: " + a.primarySkill);
+    const primary = SKILLS.find(k => k.id === a.primarySkill);
+    if (primary && !a.stages.some(s => primary.stages.includes(s)) && typeof a.coverageException !== "string")
+      errors.push("delivery: activity " + a.id + " primary skill does not cover an activity stage and has no coverageException");
+    if (a.coverageException !== undefined && (typeof a.coverageException !== "string" || !a.coverageException.trim()))
+      errors.push("delivery: activity " + a.id + " has an empty coverageException");
     for (const alt of a.alternateSkills) if (!SKILL_IDS.includes(alt)) errors.push("delivery: activity " + a.id + " alternate skill unknown: " + alt);
     if (a.alternateSkills.includes(a.primarySkill)) errors.push("delivery: activity " + a.id + " repeats its primary skill as alternate");
     if (!a.skillNote.includes("UNLICENSED-PROPRIETARY") || !a.skillNote.includes("CANDIDATE"))
@@ -733,6 +779,8 @@ export function validateDelivery() {
   }
   if (!AI_OVERLAY.capabilities.includes("RAG") || !AI_OVERLAY.capabilities.includes("Agent")) errors.push("delivery: AI overlay missing RAG/Agent");
   if (!AI_OVERLAY.rule.includes("不能绕过")) errors.push("delivery: AI overlay must state it cannot bypass platform permission gates");
+  if (!nonEmptyArray(AI_OVERLAY.governance)) errors.push("delivery: AI overlay missing governance requirements");
+  if (!nonEmptyArray(AI_OVERLAY.evaluation)) errors.push("delivery: AI overlay missing evaluation requirements");
 
   // Delivery states: ordered chain, no skipping.
   if (DELIVERY_STATES.length !== 5) errors.push("delivery: expected 5 delivery states");

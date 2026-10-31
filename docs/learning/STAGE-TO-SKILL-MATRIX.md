@@ -2,7 +2,7 @@
 
 > 本页区分 **Prompt / Skill / MCP / Plugin / Framework / Harness / Loop Runner**，并给出每个 Skill 的真实仓库、固定版本、许可证、触发条件、输入输出与验收方式。
 >
-> 核验时间：2026-10-31。核验方式：GitHub API 读取仓库 tree 与 LICENSE，未安装、未执行任何第三方 Skill。
+> 核验时间：2026-10-31（外部来源）；本地 Skills 于 2026-11-01 扩展至 14 个。核验方式：GitHub API 读取仓库 tree 与 LICENSE，未安装、未执行任何第三方 Skill。
 
 ## 0. 术语边界
 
@@ -16,7 +16,7 @@
 | **Harness** | Agent 的执行环境：上下文、工具、权限、测试反馈 | 不是提示词，不是 Loop |
 | **Loop Runner** | 自动迭代执行器 | 本仓库未实现 |
 
-## 1. 本地候选 Skills（8 个，全部 CANDIDATE）
+## 1. 本地候选 Skills（14 个，全部 CANDIDATE）
 
 来源：`src/catalog.mjs` 的冻结快照语义重写；许可证 `UNLICENSED-PROPRIETARY`；未在真实项目执行。
 
@@ -25,13 +25,19 @@
 | `project-discovery` | intake, discovery | — | CANDIDATE | 语义借鉴 `grill-with-docs`，非功能等同 |
 | `specification` | specification | — | CANDIDATE | 语义借鉴 `to-spec`，非功能等同 |
 | `architecture` | architecture | — | CANDIDATE | 语义借鉴 `codebase-design` / `domain-modeling` |
-| `implementation-plan` | planning | specification | CANDIDATE | 语义借鉴 `to-tickets`；**不等价于完整 `implement`/`tdd`** |
+| `implementation-plan` | planning | specification | CANDIDATE | 语义借鉴 `to-tickets`；不等价于完整 `implement`/`tdd` |
 | `systematic-debugging` | implementation, verification, operation, postmortem | — | CANDIDATE | 语义借鉴 superpowers `systematic-debugging` / mattpocock `diagnosing-bugs` |
 | `verification` | verification, review, release | — | CANDIDATE | 语义借鉴 `verification-before-completion` / `tdd` |
 | `code-review` | review | verification | CANDIDATE | 语义借鉴 `code-review` |
-| `documentation-sync` | release, operation, postmortem | — | CANDIDATE | 部分借鉴 `retro` |
+| `documentation-sync` | release, operation, postmortem | — | CANDIDATE | 部分借鉴 `retro`；收窄为文档漂移同步 |
+| `implementation` | implementation, verification | implementation-plan | CANDIDATE | 语义借鉴 `tdd` / `implement` / `incremental-implementation` |
+| `security-review` | architecture, verification, review | architecture | CANDIDATE | 语义借鉴 `security-and-hardening` / `claude-code-security-review` |
+| `release-engineering` | release | verification | CANDIDATE | 语义借鉴 `shipping-and-launch` / `ci-cd-and-automation` |
+| `incident-response` | operation, postmortem | systematic-debugging | CANDIDATE | 语义借鉴 SRE 事故响应与 blameless 复盘 |
+| `eval-engineering` | specification, verification, operation | verification | CANDIDATE | 语义借鉴 eval 金字塔与 LLM judge 实践 |
+| `agent-collaboration` | planning, implementation, review | implementation-plan | CANDIDATE | 语义借鉴 `subagent-driven-development` / worktree / 并行 Agent |
 
-**没有本地 `implement` / `tdd` / `frontend-design` / `webapp-testing` / `security-review` Skill。** 需要时只能引用外部候选，或由目标项目自行实现。
+`implementation`、`security-review`、`release-engineering`、`incident-response`、`eval-engineering`、`agent-collaboration` 是 v0.4 新增；它们与外部同名 Skill 只做语义借鉴，不复制正文。
 
 ## 2. 外部 Skills（固定版本，未安装）
 
@@ -185,15 +191,15 @@
 | A07 DB/API/权限 | 任务简报摘要 | architecture, implementation | `architecture` / `supabase` | [Guide A07](FULLSTACK-LIFECYCLE-GUIDE.md#a07--数据库api-与认证权限) | DOCUMENTED |
 | A08 Tracer Tickets | 任务简报摘要 | planning | `implementation-plan` / `to-tickets` | [Guide A08](FULLSTACK-LIFECYCLE-GUIDE.md#a08--纵向-tracer-tickets) | DOCUMENTED |
 | A09 Harness | 任务简报摘要；OpenAI 文章 | planning, implementation | `implementation-plan` | [Guide A09](FULLSTACK-LIFECYCLE-GUIDE.md#a09--harness-与-agent-执行环境) | DOCUMENTED |
-| A10 实现 | 任务简报摘要 | implementation | `implementation-plan` / `implement`+`tdd`（外部） | [Guide A10](FULLSTACK-LIFECYCLE-GUIDE.md#a10--前后端完整功能实现) | DOCUMENTED |
-| A11 TDD/契约 | 任务简报摘要 | implementation, verification | `verification` / `tdd` | [Guide A11](FULLSTACK-LIFECYCLE-GUIDE.md#a11--tdd集成测试与契约测试) | DOCUMENTED |
+| A10 实现 | 任务简报摘要 | implementation | `implementation` / `implement`+`tdd`（外部） | [Guide A10](FULLSTACK-LIFECYCLE-GUIDE.md#a10--前后端完整功能实现) | DOCUMENTED |
+| A11 TDD/契约 | 任务简报摘要 | implementation, verification | `implementation` / `tdd` | [Guide A11](FULLSTACK-LIFECYCLE-GUIDE.md#a11--tdd集成测试与契约测试) | DOCUMENTED |
 | A12 E2E/UX QA | 任务简报摘要 | verification | `verification` / `webapp-testing` | [Guide A12](FULLSTACK-LIFECYCLE-GUIDE.md#a12--浏览器-e2e-和-ux-qa) | DOCUMENTED |
 | A13 调试 | 任务简报摘要 | discovery, implementation, operation | `systematic-debugging` | [Guide A13](FULLSTACK-LIFECYCLE-GUIDE.md#a13--故障诊断与根因分析) | DOCUMENTED |
 | A14 双轴审查 | 任务简报摘要 | review | `code-review` | [Guide A14](FULLSTACK-LIFECYCLE-GUIDE.md#a14--独立双轴代码审查) | DOCUMENTED |
-| A15 安全审计 | 任务简报摘要 | architecture, verification, review | `code-review` / security action | [Guide A15](FULLSTACK-LIFECYCLE-GUIDE.md#a15--安全隐私和权限审计) | DOCUMENTED |
-| A16 CI/CD/发布 | 任务简报摘要 | verification, release | `verification` / spec-kit/OpenSpec | [Guide A16](FULLSTACK-LIFECYCLE-GUIDE.md#a16--cicd-与发布) | DOCUMENTED |
-| A17 监控/运营 | 任务简报摘要 | operation | `systematic-debugging` / expo-observe | [Guide A17](FULLSTACK-LIFECYCLE-GUIDE.md#a17--监控恢复和运营) | DOCUMENTED |
-| A18 文档/复盘 | 任务简报摘要 | release, operation, postmortem | `documentation-sync` / `retro` | [Guide A18](FULLSTACK-LIFECYCLE-GUIDE.md#a18--文档交接和复盘) | DOCUMENTED |
+| A15 安全审计 | 任务简报摘要 | architecture, verification, review | `security-review` | [Guide A15](FULLSTACK-LIFECYCLE-GUIDE.md#a15--安全隐私和权限审计) | DOCUMENTED |
+| A16 CI/CD/发布 | 任务简报摘要 | verification, release | `release-engineering` / spec-kit/OpenSpec | [Guide A16](FULLSTACK-LIFECYCLE-GUIDE.md#a16--cicd-与发布) | DOCUMENTED |
+| A17 监控/运营 | 任务简报摘要 | operation | `incident-response` / expo-observe | [Guide A17](FULLSTACK-LIFECYCLE-GUIDE.md#a17--监控恢复和运营) | DOCUMENTED |
+| A18 文档/复盘 | 任务简报摘要 | release, operation, postmortem | `incident-response` / `retro` | [Guide A18](FULLSTACK-LIFECYCLE-GUIDE.md#a18--文档交接和复盘) | DOCUMENTED |
 
 > `DOCUMENTED` 只表示文档覆盖，不表示 Skill 已安装或项目已执行。R1/R2/R3 完整原文 `SOURCE_UNAVAILABLE`，来源列使用任务简报结构摘要。
 

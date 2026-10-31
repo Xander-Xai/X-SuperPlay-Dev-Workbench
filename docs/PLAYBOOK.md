@@ -61,7 +61,7 @@ Ticket 3：真机弱网/失败恢复 → 审核预检查 → 在获授权时提�
 
 ## 工具顺序
 
-1. `node tools/xeng.mjs init <target> --dry-run` 预览工程基线。
+1. `node tools/xeng.mjs init <target> --profile <profile-a,profile-b> --dry-run` 预览工程基线。
 2. `node tools/project-probe.mjs` 只读探测已有项目。
 3. `node tools/skill-kit.mjs plan` 预览 Skill 安装。
 4. 人工审查后 `--apply --confirm-reviewed`。

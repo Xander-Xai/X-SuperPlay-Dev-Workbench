@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {TYPES,STAGES,SKILLS,TASKS,PROFILES,OWNER,PROVENANCE,SOURCE,GOVERNANCE,ROUTE_SOPS,SKILL_STATUSES,skillMetadata} from "../src/catalog.mjs";
-import {slugify,normalizeConfig,assemble,xengDryRun,toMarkdown,toManifest,validateCatalog} from "../src/engine.mjs";
+import {slugify,normalizeConfig,assemble,xengDryRun,toMarkdown,toManifest,validateCatalog,clampStageIndex} from "../src/engine.mjs";
 import {PLAYBOOKS,playbookById,playbookMarkdown,validatePlaybooks} from "../src/playbooks.mjs";
 import {GIT_WORKFLOW,validateGitWorkflow} from "../src/git-workflow.mjs";
 import {MATURITY_LEVELS,maturityReport} from "../src/maturity.mjs";
@@ -12,7 +12,7 @@ test("catalog contains the preserved routes, stages, tasks, profiles and skills"
   assert.equal(new Set(STAGES.map(s=>s.id)).size,11);
   assert.equal(TASKS.length,13);
   assert.equal(PROFILES.length,17);
-  assert.equal(SKILLS.length,8);
+  assert.equal(SKILLS.length,14);
   assert.ok(SKILLS.every(x=>x.status==="CANDIDATE" && x.installed===false && x.selfContained===true));
   assert.deepEqual(validateCatalog(),[]);
 });
@@ -100,6 +100,15 @@ test("task choice changes the route without inventing stages",()=>{
   const doc=assemble({task:"documentation"});
   assert.deepEqual(doc.stages.map(s=>s.id),["verification","implementation","review"]);
 });
+test("stage index is clamped to the active route",()=>{
+  assert.equal(clampStageIndex(11,0),0);
+  assert.equal(clampStageIndex(11,10),10);
+  assert.equal(clampStageIndex(11,11),10);
+  assert.equal(clampStageIndex(11,-1),0);
+  assert.equal(clampStageIndex(4,10),3);
+  assert.equal(clampStageIndex(0,3),0);
+  assert.equal(clampStageIndex(4,Number.NaN),0);
+});
 test("input lengths are bounded",()=>{
   const cfg=normalizeConfig({name:"a".repeat(400),description:"b".repeat(5000)});
   assert.equal(cfg.name.length,100);assert.equal(cfg.description.length,2000);
@@ -130,6 +139,21 @@ test("every product route owns a distinct, complete SOP",()=>{
   assert.equal(app.routeSop.id,"app");
   assert.ok(app.routeSop.platformConstraints.join(" ").includes("签名"));
 });
+test("route SOPs carry the 2026 platform and compliance gates",()=>{
+  const text=id=>JSON.stringify(ROUTE_SOPS[id]);
+  assert.match(text("saas"),/OIDC/);
+  assert.match(text("saas"),/SCIM/);
+  assert.match(text("saas"),/DPA/);
+  assert.match(text("enterprise"),/SAML/);
+  assert.match(text("enterprise"),/职责分离/);
+  assert.match(text("mini-program"),/ICP 备案/);
+  assert.match(text("mini-program"),/requirePrivacyAuthorize/);
+  assert.match(text("mini-program"),/内容安全/);
+  assert.match(text("app"),/API 36/);
+  assert.match(text("app"),/Xcode 26/);
+  assert.match(text("app"),/Data Safety/);
+});
+
 test("skill metadata is complete and status cannot self-promote",()=>{
   assert.deepEqual(SKILL_STATUSES,["CANDIDATE","LOCALLY_VERIFIED","REAL_PROJECT_VERIFIED","REUSABLE"]);
   for(const skill of SKILLS){

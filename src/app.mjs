@@ -1,8 +1,8 @@
 import {
   TYPES, STACKS, AGENTS, ADDONS, SKILLS, STAGES, TASKS, PROFILES, TIERS,
-  EVIDENCE_STATES, EVIDENCE_LAYERS, EVIDENCE_KINDS, OWNER, PROVENANCE, RUNTIME, ROUTE_SOPS
+  EVIDENCE_STATES, EVIDENCE_LAYERS, RUNTIME, ROUTE_SOPS
 } from "./catalog.mjs";
-import { assemble, xengDryRun, toMarkdown, toManifest } from "./engine.mjs";
+import { assemble, xengDryRun, toMarkdown, toManifest, clampStageIndex } from "./engine.mjs";
 import { skillKitCommand, skillsForStage, resolveSkillDependencies, discoverSkills } from "./install-contract.mjs";
 import { starterMarkdown } from "./starter.mjs";
 import { normalizeBaseline } from "./baseline.mjs";
@@ -14,6 +14,7 @@ import { PLAYBOOKS, PLAYBOOK_STATUS } from "./playbooks.mjs";
 import { GIT_WORKFLOW } from "./git-workflow.mjs";
 import { MATURITY_LEVELS, MATURITY_TARGET } from "./maturity.mjs";
 import { listProviders } from "./orchestration.mjs";
+import { COLLABORATION_MODES, HUMAN_GATES } from "./collaboration.mjs";
 
 const one = selector => document.querySelector(selector);
 const all = selector => [...document.querySelectorAll(selector)];
@@ -184,6 +185,7 @@ function renderSummary(p) {
 }
 
 function renderStages(p) {
+  activeStage = clampStageIndex(p.stages.length, activeStage);
   const list = one("#stage-list");
   list.replaceChildren();
   p.stages.forEach((stage, i) => {
@@ -392,6 +394,16 @@ function renderWorkflow() {
     ].forEach(v => notes.append(newElement("li", "", v)));
     body.append(notes);
     body.append(newElement("p", "install-disclaimer", "生成计划（只读）：node tools/xeng.mjs orchestrator plan --provider orca --agent omp --ticket <file.json>"));
+    body.append(newElement("h3", "", "协作模式与人工 Gate"));
+    body.append(newElement("p", "muted", "协作模型只校验委派契约，不自动创建 worktree、不合并、不发布。写者不得审批自己的变更。"));
+    body.append(table(
+      ["模式", "ID", "适用", "隔离", "禁止"],
+      COLLABORATION_MODES.map(m => [m.name, m.id, m.useWhen, m.isolation, m.forbidden])
+    ));
+    body.append(table(
+      ["人工 Gate", "含义", "规则"],
+      HUMAN_GATES.map(g => [g.name, g.id, g.rule])
+    ));
   } else {
     body.append(newElement("p", "muted", "Tier 决定 spec / plan / ADR / review / e2e / rollback / evidence 的最低义务。Tier C/D 可裁剪部分阶段，但必须记录理由。"));
     body.append(table(
@@ -546,7 +558,7 @@ function renderSkills() {
       " · 依赖：" + (skill.dependencies.join(", ") || "无") + " · " + skill.license));
     card.append(newElement("div", "skill-meta", "Agents：" + skill.supportedAgents.join(", ") +
       (skill.prerequisites.length ? " · 前置：" + skill.prerequisites.join(", ") : "")));
-    card.append(newElement("code", "skill-path", skill.bundle + "/SKILL.md + references/"));
+    card.append(newElement("code", "skill-path", skill.bundle + "/SKILL.md（整包复制）"));
     card.title = "安装方式：" + skill.installMethod + "\n测试：" + skill.tests.join(", ");
     card.addEventListener("click", () => {
       activeSkillId = skill.id;
@@ -744,7 +756,10 @@ function init() {
   one("#project-name").addEventListener("input", render);
   one("#project-description").addEventListener("input", render);
   for (const id of ["#project-mode", "#project-agent", "#project-tier", "#project-task", "#project-stack"])
-    one(id).addEventListener("change", render);
+    one(id).addEventListener("change", () => {
+      if (id === "#project-task" || id === "#project-mode") activeStage = 0;
+      render();
+    });
   one("#project-mode").addEventListener("change", () => { renderAddons(); render(); });
 
   one("#generate").addEventListener("click", () => {

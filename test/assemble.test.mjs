@@ -75,6 +75,16 @@ test("assemble apply refuses without confirmation, then installs without overwri
   }finally{rmSync(dir,{recursive:true,force:true});}
 });
 
+test("assemble includes recommended skills for the selected route",()=>{
+  const dir=fixture();
+  try{
+    const {r,json}=runJson("assemble","--target",dir,"--type","saas","--task","bug","--tier","B","--agent","codex");
+    assert.equal(r.status,0,r.stderr);
+    assert.ok(json.skills.resolved.includes("systematic-debugging"),JSON.stringify(json.skills));
+    assert.ok(json.skills.items.some(x=>x.skill==="systematic-debugging"));
+  }finally{rmSync(dir,{recursive:true,force:true});}
+});
+
 test("assemble refuses to overwrite a preexisting skill file",()=>{
   const dir=fixture();
   try{

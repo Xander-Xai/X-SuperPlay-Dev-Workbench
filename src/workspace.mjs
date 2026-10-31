@@ -5,6 +5,7 @@ import { starterMarkdown } from "./starter.mjs";
 import { stageHandoff } from "./handoff.mjs";
 import { identityBlock, projectIdentity } from "./identity.mjs";
 import { GIT_WORKFLOW } from "./git-workflow.mjs";
+import { collaborationPlan } from "./collaboration.mjs";
 import { playbooksForProfiles, playbookMarkdown } from "./playbooks.mjs";
 
 const q = v => JSON.stringify(String(v ?? ""));
@@ -63,6 +64,77 @@ export function engineeringProfileYaml(plan) {
   return lines.join("\n");
 }
 
+export function intentTemplate(plan) {
+  return [
+    identityBlock(plan), "",
+    "# " + plan.config.name + " · Intent",
+    "",
+    "> 状态：DRAFT_NOT_EXECUTED。先写 intent，再写 spec；两者冲突时以 intent 的问题与约束为准并更新 spec。",
+    "",
+    "## 问题",
+    "",
+    plan.config.description || "<谁在什么场景下遇到什么问题；不写解决方案。>",
+    "",
+    "## 预期结果",
+    "",
+    "<用户可观察的结果；不是功能列表。>",
+    "",
+    "## 影响面",
+    "",
+    "- 用户/角色：",
+    "- 系统/数据：",
+    "- 外部依赖：",
+    "- 合规/安全：",
+    "",
+    "## 约束",
+    "",
+    "- 授权与预算：",
+    "- 时间窗口：",
+    "- 不可接受的风险：",
+    "- 必须遵守的项目本地规则：",
+    "",
+    "## 开放问题",
+    "",
+    "| 问题 | 负责人 | 截止 | 状态 |",
+    "|---|---|---|---|",
+    "| <问题> | <owner> | <date> | OPEN |",
+    ""
+  ].join("\n");
+}
+
+export function delegationPlan(plan) {
+  const c = collaborationPlan(plan);
+  const rows = c.writers.map(w =>
+    "| " + w.id + " | " + w.reviewer + " | " + w.worktree + " | " + w.branch + " | " +
+    w.allowed_files.join("<br>") + " | " + w.allowed_commands.join("<br>") + " |"
+  );
+  return [
+    identityBlock(plan), "",
+    "# " + plan.config.name + " · 协作与委派计划", "",
+    "> 状态：" + c.status + "。这是模板与校验契约，不是已创建的 worktree 或已批准的委派。",
+    "> 模式：" + c.mode + "。Workbench 不自动创建 worktree、不合并、不发布、不改权限。",
+    "> base_sha：" + c.base_sha, "",
+    "## 写者与审者", "",
+    "| 写者 | 审者 | Worktree | 分支 | 允许文件 | 允许命令 |",
+    "|---|---|---|---|---|---|",
+    ...rows, "",
+    "## 停止条件", "",
+    ...c.writers[0].stop_conditions.map(x => "- " + x), "",
+    "## 人工 Gate", "",
+    ...c.human_gates.map(id => "- `" + id + "`"), "",
+    "## Handoff 必填", "",
+    "- base_sha / branch / worktree",
+    "- 修改文件与原因",
+    "- 运行过的命令与结果",
+    "- 证据路径",
+    "- 未决问题与 UNKNOWN",
+    "- 建议的下一步",
+    "",
+    "> 写者不得审批自己的变更；并行写者必须有独立 worktree 且允许文件不相交。",
+    ""
+  ].join("\n");
+}
+
 export function adrTemplate(plan) {
   return [
     identityBlock(plan), "",
@@ -105,8 +177,7 @@ export function adrTemplate(plan) {
   ].join("\n");
 }
 
-export function verificationPlan(plan) {
-  const lines = [
+export function verificationPlan(plan) {  const lines = [
     identityBlock(plan), "",
     "# " + plan.config.name + " · 验证计划（草案）", "",
     "> 状态：NOT_RUN。本文件只定义需要什么证据，不代表已执行。",
@@ -428,11 +499,13 @@ export function workspaceBundle(plan) {
   const files = {
     [slug + "-manifest.json"]: JSON.stringify(plan.manifest ?? toManifest(plan), null, 2) + "\n",
     [slug + "-ENGINEERING_PROFILE.yaml"]: engineeringProfileYaml(plan),
+    [slug + "-intent.md"]: intentTemplate(plan),
     [slug + "-spec-and-tickets-draft.md"]: starterMarkdown(plan),
     [slug + "-adr-draft.md"]: adrTemplate(plan),
     [slug + "-verification-plan.md"]: verificationPlan(plan),
     [slug + "-release-checklist.md"]: releaseChecklist(plan),
     [slug + "-agent-handoff.md"]: stageHandoff(plan, plan.stages[0].id),
+    [slug + "-delegation-plan.md"]: delegationPlan(plan),
     [slug + "-route-sop.md"]: routeSopMarkdown(plan),
     [slug + "-review-record.md"]: reviewRecord(plan),
     [slug + "-implementation-plan.md"]: implementationPlan(plan),

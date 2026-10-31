@@ -9,7 +9,7 @@ import {
   TYPES, PROFILES, PROFILE_IDS, STAGES, STAGE_IDS, TASKS, TASK_IDS, TIERS, SKILLS, SKILL_IDS,
   PROVENANCE, OWNER, GOVERNANCE, RUNTIME
 } from "../src/catalog.mjs";
-import { composeRoute, tierObligations } from "../src/routing.mjs";
+import { composeRoute, tierObligations, stageSkillIds } from "../src/routing.mjs";
 import { validateCatalog } from "../src/engine.mjs";
 import { resolveSkillDependencies } from "../src/install-contract.mjs";
 import { PLAYBOOKS, playbookById, playbookMarkdown } from "../src/playbooks.mjs";
@@ -19,7 +19,8 @@ import {
   MACRO_STAGES, ACTIVITIES, PLATFORM_BRANCHES, AI_OVERLAY, DELIVERY_STATES,
   LOOP_PHASES, LOOP_TERMINAL_STATES, LOOP_DEFAULTS, TICKET_CONTRACT_FIELDS,
   TICKET_CONTRACT_STATUS, ACCEPTANCE_TEST_POLICY, EXTERNAL_SKILLS, SKILL_VERIFICATION_LAYERS,
-  SKILL_RELATION_POLICY, LEARNING_PATH, deliveryMatrix, activityById, learningPathTickets
+  SKILL_RELATION_POLICY, LEARNING_PATH, deliveryMatrix, activityById, learningPathTickets,
+  SDLC_CROSSWALK
 } from "../src/delivery.mjs";
 import { run as runSkillKit } from "./skill-kit.mjs";
 import {
@@ -919,8 +920,8 @@ function cmdValidateRegistry() {
     if (!text.startsWith("---\n")) errors.push(skill.id + ": SKILL.md must start with frontmatter");
     if (!text.includes("\nname: " + skill.id + "\n")) errors.push(skill.id + ": frontmatter name mismatch");
     if (!/\ndescription:\s*\S/.test(text)) errors.push(skill.id + ": missing description");
-    if (!text.includes("self_contained: true")) errors.push(skill.id + ": must declare self_contained: true");
-    const statusLine = (text.match(/\nstatus:\s*(\S+)/) ?? [])[1];
+    if (!/^\s*self_contained:\s*true\s*$/m.test(text)) errors.push(skill.id + ": must declare self_contained: true");
+    const statusLine = (text.match(/\n\s*status:\s*(\S+)/) ?? [])[1];
     if (statusLine !== skill.status) errors.push(skill.id + ": frontmatter status does not match catalog");
     const licenseLine = (text.match(/\nlicense:\s*(\S+)/) ?? [])[1];
     if (licenseLine !== skill.license) errors.push(skill.id + ": frontmatter license does not match catalog");
@@ -944,11 +945,30 @@ function cmdSelftest() {
 // ---------------------------------------------------------------- task
 
 function cmdTask(argv) {
+  const json = argv.includes("--json");
   const taskId = argv.find(a => !a.startsWith("--")) ?? "feature";
   const tier = (argv.find(a => a.startsWith("--tier=")) ?? "--tier=B").slice(7);
   const mode = (argv.find(a => a.startsWith("--mode=")) ?? "--mode=new").slice(7);
   const type = (argv.find(a => a.startsWith("--type=")) ?? "--type=mini-program").slice(7);
   const route = composeRoute({ type, task: taskId, tier, mode });
+  if (json) {
+    console.log(JSON.stringify({
+      status: route.status,
+      task: route.task,
+      type: { id: route.type, name: TYPES[route.type].name },
+      tier: route.tier,
+      mode: route.mode,
+      stack: route.stack,
+      profiles: route.profiles,
+      stages: route.stages,
+      skipped: route.skipped,
+      evidence: route.evidence,
+      skills: route.skills,
+      routeSop: route.routeSop,
+      warnings: route.warnings
+    }, null, 2));
+    return 0;
+  }
   console.log("task=" + route.task.id + " (" + route.task.name + ") tier=" + route.tier.id + " mode=" + route.mode);
   for (const s of route.stages) console.log(String(s.index).padStart(2, "0") + " " + s.id.padEnd(16) + s.role.padEnd(9) + s.focus);
   console.log("skipped: " + (route.skipped.map(s => s.id).join(", ") || "none"));
@@ -1006,10 +1026,11 @@ function cmdAssemble(argv) {
   });
   const stageSkills = route.stages.map(s => ({
     stage: s.id, name: s.name, role: s.role,
-    skills: [...(STAGES.find(x => x.id === s.id)?.requiredSkills ?? [])]
+    skills: [...stageSkillIds(s.id)]
   }));
-  const required = [...new Set(stageSkills.flatMap(s => s.skills))];
-  const resolved = resolveSkillDependencies(required.join(","));
+  const required = [...new Set(route.stages.flatMap(s => STAGES.find(x => x.id === s.id)?.requiredSkills ?? []))];
+  const requested = [...new Set(stageSkills.flatMap(s => s.skills))];
+  const resolved = resolveSkillDependencies(requested.join(","));
   const plan = runSkillKit(["plan", "--target", target, "--agent", opts.agent, "--skills", resolved.join(",")], { silent: true });
   const repo = targetRepoState(target);
   const warnings = [...route.warnings];
@@ -1152,6 +1173,7 @@ function cmdDelivery(argv) {
     acceptanceTestPolicy: ACCEPTANCE_TEST_POLICY,
     platformBranches: PLATFORM_BRANCHES,
     aiOverlay: AI_OVERLAY,
+    crosswalk: SDLC_CROSSWALK,
     learningPath: LEARNING_PATH,
     learningPathTickets: learningPathTickets()
   };
@@ -1400,7 +1422,7 @@ function usage() {
   return [
     "Workbench xeng CLI (Node, offline)",
     "",
-    "  xeng init <path> --profile a,b --tier A|B|C|D [--task feature] [--mode new|existing] [--dry-run]",
+    "  xeng init <path> --profile a,b --tier A|B|C|D [--task feature] [--mode new|existing] [--name <name>] [--dry-run]",
     "  xeng audit [path] [--json]",
     "  xeng doctor [path]",
     "  xeng maturity [path] [--json]",
@@ -1408,12 +1430,13 @@ function usage() {
     "  xeng method [overview|sources|pilot|design|skills|activities|matrix|A01..A18] [--json] [--template]",
     "  xeng validate-registry",
     "  xeng selftest",
-    "  xeng task <type> [--tier=A] [--mode=new] [--type=saas]",
+    "  xeng task <task-id> [--tier=A] [--mode=new] [--type=saas] [--json]",
     "  xeng matrix [--json]",
     "  xeng delivery [--json]",
     "  xeng skills-matrix [--json]",
     "  xeng orchestrator list|doctor|plan|receipt [--json]",
-    "  xeng assemble --target <dir> --type saas --task feature --tier B --agent codex [--apply --confirm-reviewed]",
+    "  xeng orchestrator plan --provider orca --agent omp --ticket <file> [--base-sha <sha>] [--project-id <id>] [--repository <repo>] [--platform windows|wsl2|linux|macos]",
+    "  xeng assemble --target <dir> --type saas --task feature --tier B --agent codex [--stack flutter] [--addons rag,agent] [--apply --confirm-reviewed]",
     "  xeng agent-check --target <dir> --agent codex",
     "  xeng version",
     "",

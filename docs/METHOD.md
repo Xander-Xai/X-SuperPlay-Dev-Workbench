@@ -25,6 +25,21 @@
 - 18 活动覆盖全部 11 阶段；每项有且仅有一个主用 Skill。
 - 宏阶段顺序固定，无循环。
 
+## 六阶段对照（只读视图）
+
+Anthropic《AI-Native SDLC Playbook》的六阶段是交付视图，不是第二套生命周期。机器可读定义在 `src/delivery.mjs` 的 `SDLC_CROSSWALK`：
+
+| 六阶段 | 产物 | 11 阶段 | 活动 |
+|---|---|---|---|
+| Plan | `intent.md`、`spec.md` | intake / discovery / specification | A01 / A02 / A04 |
+| Design | `adr/NNNN-*.md`、`api-contract.yaml` | architecture | A03 / A05 / A06 |
+| Build | `plan.md`、`tickets.json`、`commit`、`test-output.txt` | planning / implementation | A07–A11 |
+| Test | `test-report.md`、`e2e-report.md`、`review.md`、`evidence.json` | verification / review | A12 / A14 |
+| Deploy | `release-receipt.md`、`changelog.md` | release | A16 |
+| Maintain | `ops-log.md`、`incident-ledger.md`、`postmortem.md` | operation / postmortem | A13 / A17 / A18 |
+
+六阶段合起来必须覆盖全部 11 阶段；`validateDelivery()` 会检查。详见 [2026-11-01 六阶段对照](research/2026-11-01-ai-native-sdlc-alignment.md)。
+
 ## CLI
 
 ~~~bash
@@ -36,7 +51,7 @@ node tools/xeng.mjs method A04 --json
 node tools/xeng.mjs method --template      # 生成 Markdown 矩阵模板
 node tools/xeng.mjs method matrix          # 11 阶段 × 宏阶段 × 活动
 node tools/xeng.mjs matrix --json
-node tools/xeng.mjs delivery --json        # 交付状态、Loop、Ticket 契约、四路线、AI Overlay
+node tools/xeng.mjs delivery --json        # 交付状态、Loop、Ticket 契约、四路线、AI Overlay、六阶段 crosswalk
 node tools/xeng.mjs skills-matrix --json   # 本地/外部 Skills 与验证层
 ~~~
 
@@ -50,7 +65,7 @@ node tools/xeng.mjs skills-matrix --json   # 本地/外部 Skills 与验证层
 | `inputs` | 前置条件与输入 |
 | `humanDecisions` | 人类负责的决定 |
 | `agentOperations` | Agent 可执行的操作 |
-| `primarySkill` / `alternateSkills` | 主用 / 替代 Skill（本地 8 个候选） |
+| `primarySkill` / `alternateSkills` | 主用 / 替代 Skill（本地 14 个候选） |
 | `skillNote` | 来源、许可与验证状态 |
 | `tools` | CLI / 工具 / 框架 |
 | `outputs` | 可审查工件 |
@@ -105,7 +120,7 @@ node tools/xeng.mjs skills-matrix --json   # 本地/外部 Skills 与验证层
 
 ## Skills 选择
 
-- 本地 8 个候选均为 `CANDIDATE`，`UNLICENSED-PROPRIETARY`。
+- 本地 14 个候选均为 `CANDIDATE`，`UNLICENSED-PROPRIETARY`。
 - 外部 Skills 仅 `USER_EXPLICIT` 触发，不自动安装、不 Vendor。
 - 许可证未知（`anthropics/skills`、`vercel-labs/agent-skills`）时禁止复制正文。
 - 验证分层：`STATIC_CHECK → INSTALL → AGENT_DISCOVERY → AGENT_INVOCATION → REAL_PROJECT_EFFECT`，不可互相替代。

@@ -19,7 +19,7 @@
 | 11 | 30+60 天学习路线明确 | PASS | [KNOWLEDGE-ROADMAP.md](KNOWLEDGE-ROADMAP.md) |
 | 12 | 不存在重复、冲突的权威流程 | PASS | 单一权威：`src/catalog.mjs`；本文只做兼容视图 |
 | 13 | README 能直接导航到学习入口 | PASS | README “学习入口”链接到 [START-HERE.md](START-HERE.md) |
-| 14 | 没有把候选 Skills 标记为已验证 | PASS | 本地 8 个全部 `CANDIDATE`；外部 `REFERENCE_PINNED` |
+| 14 | 没有把候选 Skills 标记为已验证 | PASS | 本地 14 个全部 `CANDIDATE`；外部 `REFERENCE_PINNED` |
 | 15 | 没有把文档完成写成开发运行能力完成 | PASS | 本页 §4 与各文档边界声明 |
 | 16 | 不存在未经授权安装或运行第三方代码 | PASS | 本轮只读 API + Markdown；未安装、未执行 |
 
@@ -42,7 +42,7 @@
 |---|---|---|---|
 | mattpocock/skills | `5beb35b…`（v1.3.1 commit `24fe0ef…`） | MIT | REFERENCE_PINNED |
 | obra/superpowers | `2ce8aa15…`（v7.0.1） | MIT | REFERENCE_PINNED |
-| anthropics/skills | `ca45fc49…` | Apache-2.0（已核对 frontend-design / webapp-testing / skill-creator 的 `LICENSE.txt`；根目录无统一 LICENSE） | REFERENCE_PINNED |
+| anthropics/skills | `ca45fc49…` | 目录内 `LICENSE.txt` 为 Apache-2.0（已核对 frontend-design / webapp-testing / skill-creator）；根目录无统一 LICENSE → repo-level `LICENSE_UNVERIFIED` | REFERENCE_PINNED |
 | vercel-labs/agent-skills | `1a2c79d4…` | LICENSE_UNVERIFIED | REFERENCE_PINNED |
 | expo/skills | `05754e71…` | MIT | REFERENCE_PINNED |
 | supabase/agent-skills | `c9be0e93…` | MIT | REFERENCE_PINNED |

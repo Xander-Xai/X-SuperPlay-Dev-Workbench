@@ -8,7 +8,7 @@ import {
   MACRO_STAGES,ACTIVITIES,PLATFORM_BRANCHES,AI_OVERLAY,DELIVERY_STATES,DELIVERY_STATE_IDS,
   LOOP_PHASES,LOOP_TERMINAL_STATES,LOOP_TERMINAL_IDS,TICKET_CONTRACT_FIELDS,TICKET_CONTRACT_STATUS,
   ACCEPTANCE_TEST_POLICY,
-  EXTERNAL_SKILLS,SKILL_VERIFICATION_LAYERS,SKILL_RELATION_POLICY,LEARNING_PATH,
+  EXTERNAL_SKILLS,SKILL_VERIFICATION_LAYERS,SKILL_RELATION_POLICY,LEARNING_PATH,SDLC_CROSSWALK,
   validateDelivery,deliveryMatrix,activityById,activitiesForStage,macroStageFor,canAdvanceDelivery,learningPathTickets
 } from "../src/delivery.mjs";
 import {assemble} from "../src/engine.mjs";
@@ -23,12 +23,19 @@ test("delivery model validates and never invents a second lifecycle",()=>{
   assert.equal(ACTIVITIES.length,18);
 });
 
-test("8 macro stages map every canonical stage exactly once",()=>{
+test("6 macro stages map every canonical stage exactly once",()=>{
   const covered=MACRO_STAGES.flatMap(m=>m.canonicalStages);
   assert.equal(new Set(covered).size,STAGE_IDS.length);
   assert.deepEqual([...new Set(covered)].sort(),[...STAGE_IDS].sort());
   for(const m of MACRO_STAGES) assert.ok(m.canonicalStages.every(s=>STAGE_IDS.includes(s)));
   for(const id of STAGE_IDS) assert.ok(macroStageFor(id),id);
+});
+
+test("six-stage crosswalk covers every canonical stage without becoming a lifecycle",()=>{
+  assert.equal(SDLC_CROSSWALK.length,6);
+  const covered=SDLC_CROSSWALK.flatMap(x=>x.stages);
+  assert.deepEqual([...new Set(covered)].sort(),[...STAGE_IDS].sort());
+  assert.ok(SDLC_CROSSWALK.every(x=>x.artifacts.length>0&&x.activities.length>0));
 });
 
 test("18 activities cover all stages, each with one primary owner and full fields",()=>{
@@ -55,6 +62,11 @@ test("four product branches reuse route SOPs and the AI overlay cannot bypass th
   }
   for(const cap of ["LLM","RAG","Agent","多 Agent","自动化工作流","AI-native UX"]) assert.ok(AI_OVERLAY.capabilities.includes(cap),cap);
   assert.match(AI_OVERLAY.rule,/不能绕过/);
+  assert.ok(AI_OVERLAY.governance.some(x=>x.includes("AI 注册表")));
+  assert.ok(AI_OVERLAY.governance.some(x=>x.includes("风险分类")));
+  assert.ok(AI_OVERLAY.governance.some(x=>x.includes("人类监督")));
+  assert.ok(AI_OVERLAY.evaluation.some(x=>x.includes("数据集版本")));
+  assert.ok(AI_OVERLAY.evaluation.some(x=>x.includes("OWASP")));
 });
 
 test("commercial delivery states are forward-only and cannot substitute",()=>{

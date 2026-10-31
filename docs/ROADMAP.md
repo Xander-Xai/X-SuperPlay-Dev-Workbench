@@ -61,9 +61,9 @@
 
 状态：`METHOD_DOCUMENTED_AND_ROUTED`（仓库方法与入口层；与真实执行分层）；`HARNESS_LOOP_RUNTIME_NOT_IMPLEMENTED`；`REAL_PROJECT_DOGFOOD_NOT_RUN`。详情见[方法定义](methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md)。
 
-## v0.2.2 AI-Native 全栈交付整合（2026-10-31；已合入 PR #31）
+## v0.2.2 AI-Native 全栈交付整合（2026-10-31；已合入 PR #30）
 
-> 分支 `docs/ai-native-learning-system` 已合入 `main`（merge commit `1b5cfc8`）。`[x]` 表示已实现并通过 CI `verify` 与本地 `npm run verify`。
+> 交付整合分支已合入 `main`（merge commit `0a6e49b`）。PR #31 是学习体系文档，不是交付整合。`[x]` 表示已实现并通过 CI `verify` 与本地 `npm run verify`。
 
 目标：在方法文档之上补齐可执行的兼容视图；不新增第二套生命周期。
 
@@ -95,6 +95,20 @@
 - [ ] 运行时锁、自动重试与失败恢复（当前只有计划检查）。
 - [ ] Multica 许可证、部署成本、数据流与鉴权审查通过后再评估可执行依赖。
 - [ ] Tern 结束闭测并给出 Windows / WSL2 支持声明后再评估。
+
+## v0.4 文档真实性、流程/Skill 现代化与协作装配（2026-11-01）
+
+目标：把审计发现落成可复核的文档、14 个候选 Skill、按产物的 2026 Gate 与可校验的协作模型；不新增第二套生命周期。
+
+- [x] 对抗审计 `docs/research/2026-11-01-skill-and-flow-audit.md` 与需求 R1–R20。
+- [x] Skills 8 → 14，现有 8 个重写，frontmatter 迁移到 agentskills.io 标准。
+- [x] catalog/delivery 阶段与活动主用 Skill 修复；每阶段至少 1 个 required Skill。
+- [x] 四条路线 SOP + AI Overlay 增加 2026 平台/合规 Gate 与 token 测试。
+- [x] `src/collaboration.mjs`、`delegation-plan.md`、`intent.md` 与人工 Gate。
+- [x] `clampStageIndex`、`xeng task --json`、`xeng assemble` 推荐 Skill、CI `scan`。
+- [x] 文档真实性修正与 `docs/DEPLOYMENT.md` 等六份缺失文档。
+- [x] 六阶段 crosswalk 与 `docs/METHOD.md` 对照。
+- [x] `npm run verify`、`npm run build`、1440/390 截图与 PR（PR 待合并，Pages 在合并后部署）。
 
 ## v0.3：真实项目 Dogfood
 

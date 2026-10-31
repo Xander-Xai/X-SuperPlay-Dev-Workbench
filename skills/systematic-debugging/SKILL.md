@@ -1,32 +1,61 @@
 ---
 name: systematic-debugging
-description: Find root causes before fixing. Use when behavior does not match expectations, tests fail inexplicably, builds break, or any "works on my machine" situation appears.
-status: CANDIDATE
-version: 0.2.0
+description: Use when a test fails, a build breaks, behavior differs from expectations, or an incident needs root-cause analysis. Covers reproduction, hypotheses, bisect, and regression tests.
 license: UNLICENSED-PROPRIETARY
-provenance: Xander-Xai/X-SuperPlay-AI-Engineering-OS@8553124f238ab463d4a50debad34e871ef8de060
-self_contained: true
+metadata:
+  version: "0.4.0"
+  status: CANDIDATE
+  owner: Xander-Xai/X-SuperPlay-Dev-Workbench
+  provenance: Xander-Xai/X-SuperPlay-AI-Engineering-OS@8553124f238ab463d4a50debad34e871ef8de060
+  self_contained: true
+  lifecycle_stage: implementation
+  supported_agents: claude-code,codex,opencode
+  prerequisites: none
+  dependencies: none
+  install_method: node tools/skill-kit.mjs install --target <project> --agent <agent> --skills systematic-debugging
+  tests: static frontmatter, catalog mapping, install dry-run, agent discovery, real-project effect
+  upstream_equivalents: debugging-and-error-recovery,systematic-debugging
 ---
 
 # Systematic Debugging
 
-## Steps
+## Core principle
 
-1. **Reproduce deterministically.** Record command, input and environment. A bug you cannot reproduce on demand cannot be verified as fixed. If reproduction is impossible, say why and switch to investigation mode.
-2. **State the failure precisely.** Expected vs actual, with the exact observable.
-3. **Form one hypothesis with a mechanism.** "X because Y happens between A and B", not "maybe it's X".
-4. **Design the cheapest experiment that could falsify it.** Log line, breakpoint, unit repro, bisect.
-5. **Run it and record the result.** Falsified → next hypothesis informed by the result. Confirmed → root cause in one sentence.
-6. **Fix the root cause**, not the nearby symptom. If the fix is at a different layer, say why.
-7. **Add a regression test** that fails before the fix and passes after it.
-8. **Verify the whole surface** the fix touches, not only the new test.
+**Reproduce, then test one hypothesis at a time.** A fix without a confirmed cause is a guess with extra steps.
 
-## Rules
+## Procedure
 
-- Two failed fixes on the same root cause without a hypothesis change → STOP. Gather more evidence, get a second opinion, or question the architecture.
-- Never "fix" by deleting the test or assertion that caught the bug.
-- If you are trying changes to see what happens, you have left this procedure.
+1. **Reproduce.** Make the failure happen on demand. Record the exact command, environment, input, and commit.
+2. **Minimize.** Remove unrelated steps until the smallest reproduction remains.
+3. **Observe.** Read logs, stack traces, metrics, and the actual state. Do not start from the suspected line.
+4. **Form one hypothesis.** State what must be true for the failure to occur.
+5. **Test the hypothesis.** Change one variable or add one observation. Record the result.
+6. **Bisect when needed.** Use `git bisect` or disable components to find the first bad change.
+7. **Fix the cause.** Add a regression test that fails before the fix and passes after.
+8. **Verify the surrounding behavior.** Run the nearest suite; look for the same failure elsewhere.
 
-## Output
+## Stop conditions
 
-A hypothesis log using `references/hypothesis-log.md`, plus the regression test.
+- The failure cannot be reproduced: gather more evidence before changing code.
+- Two consecutive hypotheses produced no new evidence: change the model, ask for help, or escalate.
+- The fix requires production access or an irreversible action: stop and get authorization.
+- The symptom disappears without explanation: keep investigating; flaky disappearance is not a fix.
+
+## Anti-rationalization
+
+| Excuse | Reality |
+|---|---|
+| "I know what it is" | Then write the hypothesis and test it. Knowledge without evidence is a guess. |
+| "Just add a try/catch" | Swallowing the error hides the cause and moves the failure downstream. |
+| "It's flaky, ignore it" | Flakiness is a real defect in the test or the system. Classify and fix. |
+| "It works now" | Without a cause, it will return. Record what changed. |
+| "One more guess" | After two failed hypotheses, change the approach, not the guess. |
+| "The logs are enough" | Logs are observations, not proof of cause. Test the mechanism. |
+
+## Evidence
+
+- reproduction command and input;
+- hypothesis log;
+- bisect range or experiment results;
+- regression test name and result;
+- root cause statement and affected surfaces.
