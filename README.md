@@ -81,11 +81,13 @@ npm run probe -- --target ../your-project --type saas --output project-baseline.
 
 ## 证据模型
 
-状态：`NOT_RUN → IN_PROGRESS / BLOCKED → UNKNOWN / VERIFIED`。`VERIFIED` 必须带 command、result、artifact；状态只能按允许的迁移前进，`VERIFIED` 不可回退，禁止静默升级。
+状态：`NOT_RUN → IN_PROGRESS / BLOCKED → UNKNOWN / VERIFIED`。`VERIFIED` 必须带 command、result、artifact 且使用已执行层；状态只能按允许的迁移前进，`VERIFIED` 不可回退，禁止静默升级。
+
+必需 Gate 按项目类型、任务、Tier、Profile 与阶段推导（REQUIRED / RECOMMENDED / OPTIONAL / NOT_APPLICABLE），不再把目录中的全部证据种类当作所有项目的强制项。Tier C/D 只降低非安全义务；已有项目与安全 Gate 不因降级被弱化。
 
 层：代码检查 / 真实环境 / 消费者验收，三层不可互相替代。
 
-网页“证据与改进”可导入 `LOCAL_EVIDENCE_REPORT`（schemaVersion 1），导入结果为 `IMPORTED_NOT_TRUSTED`，只做摘要，不提升任何阶段。
+网页“证据与改进”可导入 `LOCAL_EVIDENCE_REPORT`（schemaVersion 1），导入结果为 `IMPORTED_NOT_TRUSTED`，按当前路线契约显示缺失 Gate；声明完整不等于真实验收。
 
 ## 仓库边界
 

@@ -79,6 +79,16 @@ Workbench 现在是工程运行时的所有者。旧私有 Engineering OS 只保
 
 结论：**没有发现被静默丢弃的 Skill 依赖**；8 个 Skill 的依赖闭包在 `src/routing.mjs` 中重建。发现 5 类未迁入的工程约束，均记录为缺口，而不是宣称已覆盖。
 
+### 缺口处置决定
+
+| ID | 缺口 | 决定 | Owner / 理由 |
+|---|---|---|---|
+| G-01 | 分支 / 提交 / PR / Git 细则 | **明确延期** | Workbench maintainer；通用 Git 规范由项目本地规则与 CI 承接，不属于 Workbench 独特运行时 |
+| G-02 | worktree 与逐 Agent 操作手册 | **已有等效替代** | `src/handoff.mjs` 的权限/停止条件 + Agent 目标目录；worktree 属执行环境选择，不迁入 |
+| G-03 | postmortem / PR / review / 外部需求模板 | **已有等效替代** | `postmortem` 阶段、`review` 阶段、`intake` 阶段与工作区草案覆盖语义；不复制旧模板 |
+| G-04 | AI 项目与安全检查单 | **已有等效替代** | Profile 义务字段 + `xeng audit` 的密钥/env/迁移/回滚检查 |
+| G-05 | repositories 注册表 | **只需保留历史** | 组织级仓库清单不是工程运行时；保留源仓历史，不进入公开目录 |
+
 ## 源仓 PR #5 覆盖情况
 
 源仓 PR #5 增加 tracer ticket 模板、Spec–Tickets–Harness–Loop 采纳 SOP 与实施计划扩展。Workbench 现状：
@@ -90,7 +100,7 @@ Workbench 现在是工程运行时的所有者。旧私有 Engineering OS 只保
 
 ## 跨仓契约对齐
 
-`ai-native-governance-contract/v1` 的六类契约对账见 [CONTRACT_ALIGNMENT.md](CONTRACT_ALIGNMENT.md) 与 [migration/contract-alignment-v1.json](../migration/contract-alignment-v1.json)。结论：6 项均为部分实现，无运行时依赖；Review Convergence 与 Knowledge Promotion 有明确未实现子项。
+`ai-native-governance-contract/v1`（PR #57 @ `2b3013ca`，contract blob `df6f5100`）的六类契约对账见 [CONTRACT_ALIGNMENT.md](CONTRACT_ALIGNMENT.md) 与 [migration/contract-alignment-v1.json](../migration/contract-alignment-v1.json)。结论：6 项均为部分实现，状态词汇兼容已采用；无运行时依赖；Review Convergence 与 Knowledge Promotion 有明确未实现子项。
 
 ## 未解决项
 

@@ -1,55 +1,58 @@
 {
   "contract_id": "ai-native-governance-contract/v1",
   "owner": "Xander-Xai/AI-Native-Work-Learning-OS",
-  "consumer": "Xander-Xai/X-SuperPlay-Dev-Workbench",
+  "consumer_repository": "Xander-Xai/X-SuperPlay-Dev-Workbench",
+  "consumer_commit": "SEE_PR_12_HEAD",
+  "adoption_status": "PARTIAL",
   "reviewed_at": "2026-10-31",
+  "verified_at": "2026-10-31",
   "source_reference": {
     "repository": "Xander-Xai/AI-Native-Work-Learning-OS",
     "pull_request": 57,
-    "head_commit": "78d9efae1f948e50952d229ecf22ddbc6350040c",
+    "head_commit": "2b3013ca8d096bdd25c5ec7d5c7a9b3b02b98735",
+    "contract_blob_sha": "df6f510092b6ac0b894bd8b56acd9ec4cd58d7cd",
     "access": "OWNER_AUTHORIZED_READ_ONLY",
     "copied_verbatim": false,
     "runtime_dependency": false
   },
-  "status": "PARTIAL_ALL_SIX",
-  "items": [
-    {
-      "id": "task-contract",
+  "sections": {
+    "task_contract": {
       "status": "PARTIAL",
-      "implemented": ["task identity", "frozen objective", "AC placeholder", "authorized scope", "stop conditions", "evidence plan per stage"],
-      "gaps": ["structured FORBIDDEN_ACTIONS field", "structured per-task EVIDENCE_PLAN field", "one active task enforcement"]
+      "evidence": ["src/starter.mjs", "src/handoff.mjs", "src/catalog.mjs#TASKS"],
+      "gap": "no structured FORBIDDEN_ACTIONS or per-task EVIDENCE_PLAN field; one active task is not enforced"
     },
-    {
-      "id": "evidence-identity",
+    "evidence_verification_identity": {
       "status": "PARTIAL",
-      "implemented": ["state machine", "executed-layer requirement", "gate completeness", "untrusted import", "no silent promotion"],
-      "gaps": ["reviewed candidate digest", "built artifact identity", "released artifact identity", "runtime receipt identity", "consumer acceptance record"]
+      "evidence": ["src/evidence.mjs", "test/evidence.test.mjs", "src/routing.mjs#evidencePlanFor"],
+      "gap": "candidate/built/released/runtime/consumer identities have no digest chain"
     },
-    {
-      "id": "agent-permissions",
-      "status": "PARTIAL",
-      "implemented": ["read-only first", "explicit approval for apply", "no escalation prose", "no credential access", "no auto deploy"],
-      "gaps": ["structured permission tiers", "executable permission-laundering guard"]
+    "status_vocabulary_compatibility": {
+      "status": "ADOPTED",
+      "evidence": ["src/evidence.mjs", "migration/eng-os-split-20261031.json"],
+      "note": "NOT_RUN/UNKNOWN, CI, migration and acceptance states are recorded separately"
     },
-    {
-      "id": "context-freshness",
+    "agent_side_effect_permission": {
       "status": "PARTIAL",
-      "implemented": ["baseline HEAD and dirty state", "pinned provenance", "doctor stale-fact check", "point-dont-paste handoff"],
-      "gaps": ["required current-truth anchor field", "automatic downstream invalidation"]
+      "evidence": ["src/handoff.mjs", "tools/xeng.mjs", "tools/skill-kit.mjs"],
+      "gap": "no structured permission tiers or executable permission-laundering guard"
     },
-    {
-      "id": "review-convergence",
+    "context_state_freshness": {
       "status": "PARTIAL",
-      "implemented": ["review stage gate", "independent review prose", "explicit scope-change prose"],
-      "gaps": ["finding classification enum", "immutable review candidate", "scope-lock mechanism"]
+      "evidence": ["src/baseline.mjs", "tools/xeng.mjs#doctor", "src/handoff.mjs"],
+      "gap": "no required current-truth anchor field or automatic downstream invalidation"
     },
-    {
-      "id": "knowledge-promotion",
+    "review_convergence": {
       "status": "PARTIAL",
-      "implemented": ["retro stage", "candidate skill status", "two-project promotion prose"],
-      "gaps": ["promotion ladder data model", "cross-project evidence index", "consumer record for artifacts"]
+      "evidence": ["src/catalog.mjs#STAGES", "skills/code-review"],
+      "gap": "no finding classification enum, immutable review candidate or scope-lock mechanism"
+    },
+    "knowledge_pattern_promotion": {
+      "status": "PARTIAL",
+      "evidence": ["docs/PLAYBOOK.md", "docs/ROADMAP.md"],
+      "gap": "promotion ladder is prose only; no cross-project evidence index or consumer record"
     }
-  ],
+  },
+  "not_owned": ["engineering lifecycle", "profiles", "standards", "skill installation", "xeng CLI"],
   "declined": [
     "private file structure or CLI as a contract",
     "L0-L6 maturity as a universal cross-domain model",
@@ -59,6 +62,7 @@
   "verification_status": "NOT_RUN",
   "notes": [
     "This alignment is an independently written summary, not a copy of the private contract body.",
+    "ADOPTED means a local implementation plus inspectable evidence, not a declaration.",
     "No real project, enterprise environment or production system is claimed as accepted."
   ]
 }

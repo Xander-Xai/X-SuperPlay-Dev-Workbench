@@ -4,8 +4,9 @@
 
 - 对账日期：2026-10-31
 - 契约版本：`v1`
+- 契约来源：AI-Native PR #57 @ `2b3013ca8d096bdd25c5ec7d5c7a9b3b02b98735`（contract blob `df6f5100`）
 - Workbench 版本：`0.2.0`
-- 结论：**6 项均为部分实现**；Review Convergence 与 Knowledge Promotion 存在明确的未实现子项；无运行时依赖。
+- 结论：**6 项均为部分实现**；状态词汇兼容已采用；Review Convergence 与 Knowledge Promotion 存在明确的未实现子项；无运行时依赖。
 
 ## 1. Task Contract（任务契约）
 
@@ -34,6 +35,10 @@
 | built / released / runtime / consumer 身份 | 仅有证据层标签，没有逐产物 SHA 链 | 部分 |
 
 缺口：`reviewed_candidate`、`built_artifact`、`released_artifact`、`runtime_receipt`、`consumer_acceptance` 尚未建模为带 digest 的身份对象。
+
+### 状态词汇兼容（§2.3）
+
+**已采用**：`NOT_RUN` / `UNKNOWN` 不被当作通过；迁移状态 `MIGRATED_NOT_VERIFIED`、CI 回执、发布回执与业务验收分别记录；`CI_PASS` 不升级为 runtime 或 consumer 验收。证据见 `src/evidence.mjs` 与迁移清单的 `verification_status` / `local_checks` / `decommission_status` 分列。
 
 ## 3. Agent Side-Effect Permission（Agent 副作用权限）
 
@@ -87,6 +92,22 @@
 | Artifact 晋级需真实消费者 | 工作区产物明确为草案，未记录消费者 | 部分 |
 
 缺口：晋级阶梯目前是文档规则，不是数据结构；没有跨项目证据索引。
+
+## Adoption Record
+
+机器可读记录：[migration/contract-alignment-v1.json](../migration/contract-alignment-v1.json)。
+
+| 章节 | 状态 | 具名缺口 |
+|---|---|---|
+| Task Contract | PARTIAL | 结构化禁止动作与证据计划；单活动任务 |
+| Evidence Identity | PARTIAL | 产物 digest 身份链 |
+| Status Vocabulary | ADOPTED | — |
+| Agent Permissions | PARTIAL | 结构化权限层级；可执行防绕过 |
+| Context Freshness | PARTIAL | 强制锚点；下游失效 |
+| Review Convergence | PARTIAL | Finding 分类；不可变候选；Scope Lock |
+| Knowledge Promotion | PARTIAL | 晋级数据模型；跨项目证据索引 |
+
+`ADOPTED` 仅用于有本地实现与可复核证据的项；迁移状态、CI 状态和验收状态不互相升级。
 
 ## 采用与拒绝
 

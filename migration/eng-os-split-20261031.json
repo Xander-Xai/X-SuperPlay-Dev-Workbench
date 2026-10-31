@@ -158,11 +158,11 @@
     },
     "reconciliation": "11 module records cover the runtime; no skill dependency was dropped; five constraint gaps recorded",
     "gaps": [
-      { "id": "G-01", "item": "branching / commits / pull-request / git standards", "status": "NOT_STRUCTURED" },
-      { "id": "G-02", "item": "worktree and per-agent operating manuals", "status": "NOT_MIGRATED" },
-      { "id": "G-03", "item": "postmortem / pull-request / review / external-demand templates", "status": "NOT_MIGRATED" },
-      { "id": "G-04", "item": "AI project and security checklists", "status": "NOT_MIGRATED" },
-      { "id": "G-05", "item": "repositories registry", "status": "NOT_MIGRATED" }
+      { "id": "G-01", "item": "branching / commits / pull-request / git standards", "status": "DEFERRED", "owner": "workbench-maintainer", "reason": "generic git rules are project-local and CI-enforced" },
+      { "id": "G-02", "item": "worktree and per-agent operating manuals", "status": "EQUIVALENT_REPLACEMENT", "reason": "handoff permissions and stop conditions cover the runtime need" },
+      { "id": "G-03", "item": "postmortem / pull-request / review / external-demand templates", "status": "EQUIVALENT_REPLACEMENT", "reason": "postmortem, review and intake stages cover the semantics" },
+      { "id": "G-04", "item": "AI project and security checklists", "status": "EQUIVALENT_REPLACEMENT", "reason": "profile obligations plus xeng audit checks" },
+      { "id": "G-05", "item": "repositories registry", "status": "HISTORICAL_ONLY", "reason": "organization inventory is not engineering runtime" }
     ]
   },
   "source_pr_5": {
@@ -176,7 +176,8 @@
   "contract_alignment": {
     "contract_id": "ai-native-governance-contract/v1",
     "source_pr": 57,
-    "source_commit": "78d9efae1f948e50952d229ecf22ddbc6350040c",
+    "source_commit": "2b3013ca8d096bdd25c5ec7d5c7a9b3b02b98735",
+    "contract_blob_sha": "df6f510092b6ac0b894bd8b56acd9ec4cd58d7cd",
     "manifest": "migration/contract-alignment-v1.json",
     "document": "docs/CONTRACT_ALIGNMENT.md",
     "status": "PARTIAL_ALL_SIX",
@@ -186,11 +187,18 @@
   "local_checks": {
     "check": "PASS",
     "scan": "PASS_NO_ACTIVE_DEPENDENCY",
-    "test": "PASS_81_TESTS_80_PASS_1_SKIPPED",
+    "test": "PASS_88_TESTS_87_PASS_1_SKIPPED",
     "verify": "PASS",
     "build": "PASS",
     "browser": "HEADLESS_CHROME_1440_AND_390",
     "independent_verification": "NOT_RUN"
+  },
+  "evidence_applicability": {
+    "derived_by": "src/routing.mjs#evidencePlanFor",
+    "statuses": ["REQUIRED", "RECOMMENDED", "OPTIONAL", "NOT_APPLICABLE"],
+    "context_missing": "NOT_RUN_OR_UNKNOWN",
+    "tier_demotion": "non-safety only; existing projects are never weakened",
+    "safety_examples": ["security review", "release receipt", "AI/RAG eval", "enterprise integration probe", "device manual probe"]
   },
   "acceptance_commit": "SEE_PR_12_HEAD",
   "unresolved": [

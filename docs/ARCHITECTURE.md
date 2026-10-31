@@ -68,6 +68,17 @@ NOT_RUN ──► IN_PROGRESS ──► VERIFIED
 - 导入的本地报告状态固定为 `IMPORTED_NOT_TRUSTED`，`trusted:false`、`promotion:NONE`；即使“声明完整”也不等于可信事实。
 - 代码检查 / 真实环境 / 消费者验收是三个独立层，不可互相替代。
 
+### Gate 适用性
+
+`composeRoute()` 为每个阶段生成 `evidencePlan`：
+
+- **REQUIRED**：任务必需证据、Profile 义务（AI/RAG 的 eval、SaaS/企业的接口与权限探针、设备的真机探针）以及发布回执。
+- **RECOMMENDED**：任务可选证据、Tier C/D 降级的非安全义务。
+- **OPTIONAL**：阶段候选但本项目不强制。
+- **NOT_APPLICABLE**：本阶段不适用。
+
+Tier C/D 只能降低非安全义务；`security` 的 review/test、`release` 的 receipt、AI/RAG 的 eval、企业接口探针、设备真机探针保持必需。`existing` 模式不降级任何必需 Gate。缺少项目上下文时，`evidenceSummary()` 返回 `context:"UNKNOWN"`，阶段保持 `NOT_RUN`，不做乐观晋级。
+
 ## 浏览器安全
 
 - `index.html` 使用 CSP：`default-src 'self'`、`connect-src 'none'`、`form-action 'none'`。
