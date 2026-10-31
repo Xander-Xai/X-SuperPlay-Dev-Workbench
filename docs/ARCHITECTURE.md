@@ -16,6 +16,7 @@ Workbench runtime (this repository)
   src/git-workflow.mjs   advisory project Git guidance + per-agent notes
   src/maturity.mjs       L0-L6 gap diagnostic derived from audit checks
   src/delivery.mjs       8 macro stages / 18 activities / delivery gates / skills matrix (compatibility view)
+  src/orchestration.mjs  read-only provider registry + PLAN_ONLY handoff + untrusted receipt import
   src/identity.mjs       shared project_id / base_sha header for every artifact
   src/evidence.mjs       state machine + local report import
   src/evidence-identity.mjs  sha256 identities for reports, artifacts and runtime receipts
@@ -25,7 +26,7 @@ Workbench runtime (this repository)
   src/install-contract.mjs  agent destinations + skill dependency closure
   src/app.mjs            browser UI (no network, no filesystem)
         │
-        ├── tools/xeng.mjs          init / audit / doctor / maturity / playbook / method / matrix / delivery / skills-matrix / assemble / agent-check / validate-registry / selftest / task
+        ├── tools/xeng.mjs          init / audit / doctor / maturity / playbook / method / matrix / delivery / skills-matrix / orchestrator / assemble / agent-check / validate-registry / selftest / task
         ├── tools/skill-kit.mjs     bundled install / verify / update / uninstall / rollback
         ├── tools/project-probe.mjs read-only local baseline
         └── tools/build-site.mjs    dist allowlist
@@ -71,6 +72,17 @@ Workbench runtime (this repository)
 - `docs/METHOD.md`：上述机器可读视图的人类可读导航；`xeng method / matrix / delivery / skills-matrix` 输出同一份数据。
 
 学习材料位于 `docs/learning/`（START-HERE、18 活动知识、阶段到 Skill 矩阵、可复制提示词、产品指南、L1–L6 与 30+60 天路线、验收清单），完整方法文档位于 `docs/methods/`。两者都是文档层：不安装 Skill、不运行 Loop、不提升证据状态，也不进入 `dist/` 发布产物。8 宏阶段与 18 活动必须映射回 11 权威阶段；`npm run check` 会拒绝孤儿阶段、重复映射或活动缺少主用 Skill。
+
+## Agent 编排适配层
+
+`src/orchestration.mjs` 是可插拔的**只读注册表 + PLAN_ONLY 交接规划器**，不是新的生命周期或运行时：
+
+- Provider（Orca / Herdr / Multica / Tern）只是执行环境；任务仍来自同一 Ticket Harness 契约，证据仍进入同一状态机。
+- `planHandoff()` 只校验组合、平台、安装状态与 ticket 字段，输出 `PLAN_ONLY / DRY_RUN`；不启动进程、不拼接 Shell、不写文件。
+- `checkTicketSet()` / `checkAssignments()` 做静态冲突检查：一张 Ticket 只能有一个有效写入者，并行 Ticket 的 `allowed_files` 不得重叠，依赖不得成环，审查者必须独立。这些是计划检查，不是运行时锁。
+- 外部回执固定为 `UNTRUSTED / UNKNOWN / promotion:NONE`；`VERIFIED` 仍需目标项目内的真实命令、结果与工件。
+- `validateOrchestration()` 接入 `validateCatalog()`；Tern 在 Windows 保持 `BLOCKED`，Multica 保持许可证审查。
+- 浏览器端只渲染注册表，不调用本机终端、不读取凭据、不执行任意命令。详见 [ORCHESTRATION.md](ORCHESTRATION.md)。
 
 ## 证据模型
 
