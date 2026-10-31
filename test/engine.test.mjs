@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {TYPES,STAGES,SKILLS,TASKS,PROFILES,OWNER,PROVENANCE,SOURCE,ROUTE_SOPS,SKILL_STATUSES,skillMetadata} from "../src/catalog.mjs";
+import {TYPES,STAGES,SKILLS,TASKS,PROFILES,OWNER,PROVENANCE,SOURCE,GOVERNANCE,ROUTE_SOPS,SKILL_STATUSES,skillMetadata} from "../src/catalog.mjs";
 import {slugify,normalizeConfig,assemble,xengDryRun,toMarkdown,toManifest,validateCatalog} from "../src/engine.mjs";
 import {PLAYBOOKS,playbookById,playbookMarkdown,validatePlaybooks} from "../src/playbooks.mjs";
 import {GIT_WORKFLOW,validateGitWorkflow} from "../src/git-workflow.mjs";
@@ -15,6 +15,30 @@ test("catalog contains the preserved routes, stages, tasks, profiles and skills"
   assert.equal(SKILLS.length,8);
   assert.ok(SKILLS.every(x=>x.status==="CANDIDATE" && x.installed===false && x.selfContained===true));
   assert.deepEqual(validateCatalog(),[]);
+});
+test("profile overlay metadata is explicit and does not change base routes",()=>{
+  const overlays=PROFILES.filter(p=>p.overlay).map(p=>p.id).sort();
+  assert.deepEqual(overlays,["agent","ai-application","payments","rag"]);
+  assert.equal(PROFILES.filter(p=>!p.overlay).length,13);
+  assert.ok(PROFILES.every(p=>typeof p.overlay==="boolean"));
+  // A base route must not silently gain an overlay profile.
+  assert.deepEqual(assemble({type:"saas"}).profiles,["saas","web","backend"]);
+  assert.deepEqual(assemble({type:"mini-program"}).profiles,["mini-program","backend"]);
+  // Explicit addons still add the AI profiles exactly once.
+  const ai=assemble({type:"saas",addons:["rag","agent"]});
+  assert.deepEqual(ai.profiles,["saas","web","backend","ai-application","rag","agent"]);
+  assert.ok(PROFILES.find(p=>p.id==="rag").required.tests.length>0);
+  assert.ok(PROFILES.find(p=>p.id==="agent").required.tests.length>0);
+});
+test("governance reference is pinned to the merged contract and is not a runtime dependency",()=>{
+  assert.equal(GOVERNANCE.repository,"Xander-Xai/AI-Native-Work-Learning-OS");
+  assert.equal(GOVERNANCE.commit,"15beebf955d1f2a515e2791dc8b375806598d36a");
+  assert.equal(GOVERNANCE.contract,"ai-native-governance-contract/v1");
+  assert.equal(GOVERNANCE.contractPr,57);
+  assert.equal(GOVERNANCE.adoption,"PARTIAL");
+  assert.equal(GOVERNANCE.status,"REFERENCE_ONLY_NOT_BUNDLED");
+  assert.match(GOVERNANCE.contractMergedAt,/^\d{4}-\d{2}-\d{2}T/);
+  assert.match(GOVERNANCE.observedHead,/^[0-9a-f]{40}$/);
 });
 test("every product route resolves its base profiles",()=>{
   assert.deepEqual(assemble({type:"saas"}).profiles,["saas","web","backend"]);
