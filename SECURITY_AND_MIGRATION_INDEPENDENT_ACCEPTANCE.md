@@ -5,7 +5,7 @@
 - 只读来源：`Xander-Xai/X-SuperPlay-AI-Engineering-OS@8553124f238ab463d4a50debad34e871ef8de060`（冻结快照）
 - 来源当前 HEAD（仅观测）：`fa20126e93c57b1faab56d9c4cecc717b1eea46e`（已 superseded / archived）
 - 分支：`fix/security-secret-output-and-independent-acceptance`
-- PR：`PENDING`
+- PR：`#21`
 - 本报告只判定 Workbench 的安全整改与内容独立复核；真实项目、真机、staging、生产发布与旧仓退役是独立事项。
 
 ## 1. 最终 gates
@@ -219,7 +219,7 @@ npm run verify                            # 131 passed, 1 skipped, 0 failed
 ## 9. PR / CI / 合并回执
 
 - 分支：`fix/security-secret-output-and-independent-acceptance`
-- PR：`PENDING`
+- PR：`#21`
 - CI（PR）：`PENDING`
 - 合并 SHA：`PENDING`
 - CI（main）：`PENDING`
