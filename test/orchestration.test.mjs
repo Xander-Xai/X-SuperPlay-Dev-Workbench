@@ -230,11 +230,16 @@ test("parallel write conflicts, duplicate ids, cycles and shared reviewers are r
   ]);
   assert.ok(mixedWriters.errors.some(e => /more than one active writer/.test(e)));
 
-  // The same identity declared twice is one writer.
+  // The same identity declared twice is one writer, including case differences.
   const duplicateIdentity = checkTicketSet([
     { ticket_id: "T01", agent: "a", agents: ["a"], reviewer: "r", allowed_files: ["src/a"], blocked_by: [] }
   ]);
   assert.equal(duplicateIdentity.ok, true, duplicateIdentity.errors.join("; "));
+
+  const caseIdentity = checkTicketSet([
+    { ticket_id: "T01", agent: "OMP", agents: ["omp"], reviewer: "r", allowed_files: ["src/a"], blocked_by: [] }
+  ]);
+  assert.equal(caseIdentity.ok, true, caseIdentity.errors.join("; "));
 
   const badAgents = checkTicketSet([
     { ticket_id: "T01", agents: "a", reviewer: "r", allowed_files: ["src/a"], blocked_by: [] }
@@ -270,7 +275,7 @@ test("only one active writer per ticket, and the reviewer must differ", () => {
 
   const same = checkAssignments([
     { ticket_id: "T01", role: "writer", provider_id: "orca", agent_runtime: "omp", status: "RUNNING" },
-    { ticket_id: "T01", role: "reviewer", provider_id: "orca", agent_runtime: "omp", status: "RUNNING" }
+    { ticket_id: "T01", role: "reviewer", provider_id: "ORCA", agent_runtime: "OMP", status: "RUNNING" }
   ]);
   assert.equal(same.ok, false);
 

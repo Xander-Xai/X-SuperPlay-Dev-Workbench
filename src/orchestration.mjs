@@ -627,11 +627,11 @@ export function checkTicketSet(tickets, options = {}) {
         else if (value.trim()) declared.push(value.trim());
       }
     }
-    const writers = [...new Set(declared)];
+    const writers = [...new Map(declared.map(value => [value.toLowerCase(), value])).values()];
     if (writers.length === 0) errors.push("ticket " + id + " has no writer");
     if (writers.length > 1) errors.push("ticket " + id + " has more than one active writer: " + writers.join(", "));
 
-    if (ticket.reviewer && writers.some(w => String(ticket.reviewer) === w))
+    if (ticket.reviewer && writers.some(w => String(ticket.reviewer).toLowerCase() === w.toLowerCase()))
       errors.push("ticket " + id + " uses the same agent as writer and reviewer");
 
     if (ticket.blocked_by !== undefined && !Array.isArray(ticket.blocked_by))
@@ -692,7 +692,7 @@ export function checkAssignments(assignments) {
     if (!id) { errors.push("assignment without ticket_id"); continue; }
     if (!["writer", "reviewer"].includes(a.role)) { errors.push("assignment " + id + " has invalid role"); continue; }
     if (!ACTIVE_ASSIGNMENT.has(a.status)) continue;
-    const key = String(a.provider_id ?? "") + ":" + String(a.agent_runtime ?? "");
+    const key = (String(a.provider_id ?? "") + ":" + String(a.agent_runtime ?? "")).toLowerCase();
     if (a.role === "writer") {
       if (activeWriters.has(id)) errors.push("ticket " + id + " has more than one active writer");
       activeWriters.set(id, key);
