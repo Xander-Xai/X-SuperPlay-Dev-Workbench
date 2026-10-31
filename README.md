@@ -165,7 +165,7 @@ npm run probe -- --target ../your-project --type saas --output project-baseline.
 | Windows 11 Skill 安装 / 更新 / 卸载 / 回滚 | 本地 fixture 通过；三个 Agent 的真实加载未全部验证 |
 | 真实项目 Dogfood / 真机 / 生产发布 | `BLOCKED`：没有获得授权的真实小程序 / SaaS 项目 |
 | GitHub Pages | 已部署：<https://xander-xai.github.io/X-SuperPlay-Dev-Workbench/> |
-| 工程内容迁移（G-01…G-05、三份 SOP） | PR #19 Workbench checks 通过（run 41179156940）；文件级对账 106/106；Pages 合并后更新 |
+| 工程内容迁移（G-01…G-05、三份 SOP） | PR #19 合并为 `b2e29ae`；main CI run 41179291809 通过；Pages 已部署（run 41179291799）；文件级对账 106/106 |
 
 **CI 通过只说明本仓库代码检查通过，不代表用户项目、真实设备或生产交付已验收。**
 

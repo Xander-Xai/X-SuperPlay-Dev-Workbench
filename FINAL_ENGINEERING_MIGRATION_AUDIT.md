@@ -169,13 +169,14 @@ worktree 隔离与 Claude Code / Codex / OpenCode 的操作要点进入 `GIT_WOR
 | 项 | 值 |
 |---|---|
 | Base commit | `716bc07d5829b7a0e918cee7e0b1a64f6b70f95b` |
+| Merge commit | `b2e29aee037f3d51f6c3c59697eba08179f4c2c9` |
 | 分支 | `feat/engineering-migration-completion` |
 | PR | #19 |
-| Head SHA | 5fc673bec92249df0754cbb8b3e02df042b97e28 |
+| Head SHA | f9d7dc702cf80872c9103843f348b4a79724fe8d |
 | 本地 `npm run verify` | PASS（111 tests，110 pass，1 platform skip） |
 | 本地 `npm run build` | PASS |
-| 远端 CI | PASS — Workbench checks run 41179156940 |
-| Pages | PENDING_AFTER_MERGE |
+| 远端 CI | PASS — PR run 41179219549；main run 41179291809 |
+| Pages | DEPLOYED — run 41179291799 |
 
 合并后以 PR 与 Actions 页面回执为准；本表在合并前不声称远端已通过。
 
@@ -204,7 +205,7 @@ ENGINEERING_CONTENT_MIGRATION_COMPLETE = PASS
 3. G-01、G-03 已补迁移；G-02、G-04 行为等效；G-05 明确历史保留。
 4. L0–L6 未被静默丢弃，已转为可执行诊断，且 L6 不由静态审计宣称。
 5. 运行时、网站、CLI 与 Skill 安装均无旧仓活跃依赖。
-6. 本地 `npm run verify` 与 `npm run build` 通过；PR #19 的 Workbench checks 已通过（run 41179156940）；Pages 回执在合并后补齐。
+6. 本地 `npm run verify` 与 `npm run build` 通过；PR #19 与 main 的 Workbench checks 均通过；Pages 已部署（run 41179291799）。
 
 独立判定：
 

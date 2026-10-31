@@ -10,6 +10,8 @@
 
 Workbench 现在是工程运行时的所有者。旧 Engineering OS 只保留为**历史来源**，网站、CLI、Skill 安装与测试均不读取它作为运行依赖。
 
+**内容迁移状态：`ENGINEERING_CONTENT_MIGRATED_VERIFIED`。** PR #19 已 squash 合并为 `b2e29aee037f3d51f6c3c59697eba08179f4c2c9`；main Workbench checks（run 41179291809）通过，Pages 已部署（run 41179291799）。这是内容迁移回执，不是真实项目或生产验收。
+
 2026-10-31 重新核验后的事实：
 
 - 旧 Engineering OS 仓库已由 **private 变为 public**；可见性变化不等于内容批准，也不改变本迁移的冻结快照。
