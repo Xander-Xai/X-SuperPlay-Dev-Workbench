@@ -10,6 +10,8 @@
 
 **中文：AI 原生规格驱动的 Harness–Skills–Loop 全栈工程范式。** 本仓已维护完整的 [方法定义与 Workbench 映射](docs/methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md)、[Matt Pocock / Harness / Ralph 的固定版本上游参考](docs/methods/UPSTREAM-SOURCES.md)、[真实全栈灯塔项目试点 SOP 和模板](docs/methods/PROJECT-PILOT.md)、[AI 原生产品与 Agent 架构设计](docs/methods/AI-NATIVE-PRODUCT-AGENT-DESIGN.md)、[Skill Engineering Factory 与代码专家 Skill 生成方法](docs/methods/SKILL-ENGINEERING-FACTORY.md)。它不是原作者或招聘方的官方命名，也不是新的第二套生命周期。
 
+**学习入口**：[完整开发流程与 Skills 学习体系](docs/learning/START-HERE.md) — 18 活动知识、阶段到 Skill 矩阵、可复制提示词、四类产品指南与 L1–L6 学习路线。
+
 ```text
 需求 → Discovery → Spec/AC → Tracer Tickets → Skills → Harness
      → 单任务 Bounded Loop（实现→测试→双轴评审→证据）→ 全栈 Demo → 授权发布/复盘
@@ -214,6 +216,12 @@ npm run probe -- --target ../your-project --type saas --output project-baseline.
 
 - [架构与所有权](docs/ARCHITECTURE.md)
 - [方法视图（8/18/11 与交付 Gate）](docs/METHOD.md)
+- [完整开发流程与 Skills 学习体系](docs/learning/START-HERE.md)
+- [18 活动知识指南](docs/learning/FULLSTACK-LIFECYCLE-GUIDE.md)
+- [阶段到 Skill 矩阵](docs/learning/STAGE-TO-SKILL-MATRIX.md)
+- [Agent 提示词配方](docs/learning/AGENT-PROMPT-RECIPES.md)
+- [四类产品开发指南](docs/learning/PRODUCT-GUIDES.md)
+- [知识学习路线 L1–L6](docs/learning/KNOWLEDGE-ROADMAP.md)
 - [三报告整合与证据对账](docs/research/2026-10-31-ai-native-fullstack-synthesis.md)
 - [迁移与兼容表](docs/MIGRATION.md)
 - [跨仓治理契约对齐](docs/CONTRACT_ALIGNMENT.md)
