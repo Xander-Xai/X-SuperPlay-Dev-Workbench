@@ -219,13 +219,14 @@ npm run verify                            # 131 passed, 1 skipped, 0 failed
 ## 9. PR / CI / 合并回执
 
 - 分支：`fix/security-secret-output-and-independent-acceptance`
-- PR：`#21`
-- CI（PR）：`PENDING`
-- 合并 SHA：`PENDING`
-- CI（main）：`PENDING`
-- Pages：`PENDING`
+- PR：`#21`（squash merge）
+- CI（PR）：run `41187013584`，`verify` success；Security gate step success
+- 合并 SHA：`4f460603873ca5aed9455d03ca295e3ee5f393eb`
+- CI（main）：run `41187127583`，`verify` success；Security gate step success
+- Pages：run `41187127639`，`build` 与 `deploy` 均 success
+- Pages 地址：<https://xander-xai.github.io/X-SuperPlay-Dev-Workbench/>
 
-PR 合并后，本报告会通过回执提交补全上述字段；回执提交本身不改变代码结论。
+上述回执由本报告的后续回执提交记录；回执提交不改变代码结论。安全问题修复与合并已完成，真实项目/生产验收仍未执行。
 
 ## 10. 未完成事项
 
