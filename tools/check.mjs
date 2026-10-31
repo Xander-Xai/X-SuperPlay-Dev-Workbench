@@ -12,6 +12,7 @@ const essential=[
   "skills-grid","skill-search","skill-agent","skill-install-command","download-starter",
   "baseline-file","baseline-state","workflow-tabs","workflow-body",
   "workspace-files","workspace-preview","download-workspace-file","download-bundle",
+  "methodology-entry","methodology-overview","methodology-sources","methodology-design","methodology-skills","methodology-pilot",
   "playbook-tabs","playbook-body",
   "evidence-body","install-command","copy-install","build-marker"
 ];
@@ -24,6 +25,11 @@ const required=[
   "tools/project-probe.mjs","tools/skill-kit.mjs","tools/xeng.mjs","tools/security-gate.mjs",
   "README.md","SECURITY.md","docs/ARCHITECTURE.md","docs/MIGRATION.md","docs/AGENT_SKILL_LOAD.md",
   "docs/PLAYBOOKS.md","docs/GIT_WORKFLOW.md","docs/MATURITY.md",
+  "docs/methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md",
+  "docs/methods/UPSTREAM-SOURCES.md","docs/methods/PROJECT-PILOT.md",
+  "test/methodology.test.mjs",
+  "docs/methods/AI-NATIVE-PRODUCT-AGENT-DESIGN.md",
+  "docs/methods/SKILL-ENGINEERING-FACTORY.md",
   ".github/pull_request_template.md","migration/eng-os-split-20261031.json",
   "migration/eng-os-semantic-reconciliation-20261031.json",
   "migration/eng-os-post-freeze-increments-20261031.json","FINAL_ENGINEERING_MIGRATION_AUDIT.md",

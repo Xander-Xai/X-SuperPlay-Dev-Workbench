@@ -718,6 +718,47 @@ function cmdPlaybook(argv) {
   return 0;
 }
 
+// ---------------------------------------------------------------- method (read-only local document entrypoint)
+
+// Only these fixed repository-owned documents are readable; never accept arbitrary paths or URLs.
+const METHOD_DOCUMENTS = Object.freeze({
+  overview: "docs/methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md",
+  sources: "docs/methods/UPSTREAM-SOURCES.md",
+  pilot: "docs/methods/PROJECT-PILOT.md",
+  design: "docs/methods/AI-NATIVE-PRODUCT-AGENT-DESIGN.md",
+  skills: "docs/methods/SKILL-ENGINEERING-FACTORY.md"
+});
+
+function cmdMethod(argv) {
+  const allowed = new Set(["--json", "overview", "sources", "pilot", "design", "skills"]);
+  if (argv.some(a => !allowed.has(a)) || argv.filter(a => a !== "--json").length > 1) {
+    console.error("Usage: xeng method [overview|sources|pilot|design|skills] [--json]");
+    return 2;
+  }
+  const id = argv.find(a => !a.startsWith("--")) ?? "overview";
+  const doc = METHOD_DOCUMENTS[id];
+  const content = readText(join(ROOT, doc));
+  if (content === null) {
+    console.error("FAIL: method document missing: " + doc);
+    return 2;
+  }
+  if (argv.includes("--json")) {
+    console.log(JSON.stringify({
+      id, name: "AI-Native Spec-Driven Harness & Loop Engineering",
+      classification: "LOCAL_SYNTHESIS_NOT_INDUSTRY_STANDARD",
+      status: "METHOD_DOCUMENTED_AND_ROUTED",
+      pilot_status: "NOT_RUN",
+      harness_loop_runner_status: "NOT_IMPLEMENTED",
+      third_party_skills_installed: false,
+      document: doc,
+      content
+    }, null, 2));
+  } else {
+    console.log(content);
+  }
+  return 0;
+}
+
 // ---------------------------------------------------------------- doctor
 
 function cmdDoctor(argv) {
@@ -1008,6 +1049,7 @@ function usage() {
     "  xeng doctor [path]",
     "  xeng maturity [path] [--json]",
     "  xeng playbook [id] [--json]",
+    "  xeng method [overview|sources|pilot|design|skills] [--json]",
     "  xeng validate-registry",
     "  xeng selftest",
     "  xeng task <type> [--tier=A] [--mode=new] [--type=saas]",
@@ -1028,6 +1070,7 @@ export function main(argv = process.argv.slice(2)) {
     case "doctor": return cmdDoctor(rest);
     case "maturity": return cmdMaturity(rest);
     case "playbook": return cmdPlaybook(rest);
+    case "method": return cmdMethod(rest);
     case "validate-registry": return cmdValidateRegistry(rest);
     case "selftest": return cmdSelftest(rest);
     case "task": return cmdTask(rest);
