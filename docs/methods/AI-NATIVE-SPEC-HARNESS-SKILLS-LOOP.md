@@ -152,4 +152,4 @@ node tools/xeng.mjs playbook agent
 - `PROJECT_DEMO_VERIFIED`：完整产品路径测试；Mock 和真实 Provider 证据分开。
 - `CONSUMER_ACCEPTED` / `PRODUCTION_PROVEN`：必须另有消费者和生产证据；Workbench 的文档/CI 绝不自动提升此状态。
 
-当前仅声明第一层的**待 PR 合并方法文档与 CLI 集成**；后四层需在真实产品仓由当次证据逐级证明。独立 Harness/Loop Runner、自动的单任务锁、Scope Lock、跨项目知识晋级索引仍是明确缺口，不因为本文存在而宣称完成。
+本仓目前仅能通过本地文档、CLI、仓库 CI 证实第一层的**方法落盘与导航集成**；后四层需在真实产品仓由当次证据逐级证明。独立 Harness/Loop Runner、自动的单任务锁、Scope Lock、跨项目知识晋级索引仍是明确缺口，不因为本文存在而宣称完成。
