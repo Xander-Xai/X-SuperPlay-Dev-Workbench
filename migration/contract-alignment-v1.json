@@ -3,18 +3,20 @@
   "contract_revision": "1.1",
   "owner": "Xander-Xai/AI-Native-Work-Learning-OS",
   "consumer_repository": "Xander-Xai/X-SuperPlay-Dev-Workbench",
-  "consumer_commit": "047fc8e4c2af2a217d14ef827a773fa509c90d88",
-  "consumer_commit_source": "main at the 2026-10-31 review; later Workbench commits are listed in the acceptance report",
+  "consumer_commit": "1fc02cbe6cc7801180eda7766b1c5b1a7be52682",
+  "consumer_commit_source": "main after PR #15 merged the reviewed implementation; later documentation-only corrections are listed in the acceptance report",
   "adoption_status": "PARTIAL",
-  "authority_status": "CANDIDATE",
-  "authority_note": "Learning OS PR #57 is OPEN. This file records a candidate contract, not a merged or organization-wide authority.",
+  "authority_status": "MERGED_REFERENCE",
+  "authority_note": "Learning OS PR #57 was merged on 2026-10-31 (merge commit 15beebf). This file records a merged source reference; Workbench adoption remains PARTIAL and is not a runtime dependency.",
   "reviewed_at": "2026-10-31",
   "verified_at": "2026-10-31",
   "source_reference": {
     "repository": "Xander-Xai/AI-Native-Work-Learning-OS",
     "repository_visibility": "public",
     "pull_request": 57,
-    "pull_request_state": "OPEN",
+    "pull_request_state": "MERGED",
+    "merged_at": "2026-10-31T05:51:20Z",
+    "merge_commit_sha": "15beebf955d1f2a515e2791dc8b375806598d36a",
     "head_commit": "5a990745f155523bc212969c222b7c596a525c48",
     "head_commit_observed_at": "2026-10-31",
     "previous_head_observed": "41f272197e4ac56601207ba47c6e94756db42315",
@@ -75,7 +77,7 @@
   "notes": [
     "This alignment is an independently written summary, not a copy of the contract body.",
     "ADOPTED means a local implementation plus inspectable evidence, not a declaration.",
-    "The contract moved from 2b3013ca to 41f27219 and then 5a990745 during the audit; only the latest observed identity is pinned here.",
+    "The contract moved from 2b3013ca to 41f27219 to 5a990745, then merged at 15beebf; the merged head and blob identity are pinned here.",
     "No real project, enterprise environment or production system is claimed as accepted."
   ]
 }

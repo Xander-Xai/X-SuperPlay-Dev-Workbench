@@ -133,7 +133,7 @@ npm run probe -- --target ../your-project --type saas --output project-baseline.
 
 - 历史来源（只读溯源，不是运行依赖）：`Xander-Xai/X-SuperPlay-AI-Engineering-OS@8553124f238ab463d4a50debad34e871ef8de060`。该仓现已 public；可见性变化不改变冻结快照。
 - 来源当前 HEAD（仅观测）：`2b792242894937d303c4680208daf9df97ea0027`；冻结后 3 个提交的增量审计见 [migration/eng-os-delta-audit-20261031.json](migration/eng-os-delta-audit-20261031.json)。
-- 通用治理参考（未复制正文）：`Xander-Xai/AI-Native-Work-Learning-OS@f1289d685c95c7fac6f1d50068527a60f080ee1b`；PR #57 仍为 OPEN。
+- 通用治理参考（未复制正文）：`Xander-Xai/AI-Native-Work-Learning-OS@15beebf955d1f2a515e2791dc8b375806598d36a`；PR #57 已于 2026-10-31 合并，契约正文未复制，采用状态仍为 `PARTIAL`。
 - 迁移清单：[migration/eng-os-split-20261031.json](migration/eng-os-split-20261031.json)
 - 迁移说明：[docs/MIGRATION.md](docs/MIGRATION.md)
 
