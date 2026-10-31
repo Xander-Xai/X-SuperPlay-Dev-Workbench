@@ -1350,7 +1350,10 @@ function orchestratorPlan(argv) {
     console.log("  status: " + plan.status);
     console.log("  provider: " + plan.provider_id + " @ " + plan.provider_version + "  agent: " + plan.agent_runtime);
     console.log("  platform: " + plan.platform + "  installation: " + plan.installation_status);
-    console.log("  isolation: " + plan.workspace_policy.isolation + "  verification: " + plan.verification_status);
+    console.log("  isolation: " + plan.workspace_policy.isolation + "  enforcement: " + plan.workspace_policy.enforcement + "  verification: " + plan.verification_status);
+    const r = plan.readiness;
+    console.log("  readiness: plan_fields=" + r.plan_fields_complete + " installed=" + r.provider_installed + " executable=" + r.provider_executable + " license_reviewed=" + r.license_reviewed + " owner_authorized=" + r.owner_authorized + " execution_verified=" + r.execution_verified);
+    console.log("  execution_ready: " + (r.execution_ready ? "YES" : "NO") + " — " + plan.status_note);
     console.log("\nPreflight:");
     for (const c of plan.preflight) console.log("  " + c.status.padEnd(7) + c.check + " — " + c.detail);
     if (plan.blocked_reasons.length) console.log("\nBlocked:\n" + plan.blocked_reasons.map(r => "  - " + r).join("\n"));

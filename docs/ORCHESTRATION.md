@@ -98,6 +98,23 @@ Rules:
 - `task_contract` uses exactly the 16 fields from `src/delivery.mjs`
   (`TICKET_CONTRACT_FIELDS`). There is no second ticket schema.
 
+### Readiness ladder
+
+`PLAN_ONLY_READY` is a plan status, not an execution readiness claim. Six gates are reported
+separately and `execution_ready` stays `false` in Workbench:
+
+| Gate | Who can establish it | Workbench default |
+|---|---|---|
+| Plan fields complete | Workbench plan check | `true` only when all 16 fields are set |
+| Provider installed | `orchestrator doctor` local probe | `true` only when the binary is on `PATH` |
+| Provider executable | a real invocation against a ticket | `false` (not implemented) |
+| Licence reviewed | owner / legal review | `false` for Multica and Tern |
+| Owner authorized | the project owner | `false` (never assumed) |
+| Execution verified | real command/result/artifact in the target repo | `false` (never set by Workbench) |
+
+A plan that is complete but has an uninstalled provider, an unreviewed licence or no owner
+authorization is **not** execution-ready. `status_note` on every plan states this explicitly.
+
 ## 4. CLI
 
 All commands are read-only and offline.
@@ -122,15 +139,21 @@ node tools/xeng.mjs orchestrator receipt --file receipt.json [--plan plan.json] 
 
 `checkTicketSet` and `checkAssignments` implement static, testable checks:
 
-- one ticket has at most one active writer;
+- one ticket has at most one active writer; `agent` and `agents` are combined, so
+  `agent=A` plus `agents=[B]` is rejected as two writers;
 - `allowed_files` scopes of tickets with no dependency relationship must not overlap;
 - `blocked_by` must reference known tickets and must not contain a cycle;
 - the reviewer must differ from the writer;
 - the ticket set reports when it exceeds `LOOP_DEFAULTS.maxParallelTickets`.
 
-These are planning checks, not runtime locks. Workbench does not claim to have implemented
-file locking, worktree creation or automatic recovery. The provider or the human owner performs
-those actions after the plan is reviewed.
+Path overlap is compared case-insensitively by default because Windows paths are
+case-insensitive; `src/App.mjs` and `src/app.mjs` conflict even on a case-sensitive host. Glob
+segments (`*`, `**`) are treated conservatively.
+
+These are planning checks, not runtime locks. `workspace_policy.enforcement` is
+`STATIC_PLAN_CHECK_ONLY`. Workbench does not claim to have implemented file locking, worktree
+creation or automatic recovery. The provider or the human owner performs those actions after the
+plan is reviewed.
 
 ## 6. Evidence
 
@@ -138,6 +161,8 @@ those actions after the plan is reviewed.
 new state.
 
 - An external receipt is a claim, never a fact.
+- Identity matching compares provider, runtime, ticket, project, base SHA and — when the plan
+  specifies one — repository. A cross-repository receipt is rejected.
 - A zero exit code, a log line, or an Agent saying "done" does not become `VERIFIED`.
 - Development tests, CI, release and consumer acceptance remain separate layers.
 - `VERIFIED` still requires command, result and artifact at an executed layer, recorded inside

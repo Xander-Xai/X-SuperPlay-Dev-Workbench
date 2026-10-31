@@ -540,8 +540,9 @@ export function missingTicketFields(ticket) {
 
 // ---------------------------------------------------------------- conflict checks
 
-function pathOverlaps(a, b) {
-  const A = a.split("/"), B = b.split("/");
+function pathOverlaps(a, b, caseInsensitive = true) {
+  const norm = s => caseInsensitive ? s.toLowerCase() : s;
+  const A = norm(a).split("/"), B = norm(b).split("/");
   const n = Math.min(A.length, B.length);
   for (let i = 0; i < n; i++) {
     const x = A[i], y = B[i];
@@ -594,6 +595,7 @@ export function checkTicketSet(tickets, options = {}) {
   if (!Array.isArray(tickets) || tickets.length === 0) throw new Error("tickets must be a non-empty array");
   const errors = [], warnings = [];
   const maxParallel = Number.isInteger(options.maxParallel) ? options.maxParallel : LOOP_DEFAULTS.maxParallelTickets;
+  const caseInsensitive = options.caseInsensitive !== false;
   const ids = new Set();
 
   for (const ticket of tickets) {
@@ -610,15 +612,31 @@ export function checkTicketSet(tickets, options = {}) {
   for (const ticket of tickets) {
     if (!ticket?.ticket_id) continue;
     const id = ticket.ticket_id;
-    const writers = Array.isArray(ticket.agents) ? ticket.agents.filter(Boolean) : [];
-    if (writers.length > 1) errors.push("ticket " + id + " has more than one active writer");
-    if (!ticket.agent && writers.length === 0) errors.push("ticket " + id + " has no writer");
-    const writer = ticket.agent ?? writers[0] ?? null;
 
-    if (ticket.reviewer && writer && String(ticket.reviewer) === String(writer))
+    // `agent` and `agents` are two ways to declare the same thing. Combine them
+    // so agent=A + agents=[B] is correctly read as two writers, not one.
+    const declared = [];
+    if (ticket.agent !== undefined) {
+      if (typeof ticket.agent !== "string") errors.push("ticket " + id + " agent must be a string");
+      else if (ticket.agent.trim()) declared.push(ticket.agent.trim());
+    }
+    if (ticket.agents !== undefined) {
+      if (!Array.isArray(ticket.agents)) errors.push("ticket " + id + " agents must be an array");
+      else for (const value of ticket.agents) {
+        if (typeof value !== "string") errors.push("ticket " + id + " agents entries must be strings");
+        else if (value.trim()) declared.push(value.trim());
+      }
+    }
+    const writers = [...new Set(declared)];
+    if (writers.length === 0) errors.push("ticket " + id + " has no writer");
+    if (writers.length > 1) errors.push("ticket " + id + " has more than one active writer: " + writers.join(", "));
+
+    if (ticket.reviewer && writers.some(w => String(ticket.reviewer) === w))
       errors.push("ticket " + id + " uses the same agent as writer and reviewer");
 
-    for (const dep of ticket.blocked_by ?? []) {
+    if (ticket.blocked_by !== undefined && !Array.isArray(ticket.blocked_by))
+      errors.push("ticket " + id + " blocked_by must be an array");
+    for (const dep of (Array.isArray(ticket.blocked_by) ? ticket.blocked_by : [])) {
       if (!ids.has(dep)) errors.push("ticket " + id + " depends on unknown ticket " + dep);
     }
 
@@ -635,7 +653,7 @@ export function checkTicketSet(tickets, options = {}) {
       const filesA = Array.isArray(a.allowed_files) ? a.allowed_files : [];
       const filesB = Array.isArray(b.allowed_files) ? b.allowed_files : [];
       for (const fa of filesA) for (const fb of filesB) {
-        if (pathOverlaps(fa, fb))
+        if (pathOverlaps(fa, fb, caseInsensitive))
           errors.push("parallel write conflict: " + a.ticket_id + "(" + fa + ") overlaps " + b.ticket_id + "(" + fb + ")");
       }
     }
@@ -652,7 +670,10 @@ export function checkTicketSet(tickets, options = {}) {
       tickets: tickets.length,
       maxParallel,
       requestedParallel: tickets.length,
-      effectiveParallel: Math.min(maxParallel, tickets.length)
+      effectiveParallel: Math.min(maxParallel, tickets.length),
+      enforcement: "STATIC_PLAN_CHECK_ONLY",
+      case_insensitive_paths: caseInsensitive,
+      note: "A clean result is not a runtime lock. Workbench does not create worktrees or lock files."
     }
   };
 }
@@ -806,6 +827,19 @@ export function planHandoff(options = {}) {
     project_id: resolvedProjectId,
     repository,
     task_contract: contract,
+    // Six separate gates. A valid plan is not an installed provider, an
+    // executable provider, a reviewed licence, owner authorization or a run.
+    readiness: Object.freeze({
+      plan_fields_complete: missing.length === 0,
+      provider_installed: installationStatus === "INSTALLED",
+      provider_executable: false,
+      license_reviewed: provider.license_review !== "REQUIRED",
+      owner_authorized: false,
+      execution_verified: false,
+      execution_ready: false,
+      note: "execution_ready stays false until all six gates have independent evidence; Workbench never records owner authorization or execution itself."
+    }),
+    status_note: "PLAN_ONLY_READY means the plan fields and provider/runtime combination are valid. It does not mean installed, executable, licensed, owner-authorized or executed.",
     workspace_policy: Object.freeze({
       isolation,
       branch_pattern: contract.ticket_id ? "ticket/" + contract.ticket_id : "UNSET",
@@ -813,6 +847,7 @@ export function planHandoff(options = {}) {
       allowed_files: contract.allowed_files,
       write_owner: runtime.id,
       conflict_policy: "ONE_ACTIVE_WRITER_PER_TICKET",
+      enforcement: "STATIC_PLAN_CHECK_ONLY",
       shared_resource_check: "REQUIRED_BEFORE_SCHEDULING"
     }),
     permission_scope: Object.freeze({
@@ -923,6 +958,7 @@ export function verifyReceiptAgainstPlan(receipt, plan) {
   compare("ticket_id", plan.task_contract?.ticket_id);
   compare("base_sha", plan.task_contract?.base_sha);
   compare("project_id", plan.project_id);
+  compare("repository", plan.repository);
   return Object.freeze({
     ok: mismatches.length === 0,
     mismatches: Object.freeze(mismatches),

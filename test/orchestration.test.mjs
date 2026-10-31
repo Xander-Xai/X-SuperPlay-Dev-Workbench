@@ -102,9 +102,17 @@ test("a complete ticket becomes a ready PLAN_ONLY handoff for Orca + OMP", () =>
   assert.equal(plan.permission_scope.push, false);
   assert.equal(plan.permission_scope.merge, false);
   assert.equal(plan.workspace_policy.isolation, "GIT_WORKTREE");
+  assert.equal(plan.workspace_policy.enforcement, "STATIC_PLAN_CHECK_ONLY");
   assert.match(plan.evidence_reference, /^orchestration:\/\/orca\/T01\//);
   assert.ok(plan.non_actions.some(x => /No process was spawned/.test(x)));
   for (const field of TICKET_CONTRACT_FIELDS) assert.ok(Object.hasOwn(plan.task_contract, field));
+  assert.equal(plan.readiness.plan_fields_complete, true);
+  assert.equal(plan.readiness.provider_installed, false);
+  assert.equal(plan.readiness.provider_executable, false);
+  assert.equal(plan.readiness.license_reviewed, true);
+  assert.equal(plan.readiness.owner_authorized, false);
+  assert.equal(plan.readiness.execution_verified, false);
+  assert.equal(plan.readiness.execution_ready, false);
 });
 
 test("an incomplete ticket stays incomplete, never ready", () => {
@@ -124,6 +132,8 @@ test("Multica plans but reports a pending licence review and no executable adapt
   assert.equal(plan.status, "PLAN_ONLY_READY");
   assert.ok(plan.warnings.some(w => /licence review/i.test(w)));
   assert.equal(plan.runtime_invocation.status, "DISABLED_PENDING_LICENSE_REVIEW");
+  assert.equal(plan.readiness.license_reviewed, false);
+  assert.equal(plan.readiness.execution_ready, false);
 });
 
 test("two providers produce the same core contract for the same ticket", () => {
@@ -213,6 +223,42 @@ test("parallel write conflicts, duplicate ids, cycles and shared reviewers are r
     { ticket_id: "T01", agents: ["a", "b"], reviewer: "r", allowed_files: ["src/a"], blocked_by: [] }
   ]);
   assert.ok(twoWriters.errors.some(e => /more than one active writer/.test(e)));
+
+  // agent=A plus agents=[B] is two writers, not one.
+  const mixedWriters = checkTicketSet([
+    { ticket_id: "T01", agent: "a", agents: ["b"], reviewer: "r", allowed_files: ["src/a"], blocked_by: [] }
+  ]);
+  assert.ok(mixedWriters.errors.some(e => /more than one active writer/.test(e)));
+
+  // The same identity declared twice is one writer.
+  const duplicateIdentity = checkTicketSet([
+    { ticket_id: "T01", agent: "a", agents: ["a"], reviewer: "r", allowed_files: ["src/a"], blocked_by: [] }
+  ]);
+  assert.equal(duplicateIdentity.ok, true, duplicateIdentity.errors.join("; "));
+
+  const badAgents = checkTicketSet([
+    { ticket_id: "T01", agents: "a", reviewer: "r", allowed_files: ["src/a"], blocked_by: [] }
+  ]);
+  assert.ok(badAgents.errors.some(e => /agents must be an array/.test(e)));
+
+  // Windows is case-insensitive: a case-only difference must still conflict.
+  const caseConflict = checkTicketSet([
+    { ticket_id: "T01", agent: "a", reviewer: "r1", allowed_files: ["src/App.mjs"], blocked_by: [] },
+    { ticket_id: "T02", agent: "b", reviewer: "r2", allowed_files: ["src/app.mjs"], blocked_by: [] }
+  ]);
+  assert.equal(caseConflict.ok, false);
+  assert.equal(caseConflict.scheduling.case_insensitive_paths, true);
+  assert.ok(caseConflict.errors.some(e => /parallel write conflict/.test(e)));
+
+  // A glob that covers another ticket's file must conflict.
+  const globConflict = checkTicketSet([
+    { ticket_id: "T01", agent: "a", reviewer: "r1", allowed_files: ["src/**"], blocked_by: [] },
+    { ticket_id: "T02", agent: "b", reviewer: "r2", allowed_files: ["src/app.mjs"], blocked_by: [] }
+  ]);
+  assert.equal(globConflict.ok, false);
+
+  assert.equal(disjoint.scheduling.enforcement, "STATIC_PLAN_CHECK_ONLY");
+  assert.match(disjoint.scheduling.note, /not a runtime lock/);
 });
 
 test("only one active writer per ticket, and the reviewer must differ", () => {
@@ -274,7 +320,7 @@ test("a receipt that self-declares trust or VERIFIED is rejected", () => {
 });
 
 test("receipt identity is checked against the plan without verifying content", () => {
-  const plan = planHandoff({ providerId: "orca", agentRuntime: "omp", ticket: ticket(), projectId: "demo-spec" });
+  const plan = planHandoff({ providerId: "orca", agentRuntime: "omp", ticket: ticket(), projectId: "demo-spec", repository: "demo/repo" });
   const ok = verifyReceiptAgainstPlan(validReceipt(), plan);
   assert.equal(ok.ok, true);
   assert.equal(ok.trust, "UNTRUSTED");
@@ -282,6 +328,18 @@ test("receipt identity is checked against the plan without verifying content", (
   const wrong = verifyReceiptAgainstPlan({ ...validReceipt(), base_sha: SHA_B }, plan);
   assert.equal(wrong.ok, false);
   assert.ok(wrong.mismatches.some(m => /base_sha/.test(m)));
+
+  const wrongRepo = verifyReceiptAgainstPlan({ ...validReceipt(), repository: "other/repo" }, plan);
+  assert.equal(wrongRepo.ok, false);
+  assert.ok(wrongRepo.mismatches.some(m => /repository/.test(m)));
+
+  const wrongProvider = verifyReceiptAgainstPlan({ ...validReceipt(), provider_id: "herdr" }, plan);
+  assert.equal(wrongProvider.ok, false);
+  assert.ok(wrongProvider.mismatches.some(m => /provider_id/.test(m)));
+
+  const wrongTicket = verifyReceiptAgainstPlan({ ...validReceipt(), ticket_id: "T02" }, plan);
+  assert.equal(wrongTicket.ok, false);
+  assert.ok(wrongTicket.mismatches.some(m => /ticket_id/.test(m)));
 });
 
 // ---------------------------------------------------------------- CLI
@@ -315,6 +373,7 @@ test("CLI plan writes a ready plan for a valid ticket and blocks Tern", () => wi
   const plan = JSON.parse(ok.stdout);
   assert.equal(plan.status, "PLAN_ONLY_READY");
   assert.equal(plan.execution_mode, "DRY_RUN");
+  assert.equal(plan.readiness.execution_ready, false);
 
   const blocked = cli("orchestrator", "plan", "--provider", "tern", "--agent", "omp", "--json");
   assert.equal(blocked.status, 2);
