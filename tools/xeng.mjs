@@ -19,7 +19,7 @@ import {
   MACRO_STAGES, ACTIVITIES, PLATFORM_BRANCHES, AI_OVERLAY, DELIVERY_STATES,
   LOOP_PHASES, LOOP_TERMINAL_STATES, LOOP_DEFAULTS, TICKET_CONTRACT_FIELDS,
   TICKET_CONTRACT_STATUS, ACCEPTANCE_TEST_POLICY, EXTERNAL_SKILLS, SKILL_VERIFICATION_LAYERS,
-  SKILL_RELATION_POLICY, LEARNING_PATH, deliveryMatrix, activityById
+  SKILL_RELATION_POLICY, LEARNING_PATH, deliveryMatrix, activityById, learningPathTickets
 } from "../src/delivery.mjs";
 import { run as runSkillKit } from "./skill-kit.mjs";
 
@@ -1147,7 +1147,9 @@ function cmdDelivery(argv) {
     ticketContractStatus: TICKET_CONTRACT_STATUS,
     acceptanceTestPolicy: ACCEPTANCE_TEST_POLICY,
     platformBranches: PLATFORM_BRANCHES,
-    aiOverlay: AI_OVERLAY
+    aiOverlay: AI_OVERLAY,
+    learningPath: LEARNING_PATH,
+    learningPathTickets: learningPathTickets()
   };
   if (json) { console.log(JSON.stringify(data, null, 2)); return 0; }
   console.log("Commercial delivery states (forward-only):");

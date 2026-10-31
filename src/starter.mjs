@@ -86,30 +86,48 @@ export function makeStarter(plan) {
     tickets: rows.map((t, i) => {
       const stage = ticketStage(plan, t, i);
       const id = "T" + String(i + 1).padStart(2, "0");
+      const baseSha = plan.config.baseline?.headSha ?? "UNKNOWN";
+      const acceptedAC = "PENDING_OWNER_CONFIRMATION";
+      const allowedFiles = [];
+      const allowedCommands = [];
+      const forbiddenActions = [...FORBIDDEN_ACTIONS];
+      const negativeTests = [t.negative];
+      const iterationBudget = { ...ITERATION_BUDGET };
+      const timeBudget = "UNSET_MINUTES";
+      const externalCostBudget = "UNSET";
+      const stopConditions = [...(stage?.stopWhen ?? ["需求不明确", "权限不明", "测试无法完成"])];
+      const evidencePaths = [];
       return {
-        id, ticket_id: id, title: t.title, outcome: t.outcome,
-        spec_id: identity.projectId + "-spec",
+        // camelCase surface kept for existing consumers.
+        id, title: t.title, outcome: t.outcome,
         negative: t.negative, testIdea: t.testIdea,
-        blockedBy: t.blockedBy, blocked_by: t.blockedBy, stage: t.stage,
+        blockedBy: t.blockedBy, stage: t.stage,
         status: "PROPOSED_NOT_READY",
-        acceptedAC: "PENDING_OWNER_CONFIRMATION",
         acceptance: "业务方待确认可执行的 Given/When/Then",
         testCommand: "NOT_YET_IDENTIFIED", evidence: "NOT_RUN",
         evidencePlan: (stage?.evidencePlan?.required?.length ? stage.evidencePlan.required : [...(stage?.evidence ?? [])]),
-        evidencePaths: [],
-        negativeTests: [t.negative],
-        stopConditions: [...(stage?.stopWhen ?? ["需求不明确", "权限不明", "测试无法完成"])],
-        iterationBudget: { ...ITERATION_BUDGET },
-        timeBudget: "UNSET_MINUTES",
-        externalCostBudget: "UNSET",
-        allowedFiles: [],
-        allowedCommands: [],
-        forbiddenActions: [...FORBIDDEN_ACTIONS],
-        rollback: "UNSET_REQUIRES_OWNER",
-        reviewer: "UNASSIGNED",
+        evidencePaths, negativeTests, stopConditions, iterationBudget,
+        timeBudget, externalCostBudget, allowedFiles, allowedCommands,
+        forbiddenActions, acceptedAC,
         reviewAxes: { ...REVIEW_AXES },
-        baseSha: plan.config.baseline?.headSha ?? "UNKNOWN",
-        agent: plan.config.agent, permission: "READ_ONLY_DISCOVERY_FIRST"
+        baseSha, agent: plan.config.agent, permission: "READ_ONLY_DISCOVERY_FIRST",
+        // snake_case aliases: every TICKET_CONTRACT_FIELDS key must be present.
+        ticket_id: id,
+        spec_id: identity.projectId + "-spec",
+        base_sha: baseSha,
+        accepted_AC: acceptedAC,
+        blocked_by: t.blockedBy,
+        allowed_files: allowedFiles,
+        allowed_commands: allowedCommands,
+        forbidden_actions: forbiddenActions,
+        negative_tests: negativeTests,
+        iteration_budget: iterationBudget,
+        time_budget: timeBudget,
+        external_cost_budget: externalCostBudget,
+        stop_conditions: stopConditions,
+        rollback: "UNSET_REQUIRES_OWNER",
+        evidence_paths: evidencePaths,
+        reviewer: "UNASSIGNED"
       };
     })
   };

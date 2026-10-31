@@ -93,7 +93,7 @@ export const ACTIVITIES = Object.freeze([
     humanDecisions: ["AI 是否必要", "不可接受的自动化程度", "HITL 边界"],
     agentOperations: ["起草 AI-native UX 方案", "列出降级与兜底路径", "标注评测需求"],
     primarySkill: "specification", alternateSkills: ["architecture"],
-    skillNote: EXTERNAL_SKILL_NOTE,
+    skillNote: LOCAL_SKILL_NOTE + " " + EXTERNAL_SKILL_NOTE,
     tools: ["xeng playbook ai-application", "xeng playbook rag", "xeng playbook agent"],
     outputs: ["ai-product-design.md", "eval-plan.md"],
     happyPath: "AI 交互有明确输入、输出、失败与人工接管路径。",
@@ -127,7 +127,7 @@ export const ACTIVITIES = Object.freeze([
     humanDecisions: ["视觉方向", "关键交互取舍", "可访问性底线"],
     agentOperations: ["绘制页面/状态清单", "实现可运行原型", "截图与移动宽度检查"],
     primarySkill: "specification", alternateSkills: ["architecture"],
-    skillNote: "本地无专用 UI Skill；外部设计 Skill 仅为候选。" + EXTERNAL_SKILL_NOTE,
+    skillNote: LOCAL_SKILL_NOTE + " 本地无专用 UI Skill；外部设计 Skill 仅为候选。" + EXTERNAL_SKILL_NOTE,
     tools: ["浏览器截图", "Playwright", "移动宽度 390px 检查"],
     outputs: ["ui-states.md", "screenshots/"],
     happyPath: "主路径、空态、错误态、加载态与移动宽度均可检查。",
@@ -212,7 +212,7 @@ export const ACTIVITIES = Object.freeze([
     humanDecisions: ["实现取舍", "技术债接受", "范围变更"],
     agentOperations: ["写失败测试", "最小实现", "运行真实测试并记录"],
     primarySkill: "implementation-plan", alternateSkills: ["systematic-debugging"],
-    skillNote: "本地无 implement/tdd Skill；上游 implement/tdd 仅为候选。" + EXTERNAL_SKILL_NOTE,
+    skillNote: LOCAL_SKILL_NOTE + " 本地无 implement/tdd Skill；上游 implement/tdd 仅为候选。" + EXTERNAL_SKILL_NOTE,
     tools: ["node --test", "vitest/jest", "playwright", "git"],
     outputs: ["commit", "test-output.txt"],
     happyPath: "增量可运行，相关测试通过，失败可复现。",
@@ -492,11 +492,14 @@ export const ACCEPTANCE_TEST_POLICY = Object.freeze({
 // ---------------------------------------------------------------------------
 // Skills selection and conflict matrix. Upstream metadata verified 2026-10-31.
 
+const DEFAULT_SKILL_ACCEPTANCE = "安装校验 + Agent 发现 + 沙箱真实调用 + 真实项目效果；四层分别留证，缺一不晋级。";
+
 const XS = (o) => Object.freeze({
   id: o.id, repo: o.repo, version: o.version, commit: o.commit, license: o.license,
   verifiedAt: "2026-10-31", verification: o.verification,
   reportedClaim: o.reportedClaim ?? null, reportedClaimStatus: o.reportedClaimStatus ?? "NOT_APPLICABLE",
   role: o.role, trigger: o.trigger,
+  acceptance: o.acceptance ?? DEFAULT_SKILL_ACCEPTANCE,
   relations: Object.freeze({
     equivalent_to: Object.freeze([...(o.relations?.equivalent_to ?? [])]),
     conflicts_with: Object.freeze([...(o.relations?.conflicts_with ?? [])]),
@@ -633,6 +636,36 @@ export function deliveryMatrix() {
   return rows;
 }
 
+// Convert the learning path into concrete, reviewable Ticket stubs. These are
+// proposals only: the owner still confirms AC, file/command scope and budgets.
+export function learningPathTickets() {
+  const out = [];
+  let n = 0;
+  for (const key of ["phase30", "phase60"]) {
+    const phase = LEARNING_PATH[key];
+    for (const activityId of phase.priorityActivities) {
+      const activity = activityById(activityId);
+      if (!activity) continue;
+      n += 1;
+      out.push({
+        ticket_id: "LP" + String(n).padStart(2, "0"),
+        phase: key,
+        activity: activity.id,
+        title: activity.name,
+        stages: [...activity.stages],
+        primary_skill: activity.primarySkill,
+        outputs: [...activity.outputs],
+        negative_tests: [activity.negative],
+        stop_conditions: [...activity.stopConditions],
+        status: "PROPOSED_NOT_READY",
+        evidence: "NOT_RUN",
+        note: "Derived from LEARNING_PATH; owner must confirm AC, files, commands and budgets before execution."
+      });
+    }
+  }
+  return out;
+}
+
 // ---------------------------------------------------------------------------
 // Validation. Called by validateCatalog() so `npm run check` covers it.
 
@@ -683,6 +716,8 @@ export function validateDelivery() {
     if (!SKILL_IDS.includes(a.primarySkill)) errors.push("delivery: activity " + a.id + " primary skill is not a local candidate: " + a.primarySkill);
     for (const alt of a.alternateSkills) if (!SKILL_IDS.includes(alt)) errors.push("delivery: activity " + a.id + " alternate skill unknown: " + alt);
     if (a.alternateSkills.includes(a.primarySkill)) errors.push("delivery: activity " + a.id + " repeats its primary skill as alternate");
+    if (!a.skillNote.includes("UNLICENSED-PROPRIETARY") || !a.skillNote.includes("CANDIDATE"))
+      errors.push("delivery: activity " + a.id + " skillNote lacks source/license/status provenance");
   });
   for (const s of STAGE_IDS) if (!activityCovered.has(s)) errors.push("delivery: canonical stage " + s + " has no activity (orphan)");
 
@@ -734,6 +769,7 @@ export function validateDelivery() {
     if (!x.repo?.includes("/")) errors.push("delivery: external skill " + x.id + " has no repo");
     if (!x.commit || !/^[0-9a-f]{40}$/.test(x.commit)) errors.push("delivery: external skill " + x.id + " has no full commit SHA");
     if (!x.license?.trim()) errors.push("delivery: external skill " + x.id + " has no license status");
+    if (typeof x.acceptance !== "string" || !x.acceptance.trim()) errors.push("delivery: external skill " + x.id + " has no acceptance definition");
     if (x.license === "LICENSE_UNVERIFIED" && x.vendored) errors.push("delivery: external skill " + x.id + " vendored without a verified license");
     if (x.vendored) errors.push("delivery: external skill " + x.id + " must not be vendored by this repository");
     if (!["USER_EXPLICIT", "AUTO"].includes(x.trigger)) errors.push("delivery: external skill " + x.id + " has invalid trigger");
@@ -754,6 +790,16 @@ export function validateDelivery() {
     for (const id of phase.priorityActivities) if (!activityById(id)) errors.push("delivery: learning path " + key + " references unknown activity " + id);
   }
   if (!LEARNING_PATH.mapping.includes("复盘")) errors.push("delivery: learning path mapping must end in review");
+
+  // The learning path must be convertible to concrete, unexecuted ticket stubs.
+  const learningTickets = learningPathTickets();
+  if (!learningTickets.length) errors.push("delivery: learning path produces no tickets");
+  if (new Set(learningTickets.map(t => t.ticket_id)).size !== learningTickets.length) errors.push("delivery: duplicate learning ticket ids");
+  for (const t of learningTickets) {
+    if (!activityById(t.activity)) errors.push("delivery: learning ticket " + t.ticket_id + " references unknown activity");
+    if (!nonEmptyArray(t.outputs)) errors.push("delivery: learning ticket " + t.ticket_id + " has no outputs");
+    if (t.status !== "PROPOSED_NOT_READY" || t.evidence !== "NOT_RUN") errors.push("delivery: learning ticket " + t.ticket_id + " must start unexecuted");
+  }
 
   return errors;
 }

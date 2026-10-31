@@ -104,6 +104,8 @@ GitHub API 实测：
 
 **关键更正**：任务简报/报告称 Matt Pocock v1.3.1 为 `59db609`。实测 `59db609eb1e18aaf59b63284d0e52255aff0c63c` 是 2026-10-27 的另一个提交（“Close blank issues and route requests by kind (#1169)”），**不是 v1.3.1 tag**。旧 manifest 与 `docs/methods/UPSTREAM-SOURCES.md` 使用的 `5beb35b`（2026-10-19）是研究用 pin，比 v1.3.1 领先 47 个提交；它不是 tag，也不应被误写成 v1.3.1。`src/delivery.mjs` 已记录 `reportedClaimStatus: "MISMATCH"`。
 
+精度说明：`v1.3.1` 与 `v7.0.1` 是 annotated tag。tag object 分别为 `0b6cee10f260a2e048279cf737bfd3e37b1fce0b` 与 `cfd50a286baea35041505ed068c878d389ca9f7f`；peel 后的 commit 才是 `24fe0ef...` 与 `2ce8aa15...`。`EXTERNAL_SKILLS.commit` 记录的是 commit，不是 tag object。
+
 重叠关系（`equivalent_to` / `conflicts_with`）：
 
 - 本地 `specification` ↔ mattpocock `to-spec`、spec-kit、OpenSpec（三者定位重叠）。
@@ -202,7 +204,9 @@ AI Overlay（`AI_OVERLAY`）：LLM / RAG / Agent / 多 Agent / 自动化工作�
 - [x] 11 阶段保持唯一权威；新增 8 宏阶段 / 18 活动兼容视图（`src/delivery.mjs`）。
 - [x] 四类路线覆盖清单 + AI Overlay 权限规则。
 - [x] Skills 冲突矩阵与上游 pin/许可证核验（含 `59db609` 更正）。
-- [x] Harness Ticket 契约字段生成到 `src/starter.mjs`。
+- [x] Harness Ticket 契约字段生成到 `src/starter.mjs`（含 camelCase + snake_case 契约键，`CONTRACT_DEFINED_NOT_RUNTIME_ENFORCED`）。
+- [x] 学习路径 `LEARNING_PATH` 可转换为具体 Ticket 草案（`learningPathTickets()`，状态 `PROPOSED_NOT_READY` / `NOT_RUN`）。
+- [x] 每项活动的 `skillNote` 明确本地主用 Skill 的来源、许可（UNLICENSED-PROPRIETARY）与状态（CANDIDATE）；外部 Skill 带 `acceptance` 定义。
 - [x] 商业交付状态与 Loop 终止状态定义。
 - [x] 校验接入 `validateCatalog()` 与 `npm run check`。
 - 验收：`npm run verify`、`node --test test/delivery.test.mjs`、`xeng method --json`。
@@ -238,7 +242,11 @@ AI Overlay（`AI_OVERLAY`）：LLM / RAG / Agent / 多 Agent / 自动化工作�
 |---|---|
 | `npm run verify`（改动前基线） | 132 tests，131 pass，1 skipped，exit 0 |
 | `node --test test/delivery.test.mjs test/starter.test.mjs test/engine.test.mjs` | 34 pass，exit 0 |
-| `xeng method --json` / `matrix --json` / `delivery --json` / `skills-matrix --json` | 见 `test/delivery.test.mjs` |
-| `npm run verify`（改动后） | 见 PR 描述与最终报告 |
+| `xeng method activities --json` / `matrix` / `delivery` / `skills-matrix` | 见 `test/delivery.test.mjs` |
+| 独立验收脚本（34 项，不复用 `validateDelivery()` / `deliveryMatrix()`） | 34/34 pass |
+| `npm run verify`（最终） | 155 tests，154 pass，1 skipped，exit 0 |
+| `npm run build` | Pages allowlist verified，exit 0 |
+| headless Chrome DOM 执行 | 页面渲染，无 JS 错误 |
+| `npm run security` | 88 文件，无密钥形状发现 |
 
 所有生成物与映射状态仍为草案/`NOT_RUN`；本文件不提升任何证据状态。

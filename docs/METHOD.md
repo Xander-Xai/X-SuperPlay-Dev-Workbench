@@ -83,6 +83,8 @@ node tools/xeng.mjs skills-matrix --json   # 本地/外部 Skills 与验证层
 
 状态：`CONTRACT_DEFINED_NOT_RUNTIME_ENFORCED`。字段已定义并生成，**工具层强制（文件锁、命令白名单执行）尚未实现**。
 
+生成器（`src/starter.mjs`）的每张 Ticket 同时保留 camelCase 与 snake_case 契约键；`test/delivery.test.mjs` 断言 16 个 `TICKET_CONTRACT_FIELDS` 全部存在，防止契约与生成器漂移。
+
 ## 商业交付 Gate
 
 | 状态 | 含义 | 不能被谁替代 |
@@ -114,6 +116,7 @@ node tools/xeng.mjs skills-matrix --json   # 本地/外部 Skills 与验证层
 - 31–90 天：企业业务系统 + Agent 工作流 + 可选小程序分支。
 - 映射：市场需求 → 真实任务 → 能力缺口 → 最小知识学习 → Skill 辅助 → 代码实现 → 测试证据 → 复盘。
 - 已有 Python / FastAPI / RAG / LangGraph 基础不重复学习。
+- `learningPathTickets()` 把 30/60 天优先活动转成可审查的 Ticket 草案（`PROPOSED_NOT_READY` / `NOT_RUN`）；`xeng delivery --json` 输出 `learningPathTickets`。
 
 ## 边界
 

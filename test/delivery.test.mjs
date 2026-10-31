@@ -9,7 +9,7 @@ import {
   LOOP_PHASES,LOOP_TERMINAL_STATES,LOOP_TERMINAL_IDS,TICKET_CONTRACT_FIELDS,TICKET_CONTRACT_STATUS,
   ACCEPTANCE_TEST_POLICY,
   EXTERNAL_SKILLS,SKILL_VERIFICATION_LAYERS,SKILL_RELATION_POLICY,LEARNING_PATH,
-  validateDelivery,deliveryMatrix,activityById,activitiesForStage,macroStageFor,canAdvanceDelivery
+  validateDelivery,deliveryMatrix,activityById,activitiesForStage,macroStageFor,canAdvanceDelivery,learningPathTickets
 } from "../src/delivery.mjs";
 import {assemble} from "../src/engine.mjs";
 import {makeStarter} from "../src/starter.mjs";
@@ -41,6 +41,8 @@ test("18 activities cover all stages, each with one primary owner and full field
       assert.ok(Array.isArray(a[key])&&a[key].length>0,a.id+" "+key);
     for(const key of ["happyPath","negative","greenfield","brownfield","skillNote"])
       assert.ok(typeof a[key]==="string"&&a[key].trim(),a.id+" "+key);
+    assert.match(a.skillNote,/UNLICENSED-PROPRIETARY/,a.id);
+    assert.match(a.skillNote,/CANDIDATE/,a.id);
   }
   assert.deepEqual(activitiesForStage("implementation").map(a=>a.id),["A07","A09","A10","A11","A13"]);
 });
@@ -86,16 +88,31 @@ test("ticket contract defines every required harness field",()=>{
 test("generated tickets carry the harness contract without claiming execution",()=>{
   const tickets=makeStarter(assemble({type:"saas",name:"Demo"})).tickets;
   for(const t of tickets){
+    // Every declared contract field must exist on the generated ticket.
+    for(const field of TICKET_CONTRACT_FIELDS) assert.ok(field in t,t.id+" missing "+field);
     assert.equal(t.ticket_id,t.id);
     assert.ok(t.spec_id.endsWith("-spec"));
-    assert.equal(t.acceptedAC,"PENDING_OWNER_CONFIRMATION");
-    assert.ok(Array.isArray(t.allowedFiles)&&Array.isArray(t.allowedCommands));
-    assert.ok(Array.isArray(t.negativeTests)&&t.negativeTests.length>0);
-    assert.equal(t.timeBudget,"UNSET_MINUTES");
-    assert.equal(t.externalCostBudget,"UNSET");
+    assert.equal(t.accepted_AC,"PENDING_OWNER_CONFIRMATION");
+    assert.ok(Array.isArray(t.allowed_files)&&Array.isArray(t.allowed_commands));
+    assert.ok(Array.isArray(t.negative_tests)&&t.negative_tests.length>0);
+    assert.equal(t.time_budget,"UNSET_MINUTES");
+    assert.equal(t.external_cost_budget,"UNSET");
     assert.equal(t.rollback,"UNSET_REQUIRES_OWNER");
     assert.equal(t.reviewer,"UNASSIGNED");
     assert.equal(t.evidence,"NOT_RUN");
+  }
+});
+
+test("learning path converts to concrete unexecuted ticket stubs",()=>{
+  const tickets=learningPathTickets();
+  assert.ok(tickets.length>0);
+  assert.equal(new Set(tickets.map(t=>t.ticket_id)).size,tickets.length);
+  for(const t of tickets){
+    assert.ok(activityById(t.activity),t.ticket_id);
+    assert.ok(Array.isArray(t.outputs)&&t.outputs.length>0,t.ticket_id);
+    assert.equal(t.status,"PROPOSED_NOT_READY");
+    assert.equal(t.evidence,"NOT_RUN");
+    assert.ok(t.negative_tests.length>0);
   }
 });
 
@@ -117,6 +134,7 @@ test("external skills are verified honestly and never vendored",()=>{
     assert.equal(x.vendored,false,x.id);
     assert.match(x.commit,/^[0-9a-f]{40}$/,x.id);
     assert.equal(x.trigger,"USER_EXPLICIT",x.id);
+    assert.ok(x.acceptance&&x.acceptance.length>0,x.id);
   }
   assert.equal(SKILL_RELATION_POLICY.maxPrimaryOwnersPerActivity,1);
   assert.deepEqual(SKILL_VERIFICATION_LAYERS,["STATIC_CHECK","INSTALL","AGENT_DISCOVERY","AGENT_INVOCATION","REAL_PROJECT_EFFECT"]);
