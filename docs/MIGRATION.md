@@ -21,7 +21,7 @@ Workbench 现在是工程运行时的所有者。旧私有 Engineering OS 只保
 |---|---|---|
 | 历史来源（只读） | `Xander-Xai/X-SuperPlay-AI-Engineering-OS` | `8553124f238ab463d4a50debad34e871ef8de060` |
 | 通用治理参考（未复制正文） | `Xander-Xai/AI-Native-Work-Learning-OS` | `f1289d685c95c7fac6f1d50068527a60f080ee1b` |
-| 当前工程所有者 | `Xander-Xai/X-SuperPlay-Dev-Workbench` | 本分支提交 SHA（合并前为 `UNKNOWN_UNTIL_COMMIT`） |
+| 当前工程所有者 | `Xander-Xai/X-SuperPlay-Dev-Workbench` | 运行时迁移提交 `527499f1ab3befdf5e87af042e746853cbbcf665`；验收提交见清单 `acceptance_commit` |
 
 ## 兼容表
 
@@ -57,6 +57,41 @@ Workbench 现在是工程运行时的所有者。旧私有 Engineering OS 只保
 - `PROVENANCE` 仅作为历史溯源；`OWNER` 是当前所有者；`RUNTIME` 是发布运行时。
 - `npm run scan` 检查活跃依赖；历史出现必须位于显式允许的文件中。
 
+## 源文件清单对账
+
+冻结源快照共 **106 个文件**（Git tree，未截断），Workbench 以 **11 项模块级记录**承接。按类别对账：
+
+| 源类别 | 文件数 | Workbench 处置 |
+|---|---|---|
+| `00-governance` | 5 | 由 AI-Native 治理仓承接；Workbench 只保留公开语义摘要与引用 |
+| `01-lifecycle` | 12 | 11 个阶段迁入 `STAGES`；市场/外部需求接入并入 `intake` 语义，未单列阶段 |
+| `02-standards` | 10 | 并入 Profile 义务字段；分支/提交/PR/Git 细则未结构化迁入（缺口 G-01） |
+| `03-ai-coding` | 10 | 路由、验证、Agent 交接、停止条件迁入；`worktree` 与逐 Agent 操作手册未迁入（G-02） |
+| `04-profiles` | 18 | 14 个基础 Profile 迁入；企业/移动/支付为 Workbench 叠加扩展 |
+| `05-skills` | 9 | 8 个 Skill 自包含重写；README 不迁入 |
+| `06-templates` | 8 | Spec、Tickets、ADR、Profile、验证、发布迁入；postmortem、PR、review、外部需求简报未迁入（G-03） |
+| `07-checklists` | 4 | 发布与验证检查单迁入；AI 项目与安全检查单未单独迁入（G-04） |
+| `08-automation` | 1 | 仅说明文件；无运行时代码 |
+| `09-reference` | 2 | 上游来源清单为历史参考，不迁入 |
+| `registry` | 4 | profiles / skills / standards 语义迁入；repositories 注册表未迁入（G-05） |
+| `tools` | 2 | `xeng` 以 Node 重写并扩展；原 Python 测试不迁入 |
+| 根文件 / `docs` / `lab` / `.github` | 20 | 历史入口、ADR、审计与 CI 不作为公开运行时迁入 |
+
+结论：**没有发现被静默丢弃的 Skill 依赖**；8 个 Skill 的依赖闭包在 `src/routing.mjs` 中重建。发现 5 类未迁入的工程约束，均记录为缺口，而不是宣称已覆盖。
+
+## 源仓 PR #5 覆盖情况
+
+源仓 PR #5 增加 tracer ticket 模板、Spec–Tickets–Harness–Loop 采纳 SOP 与实施计划扩展。Workbench 现状：
+
+- **已覆盖**：Tracer Ticket 的纵向切片、`blocked_by`、AC/负例、base SHA、权限范围、真实测试命令占位。
+- **部分覆盖**：Harness / 有界 Loop 以 handoff 的停止条件与单阶段纪律表达，没有独立运行时。
+- **未覆盖**：迭代预算字段、双轴（Spec / Standards）评审记录、上游方法采纳说明。
+- PR #5 未合并；Workbench 基于冻结 SHA 语义重写，不吸收未合并内容作为权威。
+
+## 跨仓契约对齐
+
+`ai-native-governance-contract/v1` 的六类契约对账见 [CONTRACT_ALIGNMENT.md](CONTRACT_ALIGNMENT.md) 与 [migration/contract-alignment-v1.json](../migration/contract-alignment-v1.json)。结论：6 项均为部分实现，无运行时依赖；Review Convergence 与 Knowledge Promotion 有明确未实现子项。
+
 ## 未解决项
 
 | ID | 项 | 状态 |
@@ -68,6 +103,8 @@ Workbench 现在是工程运行时的所有者。旧私有 Engineering OS 只保
 | U-05 | 旧仓 PR #5 / #6 的最终合并状态 | 迁移基于冻结 SHA，不依赖未合并 PR |
 | U-06 | 许可证 | `UNLICENSED-PROPRIETARY`，需所有者确定 |
 | U-07 | CI 与 Pages 部署回执 | CI run `41107653209` 通过；Pages 仅在合并到 main 后发布，尚无回执 |
+| U-08 | 未迁入的工程约束（G-01…G-05） | 分支/提交/PR 细则、worktree、postmortem/PR/review 模板、安全/AI 检查单、repositories 注册表；未宣称覆盖 |
+| U-09 | 治理契约完整实现 | 6 项均为部分实现；Finding 分类、不可变候选、晋级阶梯未实现 |
 
 ## 退役检查单
 

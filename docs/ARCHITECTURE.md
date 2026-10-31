@@ -62,8 +62,10 @@ NOT_RUN ──► IN_PROGRESS ──► VERIFIED
 ~~~
 
 - `VERIFIED` 是终态，不能回退。
-- `VERIFIED` 记录必须包含 command、result、artifact。
-- 导入的本地报告状态固定为 `IMPORTED_NOT_TRUSTED`，只做摘要。
+- `VERIFIED` 记录必须包含 command、result、artifact，且证据层必须是已执行层（LOCAL_TESTED / CI_VERIFIED / RELEASED / ACCEPTED）。
+- 阶段完成按**全部必需 Gate** 判定：任一必需 Gate 缺少 VERIFIED 项、或存在 BLOCKED / UNKNOWN / NOT_RUN / IN_PROGRESS 项，阶段就不能标记完成。
+- 同阶段同时出现 VERIFIED 与阻断项时，汇总为 `BLOCKED` 并标记冲突，而不是取状态最大值。
+- 导入的本地报告状态固定为 `IMPORTED_NOT_TRUSTED`，`trusted:false`、`promotion:NONE`；即使“声明完整”也不等于可信事实。
 - 代码检查 / 真实环境 / 消费者验收是三个独立层，不可互相替代。
 
 ## 浏览器安全

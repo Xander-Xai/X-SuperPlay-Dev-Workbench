@@ -137,6 +137,62 @@
     "05-skills cross-directory references at install time",
     "private repository as the catalog source of truth"
   ],
+  "source_inventory": {
+    "snapshot_commit": "8553124f238ab463d4a50debad34e871ef8de060",
+    "total_files": 106,
+    "truncated": false,
+    "categories": {
+      "00-governance": 5,
+      "01-lifecycle": 12,
+      "02-standards": 10,
+      "03-ai-coding": 10,
+      "04-profiles": 18,
+      "05-skills": 9,
+      "06-templates": 8,
+      "07-checklists": 4,
+      "08-automation": 1,
+      "09-reference": 2,
+      "registry": 4,
+      "tools": 2,
+      "root-docs-lab-ci": 20
+    },
+    "reconciliation": "11 module records cover the runtime; no skill dependency was dropped; five constraint gaps recorded",
+    "gaps": [
+      { "id": "G-01", "item": "branching / commits / pull-request / git standards", "status": "NOT_STRUCTURED" },
+      { "id": "G-02", "item": "worktree and per-agent operating manuals", "status": "NOT_MIGRATED" },
+      { "id": "G-03", "item": "postmortem / pull-request / review / external-demand templates", "status": "NOT_MIGRATED" },
+      { "id": "G-04", "item": "AI project and security checklists", "status": "NOT_MIGRATED" },
+      { "id": "G-05", "item": "repositories registry", "status": "NOT_MIGRATED" }
+    ]
+  },
+  "source_pr_5": {
+    "repository": "Xander-Xai/X-SuperPlay-AI-Engineering-OS",
+    "pull_request": 5,
+    "state": "OPEN_NOT_MERGED",
+    "covered": ["tracer ticket vertical slice", "blocked_by", "AC and negative cases", "base SHA", "permission scope"],
+    "partial": ["harness and bounded loop expressed as stop conditions only"],
+    "not_covered": ["iteration budget field", "dual-axis review record", "upstream method adoption guide"]
+  },
+  "contract_alignment": {
+    "contract_id": "ai-native-governance-contract/v1",
+    "source_pr": 57,
+    "source_commit": "78d9efae1f948e50952d229ecf22ddbc6350040c",
+    "manifest": "migration/contract-alignment-v1.json",
+    "document": "docs/CONTRACT_ALIGNMENT.md",
+    "status": "PARTIAL_ALL_SIX",
+    "runtime_dependency": false,
+    "copied_verbatim": false
+  },
+  "local_checks": {
+    "check": "PASS",
+    "scan": "PASS_NO_ACTIVE_DEPENDENCY",
+    "test": "PASS_81_TESTS_80_PASS_1_SKIPPED",
+    "verify": "PASS",
+    "build": "PASS",
+    "browser": "HEADLESS_CHROME_1440_AND_390",
+    "independent_verification": "NOT_RUN"
+  },
+  "acceptance_commit": "PR_12_HEAD",
   "unresolved": [
     { "id": "U-01", "item": "destination commit SHA", "status": "PINNED_527499F1AB3BEFDF5E87AF042E746853CBBCF665" },
     { "id": "U-02", "item": "browser interaction and mobile screenshot review", "status": "VERIFIED_HEADLESS_CHROME_1440_AND_390", "note": "Desktop 1440px and mobile 390px screenshots plus scripted interactions; no real-device review." },
@@ -144,7 +200,9 @@
     { "id": "U-04", "item": "real project dogfood, device and production release", "status": "NOT_RUN" },
     { "id": "U-05", "item": "old repository PR #5 and #6 merge state", "status": "NOT_DEPENDED_ON" },
     { "id": "U-06", "item": "license for redistribution", "status": "UNLICENSED_PROPRIETARY" },
-    { "id": "U-07", "item": "CI and Pages receipts for this branch", "status": "CI_PASS_RUN_41107653209_PAGES_PENDING_MERGE" }
+    { "id": "U-07", "item": "CI and Pages receipts for this branch", "status": "CI_PASS_RUN_41107653209_PAGES_PENDING_MERGE" },
+    { "id": "U-08", "item": "unmigrated engineering constraints G-01..G-05", "status": "RECORDED_NOT_CLAIMED" },
+    { "id": "U-09", "item": "full governance contract implementation", "status": "PARTIAL_ALL_SIX" }
   ],  "verification_status": "NOT_RUN",
   "decommission_status": "DECOMMISSION_NOT_VERIFIED",
   "decommission_authorized": false,

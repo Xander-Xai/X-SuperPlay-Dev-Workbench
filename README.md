@@ -118,6 +118,7 @@ npm run probe -- --target ../your-project --type saas --output project-baseline.
 
 - [架构与所有权](docs/ARCHITECTURE.md)
 - [迁移与兼容表](docs/MIGRATION.md)
+- [跨仓治理契约对齐](docs/CONTRACT_ALIGNMENT.md)
 - [实际开发 SOP](docs/PLAYBOOK.md)
 - [Skill Kit 契约](docs/SKILL_KIT.md)
 - [演进路线](docs/ROADMAP.md)
