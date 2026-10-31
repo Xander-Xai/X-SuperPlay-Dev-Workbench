@@ -12,6 +12,7 @@ const essential=[
   "skills-grid","skill-search","skill-agent","skill-install-command","download-starter",
   "baseline-file","baseline-state","workflow-tabs","workflow-body",
   "workspace-files","workspace-preview","download-workspace-file","download-bundle",
+  "methodology-entry","methodology-overview","methodology-sources","methodology-design","methodology-skills","methodology-pilot",
   "playbook-tabs","playbook-body",
   "evidence-body","install-command","copy-install","build-marker"
 ];
