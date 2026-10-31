@@ -8,7 +8,7 @@
 
 ## 完整开发范式：AI-Native Spec-Driven Harness & Loop Engineering
 
-**中文：AI 原生规格驱动的 Harness–Skills–Loop 全栈工程范式。** 本仓已维护完整的 [方法定义与 Workbench 映射](docs/methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md)、[Matt Pocock / Harness / Ralph 的固定版本上游参考](docs/methods/UPSTREAM-SOURCES.md)、[真实全栈灯塔项目试点 SOP 和模板](docs/methods/PROJECT-PILOT.md)。它不是原作者或招聘方的官方命名，也不是新的第二套生命周期。
+**中文：AI 原生规格驱动的 Harness–Skills–Loop 全栈工程范式。** 本仓已维护完整的 [方法定义与 Workbench 映射](docs/methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md)、[Matt Pocock / Harness / Ralph 的固定版本上游参考](docs/methods/UPSTREAM-SOURCES.md)、[真实全栈灯塔项目试点 SOP 和模板](docs/methods/PROJECT-PILOT.md)、[AI 原生产品与 Agent 架构设计](docs/methods/AI-NATIVE-PRODUCT-AGENT-DESIGN.md)、[Skill Engineering Factory 与代码专家 Skill 生成方法](docs/methods/SKILL-ENGINEERING-FACTORY.md)。它不是原作者或招聘方的官方命名，也不是新的第二套生命周期。
 
 ```text
 需求 → Discovery → Spec/AC → Tracer Tickets → Skills → Harness
@@ -19,9 +19,11 @@
 node tools/xeng.mjs method          # 完整范式（只读）
 node tools/xeng.mjs method sources  # 上游固定版本、许可与对应关系
 node tools/xeng.mjs method pilot    # 项目纵切 SOP、Harness/Loop 记录模板与启动提示词
+node tools/xeng.mjs method design   # AI 原生产品和 Agent 架构设计
+node tools/xeng.mjs method skills   # Skill 工厂/代码专家 Skill 创建与评测方法
 ```
 
-**完成度边界**：方法导航和 CLI 已落盘；Harness/Loop 独立 Runner **未实现**；外部 Skills **未安装**；真实项目 Dogfood、Provider/设备与消费者验收仍为 `NOT_RUN`。文档和 CI 不证明产品已交付。
+**完成度边界**：方法导航和 CLI 已提交到 PR 分支；Skill Factory 自动生成器、Harness/Loop 独立 Runner **未实现**；外部 Skills **未安装**；真实项目 Dogfood、Provider/设备与消费者验收仍为 `NOT_RUN`。文档和 CI 不证明产品已交付。
 
 ## 三分钟运行
 
@@ -198,6 +200,8 @@ npm run probe -- --target ../your-project --type saas --output project-baseline.
 - [AI 原生 Spec–Skills–Harness–Loop 完整开发范式](docs/methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md)
 - [Matt Pocock / Harness / Ralph 固定上游来源](docs/methods/UPSTREAM-SOURCES.md)
 - [灯塔项目全栈实战及验收模板](docs/methods/PROJECT-PILOT.md)
+- [AI 原生产品设计与 Agent 架构设计模板](docs/methods/AI-NATIVE-PRODUCT-AGENT-DESIGN.md)
+- [Skill Engineering Factory 与代码专家 Skill 示例](docs/methods/SKILL-ENGINEERING-FACTORY.md)
 - [工程 Playbook](docs/PLAYBOOKS.md)
 - [项目级 Git 工作流](docs/GIT_WORKFLOW.md)
 - [工程成熟度 L0–L6](docs/MATURITY.md)
