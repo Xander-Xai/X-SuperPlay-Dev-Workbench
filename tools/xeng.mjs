@@ -15,6 +15,12 @@ import { resolveSkillDependencies } from "../src/install-contract.mjs";
 import { PLAYBOOKS, playbookById, playbookMarkdown } from "../src/playbooks.mjs";
 import { maturityReport, MATURITY_LEVELS } from "../src/maturity.mjs";
 import { GIT_WORKFLOW } from "../src/git-workflow.mjs";
+import {
+  MACRO_STAGES, ACTIVITIES, PLATFORM_BRANCHES, AI_OVERLAY, DELIVERY_STATES,
+  LOOP_PHASES, LOOP_TERMINAL_STATES, LOOP_DEFAULTS, TICKET_CONTRACT_FIELDS,
+  TICKET_CONTRACT_STATUS, ACCEPTANCE_TEST_POLICY, EXTERNAL_SKILLS, SKILL_VERIFICATION_LAYERS,
+  SKILL_RELATION_POLICY, LEARNING_PATH, deliveryMatrix, activityById
+} from "../src/delivery.mjs";
 import { run as runSkillKit } from "./skill-kit.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -997,6 +1003,119 @@ function cmdAgentCheck(argv) {
   return installed && filesOk ? 0 : 1;
 }
 
+// ---------------------------------------------------------------- method / matrix / delivery / skills-matrix
+
+function methodTemplate() {
+  const lines = [
+    "# AI-Native Full-Stack Delivery · 8 宏阶段 × 18 活动 × 11 权威阶段", "",
+    "> 兼容视图，不是第二套生命周期。权威阶段仍来自 src/catalog.mjs。", "",
+    "## 宏阶段", "",
+    "| 宏阶段 | 名称 | 权威阶段 |", "|---|---|---|",
+    ...MACRO_STAGES.map(m => "| " + m.id + " | " + m.name + " | " + m.canonicalStages.join(", ") + " |"),
+    "", "## 18 项活动", "",
+    "| ID | 活动 | 权威阶段 | 主用 Skill | 替代 Skill |", "|---|---|---|---|---|",
+    ...ACTIVITIES.map(a => "| " + a.id + " | " + a.name + " | " + a.stages.join(", ") + " | " + a.primarySkill + " | " + (a.alternateSkills.join(", ") || "—") + " |"),
+    "", "## 覆盖矩阵", "",
+    "| 权威阶段 | 宏阶段 | 活动 |", "|---|---|---|"
+  ];
+  const rows = deliveryMatrix();
+  for (const [stage, info] of Object.entries(rows))
+    lines.push("| " + stage + " | " + (info.macro ?? "—") + " | " + (info.activities.join(", ") || "—") + " |");
+  lines.push("", "所有活动均为草案映射；真实执行证据留在目标项目。", "");
+  return lines.join("\n");
+}
+
+function cmdMethod(argv) {
+  const json = argv.includes("--json");
+  const template = argv.includes("--template");
+  const id = argv.find(a => !a.startsWith("--"));
+  if (template) { console.log(methodTemplate()); return 0; }
+  if (!id) {
+    if (json) { console.log(JSON.stringify({ macroStages: MACRO_STAGES, activities: ACTIVITIES }, null, 2)); return 0; }
+    console.log("AI-Native Full-Stack Delivery · 8 macro stages / 18 activities");
+    for (const m of MACRO_STAGES) console.log("  " + m.id + " " + m.name.padEnd(18) + m.canonicalStages.join(", "));
+    console.log("\nActivities:");
+    for (const a of ACTIVITIES) console.log("  " + a.id + " " + a.name.padEnd(22) + a.stages.join(", "));
+    console.log("\nUse: xeng method <A01..A18> [--json] | xeng method --template | xeng matrix");
+    return 0;
+  }
+  const activity = activityById(id);
+  if (!activity) { console.error("FAIL: unknown activity: " + id + " (available: A01..A18)"); return 2; }
+  if (json) { console.log(JSON.stringify(activity, null, 2)); return 0; }
+  console.log(activity.id + " · " + activity.name);
+  console.log("stages: " + activity.stages.join(", "));
+  console.log("primary skill: " + activity.primarySkill + " | alternate: " + (activity.alternateSkills.join(", ") || "—"));
+  console.log("knowledge: " + activity.knowledge.join("；"));
+  console.log("inputs: " + activity.inputs.join("；"));
+  console.log("human decisions: " + activity.humanDecisions.join("；"));
+  console.log("agent operations: " + activity.agentOperations.join("；"));
+  console.log("tools: " + activity.tools.join("；"));
+  console.log("outputs: " + activity.outputs.join("；"));
+  console.log("happy path: " + activity.happyPath);
+  console.log("negative: " + activity.negative);
+  console.log("stop conditions: " + activity.stopConditions.join("；"));
+  console.log("deterministic controls: " + activity.deterministicControls.join("；"));
+  console.log("greenfield: " + activity.greenfield);
+  console.log("brownfield: " + activity.brownfield);
+  console.log("skill note: " + activity.skillNote);
+  return 0;
+}
+
+function cmdMatrix(argv) {
+  const json = argv.includes("--json");
+  const rows = deliveryMatrix();
+  if (json) { console.log(JSON.stringify(rows, null, 2)); return 0; }
+  console.log("Stage coverage matrix (canonical 11 stages)");
+  for (const [stage, info] of Object.entries(rows))
+    console.log("  " + stage.padEnd(16) + (info.macro ?? "—").padEnd(4) + info.activities.join(", "));
+  return 0;
+}
+
+function cmdDelivery(argv) {
+  const json = argv.includes("--json");
+  const data = {
+    deliveryStates: DELIVERY_STATES,
+    loopPhases: LOOP_PHASES,
+    terminalStates: LOOP_TERMINAL_STATES,
+    loopDefaults: LOOP_DEFAULTS,
+    ticketContractFields: TICKET_CONTRACT_FIELDS,
+    ticketContractStatus: TICKET_CONTRACT_STATUS,
+    acceptanceTestPolicy: ACCEPTANCE_TEST_POLICY,
+    platformBranches: PLATFORM_BRANCHES,
+    aiOverlay: AI_OVERLAY
+  };
+  if (json) { console.log(JSON.stringify(data, null, 2)); return 0; }
+  console.log("Commercial delivery states (forward-only):");
+  for (const s of DELIVERY_STATES) console.log("  " + s.id.padEnd(18) + s.name + " — " + s.cannotSubstitute);
+  console.log("\nBounded loop: " + LOOP_PHASES.join(" → "));
+  console.log("Terminal states: " + LOOP_TERMINAL_STATES.map(t => t.id + "(" + t.evidenceState + ")").join(", "));
+  console.log("Defaults: " + LOOP_DEFAULTS.maxAttemptsPerTicket + " attempts/ticket, " + LOOP_DEFAULTS.maxReviewFixRounds + " review-fix rounds, maxParallel=" + LOOP_DEFAULTS.maxParallelTickets);
+  console.log("\nTicket contract: " + TICKET_CONTRACT_STATUS.status);
+  console.log("Fields: " + TICKET_CONTRACT_FIELDS.join(", "));
+  console.log("\nPlatform branches: " + PLATFORM_BRANCHES.map(b => b.id).join(", "));
+  console.log("AI overlay: " + AI_OVERLAY.capabilities.join(", ") + " — " + AI_OVERLAY.rule);
+  return 0;
+}
+
+function cmdSkillsMatrix(argv) {
+  const json = argv.includes("--json");
+  const data = {
+    local: SKILLS.map(s => ({ id: s.id, status: s.status, license: s.license, lifecycle_stage: s.lifecycle_stage })),
+    external: EXTERNAL_SKILLS,
+    verificationLayers: SKILL_VERIFICATION_LAYERS,
+    policy: SKILL_RELATION_POLICY,
+    learningPath: LEARNING_PATH
+  };
+  if (json) { console.log(JSON.stringify(data, null, 2)); return 0; }
+  console.log("Local candidate skills (all CANDIDATE, UNLICENSED-PROPRIETARY):");
+  for (const s of SKILLS) console.log("  " + s.id.padEnd(22) + s.status + " · " + s.lifecycle_stage);
+  console.log("\nExternal candidates (not vendored; user-explicit trigger only):");
+  for (const x of EXTERNAL_SKILLS) console.log("  " + x.id.padEnd(28) + x.version.padEnd(10) + x.license + " · " + x.verification);
+  console.log("\nVerification layers are separate: " + SKILL_VERIFICATION_LAYERS.join(" → "));
+  console.log("Policy: one primary owner per activity; " + SKILL_RELATION_POLICY.note);
+  return 0;
+}
+
 // ---------------------------------------------------------------- main
 
 function usage() {
@@ -1011,6 +1130,10 @@ function usage() {
     "  xeng validate-registry",
     "  xeng selftest",
     "  xeng task <type> [--tier=A] [--mode=new] [--type=saas]",
+    "  xeng method [A01..A18] [--json] [--template]",
+    "  xeng matrix [--json]",
+    "  xeng delivery [--json]",
+    "  xeng skills-matrix [--json]",
     "  xeng assemble --target <dir> --type saas --task feature --tier B --agent codex [--apply --confirm-reviewed]",
     "  xeng agent-check --target <dir> --agent codex",
     "  xeng version",
@@ -1031,6 +1154,10 @@ export function main(argv = process.argv.slice(2)) {
     case "validate-registry": return cmdValidateRegistry(rest);
     case "selftest": return cmdSelftest(rest);
     case "task": return cmdTask(rest);
+    case "method": return cmdMethod(rest);
+    case "matrix": return cmdMatrix(rest);
+    case "delivery": return cmdDelivery(rest);
+    case "skills-matrix": return cmdSkillsMatrix(rest);
     case "assemble": return cmdAssemble(rest);
     case "agent-check": return cmdAgentCheck(rest);
     case "version": console.log(RUNTIME.name + " " + RUNTIME.version); return 0;
