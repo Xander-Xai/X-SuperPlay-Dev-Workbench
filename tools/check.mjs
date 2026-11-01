@@ -4,8 +4,10 @@ import {resolve,dirname} from "node:path";
 import {validateCatalog} from "../src/engine.mjs";
 import {PROFILES,TASKS,SKILLS,STAGES} from "../src/catalog.mjs";
 import {renderRouteDocs} from "./render-route-docs.mjs";
+import {auditProductDocs} from "./product-doc-check.mjs";
 const base=resolve(dirname(fileURLToPath(import.meta.url)),"..");
 const failures=validateCatalog();
+failures.push(...await auditProductDocs(base));
 const html=await readFile(resolve(base,"index.html"),"utf-8");
 const essential=[
   "route-grid","project-name","project-description","project-agent","project-stack","project-task",
