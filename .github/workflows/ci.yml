@@ -3,7 +3,8 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+    # Every PR, not only those targeting main: stacked PRs must carry a verify
+    # record before they are retargeted, otherwise their head commit is unproven.
 permissions:
   contents: read
 concurrency:
