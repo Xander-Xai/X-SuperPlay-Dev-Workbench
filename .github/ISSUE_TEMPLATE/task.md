@@ -2,7 +2,7 @@
 name: Capability or gap
 about: Work that adds, hardens or removes a capability
 title: ""
-labels: ""
+labels: "enhancement"
 assignees: ""
 ---
 
