@@ -4,6 +4,7 @@
 - 范围：把三份研究报告（R1/R2/R3）的建议与 Workbench 现有运行时交叉核验，形成可执行的兼容视图。
 - 结论状态：`RECONCILED_WITH_SOURCE_GAPS`
 - 权威生命周期：`src/catalog.mjs` 的 11 阶段；本文件不建立第二套状态机。
+- 数字口径：本文件是 2026-10-31 的观测快照。v0.4 把 Skills 从 8 个扩到 14 个，v0.5 把工作区草案从 16 份增到 19 份；下表里的 8 与 16 是当时的值，当前值以 `src/catalog.mjs`、`src/workspace.mjs` 与 `npm run check` 为准。
 
 ## 0. 来源状态（先说清楚缺什么）
 

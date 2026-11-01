@@ -39,7 +39,15 @@ node --test --test-name-pattern="catalog contains" test/engine.test.mjs
 - 新模块必须同步：`src/app.mjs` 导入、`tools/build-site.mjs` 的 `FILES`、`tools/check.mjs` 的 `required`；新 UI 区域还要加 `id`。
 - 不新增运行时依赖；不复制第三方 Skill 正文；不提交密钥或生产数据。
 
-## 5. 测试约定
+## 5. Issue
+
+- 新 issue 使用 `.github/ISSUE_TEMPLATE/` 的 `task.md`（能力/缺口）或 `bug.md`（缺陷）。
+- 每条验收项后面写证据：命令、运行环境、确切 commit SHA 与结果。
+- `PLAN_ONLY`、`PARTIAL`、`NOT_RUN`、`BLOCKED`、`UNKNOWN` 都不算完成；没完成就保持 open，并把剩余项列出来。
+- 关闭前把证据写进 issue 本身（或链接到可复核的 PR 检查），不要只写「已修复」。
+- 公开 issue 不贴私有源码、客户数据、凭据或含凭据的截图；安全问题按 [SECURITY.md](SECURITY.md) 走私下报告。
+
+## 6. 测试约定
 
 - 用 `node:test` 与 `node:assert/strict`。
 - 一个测试验证一个行为；测试名描述期望行为。
@@ -47,18 +55,18 @@ node --test --test-name-pattern="catalog contains" test/engine.test.mjs
 - 不删除或弱化失败断言来换取通过；先判断测试是否真的错了，再单独提交修改理由。
 - 生成产物保持 `DRAFT_NOT_EXECUTED`；证据保持 `NOT_RUN`，除非有真实执行回执。
 
-## 6. 文档与链接
+## 7. 文档与链接
 
 - 新文档链接进 `README.md` 的文档索引。
 - 命令示例必须可直接执行；路径必须可解析。
 - 平台/合规规则标注观测日期，不写成永久承诺。
 - 不把 `docs/` 或 `skills/` 当成已发布站点内容。
 
-## 7. 发布
+## 8. 发布
 
 本仓的发布就是 `main` 合并后由 `.github/workflows/pages.yml` 部署静态站点。没有 npm 包发布，也没有服务端部署。详见 [DEPLOYMENT.md](docs/DEPLOYMENT.md)。
 
-## 8. 提交前检查
+## 9. 提交前检查
 
 - [ ] `npm run verify` 通过
 - [ ] 涉及站点时 `npm run build` 通过
