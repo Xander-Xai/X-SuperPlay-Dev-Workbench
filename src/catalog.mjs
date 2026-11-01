@@ -42,7 +42,7 @@ export const GOVERNANCE = Object.freeze({
 
 export const RUNTIME = Object.freeze({
   name: "x-superplay-dev-workbench",
-  version: "0.3.0",
+  version: "0.4.0",
   buildSha: "UNKNOWN_UNTIL_BUILT",
   cli: "node tools/xeng.mjs",
   skillCli: "node tools/skill-kit.mjs"
@@ -325,7 +325,9 @@ export const ROUTE_SOPS = Object.freeze({
       "确认目标租户模型：单租户、组织多租户或工作区，并写入 Spec",
       "确认认证方式、会话生命周期与角色模型",
       "确认计费边界：免费、订阅、试用或按量；未涉及的支付不得假装已实现",
-      "确认数据保留、删除、导出与合规要求"
+      "确认数据保留、删除、导出与合规要求",
+      "确认 B2B SSO（OIDC/SAML）与 SCIM 生命周期；B2C 也要说明会话撤销方式",
+      "确认 DPA、子处理者清单、数据驻留区域与 DSAR 导出/删除责任"
     ],
     platformConstraints: [
       "真实支付渠道需要商户资质与沙箱/生产凭据，本地代码测试不能替代渠道回执",
@@ -347,21 +349,27 @@ export const ROUTE_SOPS = Object.freeze({
     gates: [
       "跨租户隔离负例通过，并保留请求与响应证据",
       "认证绕过负例与昂贵端点限流通过",
-      "迁移升降级在副本上验证，发布与回滚回执可查"
+      "迁移升降级在副本上验证，发布与回滚回执可查",
+      "审计日志保留与不可篡改策略有证据；DSAR 导出/删除可执行",
+      "Webhook 签名与重放保护负例通过；PCI 范围已声明"
     ],
     failureHandling: [
       "租户隔离失败：阻断发布，先修数据层边界，不用前端隐藏替代服务端校验",
       "迁移失败：按已验证的降级路径回退，保留失败日志与快照",
-      "支付回调异常：关闭支付开关，保留幂等记录并对账"
+      "支付回调异常：关闭支付开关，保留幂等记录并对账",
+      "Webhook 重放或签名失败：拒绝并记录来源，不进入业务写入",
+      "会话撤销不生效：阻断发布，先修令牌/会话存储"
     ],
     rollback: [
       "应用版本回滚到上一镜像/构建",
       "数据库按迁移降级脚本回退；无法降级时从已验证备份恢复",
-      "支付状态单独核对，避免回滚造成重复扣款"
+      "支付状态单独核对，避免回滚造成重复扣款",
+      "回滚后撤销受影响会话与 API token，保留审计记录"
     ],
     optionalBranches: [
       "payments Profile 仅在真实订阅/支付需求出现时启用",
-      "ai-application / rag / agent 作为叠加能力，不改变租户边界义务"
+      "ai-application / rag / agent 作为叠加能力，不改变租户边界义务",
+      "灰度/feature flag 仅改变发布节奏，不得绕过租户隔离与审计"
     ],
     keySkills: ["specification", "architecture", "verification", "code-review", "systematic-debugging"]
   }),
@@ -372,7 +380,9 @@ export const ROUTE_SOPS = Object.freeze({
       "完成业务方需求访谈并记录角色、流程、审批与例外",
       "确认原系统清单、集成协议、数据归属与停机窗口",
       "确认企业身份源：SSO（OIDC/SAML）、RBAC 或本地目录",
-      "确认 UAT 参与人、签收标准与运行交接责任人"
+      "确认 UAT 参与人、签收标准与运行交接责任人",
+      "明确 OIDC 或 SAML 的选型、SCIM 开通/停用流程与账号归属",
+      "确认职责分离、字段级授权、审批状态机与审计 WORM 要求"
     ],
     platformConstraints: [
       "SSO 联调依赖企业 IdP 配置与管理员授权，本地无法替代",
@@ -389,22 +399,27 @@ export const ROUTE_SOPS = Object.freeze({
       "业务流程与角色权限矩阵",
       "SSO / RBAC 集成说明与最小权限映射",
       "数据迁移方案与回滚 Runbook",
-      "审计日志、UAT 脚本与运行交接手册"
+      "审计日志、UAT 脚本与运行交接手册",
+      "数据分类、双跑/切换方案与供应商退出/数据导出说明"
     ],
     gates: [
       "RBAC 越权负例通过，权限拒绝证据可查",
       "企业集成契约测试通过，超时与重试幂等可验证",
-      "业务方完成 UAT 签收，运行交接人确认"
+      "业务方完成 UAT 签收，运行交接人确认",
+      "职责分离与字段级授权负例通过；审计日志不可篡改",
+      "OIDC/SAML/SCIM 联调回执与电子签收记录可查"
     ],
     failureHandling: [
       "权限模型错误：暂停上线，按最小权限矩阵逐项复核",
       "集成超时或重复回调：启用幂等与重试，记录外部系统回执",
-      "UAT 未通过：回到发现/规格阶段修正，不以培训掩盖功能缺口"
+      "UAT 未通过：回到发现/规格阶段修正，不以培训掩盖功能缺口",
+      "SCIM 停用延迟或账号残留：阻断切换，先修同步任务与审计"
     ],
     rollback: [
       "保留旧系统只读或双跑窗口，按切换 Runbook 回退",
       "数据迁移按批次与校验和回退，禁止无备份覆盖",
-      "权限与审计配置回滚需企业管理员共同确认"
+      "权限与审计配置回滚需企业管理员共同确认",
+      "供应商退出时先导出可读数据并验证接收方，再撤销访问"
     ],
     optionalBranches: [
       "SSO 可作为首个纵向切片，但不得跳过本地角色负例",
@@ -419,12 +434,18 @@ export const ROUTE_SOPS = Object.freeze({
       "确认小程序 AppID、主体资质、类目与服务范围",
       "确认技术栈：原生、Taro、uni-app 或微信云开发，四选一",
       "确认登录方式、服务端会话与合法请求域名",
-      "确认隐私协议、用户授权项与数据最小化范围"
+      "确认隐私协议、用户授权项与数据最小化范围",
+      "确认 ICP 备案主体与小程序主体一致、公安备案与付费认证状态",
+      "确认《隐私保护指引》与实际隐私接口 1:1，且不默认勾选或强制绑定",
+      "确认 UGC 内容安全 API、类目资质、主包/分包体积与 iOS 虚拟支付限制"
     ],
     platformConstraints: [
       "平台账号资质、类目审核、合法域名配置和提审属于平台控制，本地代码测试不能替代",
       "微信登录与真机能力需要真实 AppID、开发者工具和真机环境",
-      "审核与发布回执只能由微信公众平台产生；没有回执不得声称已发布"
+      "审核与发布回执只能由微信公众平台产生；没有回执不得声称已发布",
+      "未完成 ICP 备案、公安备案或主体不一致时无法正式发布",
+      "隐私接口未在指引声明或未接 wx.requirePrivacyAuthorize 会被驳回",
+      "UGC 必须接内容安全 API 并做前后端双审；TLS 1.2+ 受信 CA 全链"
     ],
     preInstallChecks: [
       "确认 appid 外置，不把 AppSecret 写入客户端或仓库",
@@ -436,26 +457,34 @@ export const ROUTE_SOPS = Object.freeze({
       "小程序页面与登录/会话集成",
       "服务端 API 与数据模型",
       "合法域名、隐私与权限配置说明",
-      "体验版、提审、发布与运营迭代记录"
+      "体验版、提审、发布与运营迭代记录",
+      "隐私保护指引与接口映射表、内容安全审核记录、灰度发布记录"
     ],
     gates: [
       "真机完成登录与业务主路径，保留设备与版本记录",
       "弱网、冷启动与空态降级可复现",
-      "体验版配置与平台审核回执可查；未获回执保持 NOT_RUN"
+      "体验版配置与平台审核回执可查；未获回执保持 NOT_RUN",
+      "ICP 备案/公安备案/付费认证状态可查；主体与小程序一致",
+      "隐私弹窗与隐私接口负例通过；内容安全 API 前后端均有回执",
+      "主包体积、TLS 证书链与 iOS 虚拟支付限制已核验"
     ],
     failureHandling: [
       "真机与开发者工具行为不一致：以真机证据为准，记录基础库版本",
       "审核驳回：按平台原因修正后重新提审，不绕过类目与资质要求",
-      "登录失败：检查 AppID、域名与 session 交换，不把失败归因于用户"
+      "登录失败：检查 AppID、域名与 session 交换，不把失败归因于用户",
+      "隐私/备案驳回：按平台原因修正后重新提审，不绕过主体与类目要求",
+      "内容安全误杀或漏杀：保留样本与审核回执，调整规则后重新验证"
     ],
     rollback: [
       "回退到上一体验版或线上版本，保留版本号与变更记录",
       "服务端 API 保持向后兼容，必要时按版本开关降级",
-      "配置类变更保留变更前快照，由平台管理员执行回退"
+      "配置类变更保留变更前快照，由平台管理员执行回退",
+      "灰度发布命中异常时停止放量并回退体验版，保留版本与放量记录"
     ],
     optionalBranches: [
       "微信云开发可减少自建后端，但数据边界与迁移义务仍需说明",
-      "Taro/uni-app 叠加 web Profile，但真机验证仍是必需 Gate"
+      "Taro/uni-app 叠加 web Profile，但真机验证仍是必需 Gate",
+      "PIPL 数据最小化与境内存储按实际采集字段逐项核对，不因云开发而豁免"
     ],
     keySkills: ["specification", "architecture", "verification"]
   }),
@@ -466,12 +495,18 @@ export const ROUTE_SOPS = Object.freeze({
       "在 Flutter / React Native / 原生 Android / 原生 iOS 中明确选择一个主技术栈",
       "确认目标设备与最低系统版本矩阵",
       "确认签名、证书、包名/Bundle ID 与应用商店主体",
-      "确认设备权限、安全存储与离线恢复策略"
+      "确认设备权限、安全存储与离线恢复策略",
+      "确认 Android 目标 API 36（2026-08 起）与 16 KB page size 兼容",
+      "确认 iOS 使用 Xcode 26 / iOS 26 SDK（2026-04-28 起）与隐私清单",
+      "确认商店声明：Data Safety、隐私营养标签、ATT、AI 提供商同意与账号删除 URL"
     ],
     platformConstraints: [
       "签名证书、商店主体资质、隐私声明和审核属于平台控制，本地构建不能替代",
       "推送、支付、地图等第三方 SDK 需要各自账号与资质",
-      "真实设备安装、崩溃监控与商店发布回执必须由授权环境产生"
+      "真实设备安装、崩溃监控与商店发布回执必须由授权环境产生",
+      "Google Play 只接受 AAB 且需 upload/release key；Data Safety 必须覆盖三方 SDK",
+      "Apple 需隐私清单、营养标签、ATT 状态与 demo 账号一致",
+      "UGC 需审核与年龄分级；面向儿童时按 COPPA 取得可验证同意"
     ],
     preInstallChecks: [
       "确认只安装所选技术栈，不同时引入四套端工程",
@@ -483,22 +518,29 @@ export const ROUTE_SOPS = Object.freeze({
       "所选技术栈的工程骨架与导航/状态方案",
       "设备权限、安全存储与 API 集成",
       "离线恢复与冲突处理说明",
-      "签名构建、测试分发、商店审核与版本迭代记录"
+      "签名构建、测试分发、商店审核与版本迭代记录",
+      "商店声明包、隐私清单/Data Safety 映射、分阶段发布与强制更新策略"
     ],
     gates: [
       "目标设备/模拟器安装并完成黄金路径，保留构建版本",
       "断网重连与权限拒绝负例通过",
-      "签名构建与测试分发回执可查；商店审核未完成时保持 NOT_RUN"
+      "签名构建与测试分发回执可查；商店审核未完成时保持 NOT_RUN",
+      "Android API 36 / 16 KB / AAB 与 iOS Xcode 26 / 隐私清单检查通过",
+      "Data Safety 与营养标签覆盖三方 SDK；账号删除 URL 可访问",
+      "UGC/年龄分级/COPPA 与审核 demo 账号已核验"
     ],
     failureHandling: [
       "平台差异导致行为不一致：按目标平台分别记录，不用单一平台证据代替另一个平台",
       "签名或商店审核失败：修正配置后重新提交，不伪造发布回执",
-      "离线冲突：以服务端版本为准并保留用户操作记录"
+      "离线冲突：以服务端版本为准并保留用户操作记录",
+      "商店驳回：按原因修正声明、截图或 demo 账号后重新提交，不伪造回执",
+      "目标 API/SDK 不兼容：升级工具链或依赖，不带病提交"
     ],
     rollback: [
       "回退到上一签名构建与商店版本，保留 versionCode/build number",
       "服务端 API 保持向后兼容，必要时按客户端版本降级",
-      "OTA 更新失败时回退到内置包，不阻塞冷启动"
+      "OTA 更新失败时回退到内置包，不阻塞冷启动",
+      "分阶段发布命中崩溃/性能阈值时暂停放量并回退上一构建"
     ],
     optionalBranches: [
       "React Native/Flutter 的 web 能力不自动等同于移动端验收",
@@ -548,8 +590,7 @@ export const STAGES = Object.freeze([
     ["原始需求", "项目类型与 Tier", "现有系统/仓库状态", "授权与预算边界"],
     "项目简报 / Profile / 风险摘要",
     ["project-brief.md", "ENGINEERING_PROFILE.yaml"],
-    ["project-discovery"], [],
-    ["只读检查", "起草 Profile", "标记 UNKNOWN"],
+    ["project-discovery"], [],    ["只读检查", "起草 Profile", "标记 UNKNOWN"],
     "关键未知信息须标记 UNKNOWN；无授权范围不得继续",
     ["doc-update"], ["需求来源不明", "无授权范围", "目标与约束互相矛盾"], ["discovery", "architecture", "END"],
     { allowed: false, reason: "接入是所有路线的起点" }),
@@ -581,7 +622,7 @@ export const STAGES = Object.freeze([
     ["Spec 与 AC", "现有架构与依赖", "非功能约束"],
     "架构图 / API 契约 / ADR",
     ["adr/NNNN-*.md", "api-contract.yaml"],
-    ["architecture"], [],
+    ["architecture"], ["security-review"],
     ["列选项", "记录决策与失效条件", "标注回滚边界"],
     "安全、失败及回滚边界已明确；边界契约可验证",
     ["adr", "review"], ["关键依赖不可获得", "安全边界无法确定"], ["planning", "implementation"],
@@ -592,7 +633,7 @@ export const STAGES = Object.freeze([
     ["Spec 与架构", "现有测试与 CI", "团队/Agent 能力"],
     "Tracer Tickets / 依赖图",
     ["plans/*.md", "tickets.json"],
-    ["implementation-plan"], [],
+    ["implementation-plan"], ["agent-collaboration"],
     ["纵切", "按风险排序", "标注 blocked_by 与验证命令"],
     "首张任务卡可以由新会话独立执行；每张卡有真实验证命令",
     ["doc-update"], ["切片无法独立验证", "依赖关系不清"], ["implementation"],
@@ -603,7 +644,7 @@ export const STAGES = Object.freeze([
     ["Tracer Ticket", "项目本地规则", "已批准的权限范围"],
     "代码提交 / 单测 / 联调凭证",
     ["commit", "test-output.txt"],
-    [], ["systematic-debugging"],
+    ["implementation"], ["systematic-debugging"],
     ["最小变更", "先写失败测试", "真实运行", "记录证据"],
     "未授权操作不执行；失败可复现；不删除断言换取通过",
     ["test", "integration-probe"], ["需要未授权凭据", "连续两次修复未改变假设", "超出预算"], ["verification"],
@@ -614,7 +655,7 @@ export const STAGES = Object.freeze([
     ["实现结果", "Spec 与 AC", "任务类型的必需证据"],
     "测试结果 / 真机或集成凭证",
     ["evidence.json", "test-report.md"],
-    ["verification"], ["systematic-debugging"],
+    ["verification"], ["security-review", "systematic-debugging", "eval-engineering"],
     ["运行完整相关套件", "记录命令与环境", "区分代码检查/真实环境/消费者验收"],
     "UNKNOWN 不等于 PASS；无法运行的检查必须标 UNKNOWN",
     ["test", "eval", "integration-probe", "manual-probe", "receipt"], ["环境不可用", "测试不稳定", "缺少真实设备"], ["review", "release"],
@@ -625,7 +666,7 @@ export const STAGES = Object.freeze([
     ["实现 diff", "Spec 与 AC", "验证证据"],
     "PR / Review 结论",
     ["review.md", "pr-comment"],
-    ["code-review"], ["verification"],
+    ["code-review"], ["verification", "security-review"],
     ["对照 AC 与标准", "安全面检查", "给出明确结论"],
     "阻断项清零或明确暂停；建议不等于阻断",
     ["review"], ["存在未解决的安全阻断", "证据缺失"], ["release", "implementation"],
@@ -636,7 +677,7 @@ export const STAGES = Object.freeze([
     ["Review 结论", "发布检查单", "授权与回滚方案"],
     "版本记录 / 发布回执",
     ["release-receipt.md", "changelog.md"],
-    ["verification"], ["documentation-sync"],
+    ["release-engineering"], ["verification", "documentation-sync"],
     ["验证备份", "执行迁移", "发布并保存回执"],
     "必须得到相应授权和真实回执；无回执不得声称已发布",
     ["receipt", "review"], ["缺少授权", "备份未验证", "回滚不可用"], ["operation", "END"],
@@ -647,7 +688,7 @@ export const STAGES = Object.freeze([
     ["发布回执", "监控与日志", "用户反馈"],
     "监控 / 事件台账 / 用户反馈",
     ["ops-log.md", "incident-ledger.md"],
-    [], ["systematic-debugging", "documentation-sync"],
+    ["incident-response"], ["systematic-debugging", "documentation-sync"],
     ["观察指标", "记录事件", "区分服务在线与业务验收"],
     "服务在线不等于业务验收；异常必须进入台账",
     ["receipt", "manual-probe"], ["监控不可用", "无法访问真实用户反馈"], ["postmortem", "implementation"],
@@ -658,7 +699,7 @@ export const STAGES = Object.freeze([
     ["事件台账", "验证与发布证据", "失败模式"],
     "复盘 / 改进候选 / 复用证据",
     ["postmortem.md", "improvement-candidates.md"],
-    ["documentation-sync"], ["systematic-debugging"],
+    ["incident-response"], ["documentation-sync", "systematic-debugging"],
     ["分类失败模式", "提出最小修复", "标记复用证据"],
     "单次事件不能宣称 Skill 稳定；改进候选不得自动晋级",
     ["doc-update"], ["证据不足", "无法区分偶发与系统性"], ["END", "planning"],
@@ -754,7 +795,7 @@ const SKILL_TESTS = Object.freeze([
 const K = (id, name, description, stages, dependencies = []) => ({
   id, name, description, stages,
   status: "CANDIDATE", installed: false,
-  version: "0.2.0", bundle: "skills/" + id, selfContained: true,
+  version: "0.4.0", bundle: "skills/" + id, selfContained: true,
   owner: OWNER.repository,
   source: {
     kind: "SEMANTIC_REWRITE_FROM_FROZEN_SNAPSHOT",
@@ -796,7 +837,25 @@ export const SKILLS = Object.freeze([
     ["review"], ["verification"]),
   K("documentation-sync", "文档同步",
     "让文档与真实系统一致，并识别已经漂移的声明",
-    ["release", "operation", "postmortem"])
+    ["release", "operation", "postmortem"]),
+  K("implementation", "实现与增量交付",
+    "用失败测试驱动最小实现，保持每步可运行并留下证据",
+    ["implementation", "verification"], ["implementation-plan"]),
+  K("security-review", "安全审查",
+    "从信任边界、认证授权、密钥与依赖到注入负例做可阻断的安全审查",
+    ["architecture", "verification", "review"], ["architecture"]),
+  K("release-engineering", "发布工程",
+    "以不可变产物、渐进发布、可验证回滚和发布回执完成交付",
+    ["release"], ["verification"]),
+  K("incident-response", "事故响应与复盘",
+    "用 SLO、告警、runbook、事故角色与 blameless 复盘恢复服务并沉淀改进",
+    ["operation", "postmortem"], ["systematic-debugging"]),
+  K("eval-engineering", "评测工程",
+    "为 AI/RAG/Agent 建立分层评测、数据集版本、阈值与红队证据",
+    ["specification", "verification", "operation"], ["verification"]),
+  K("agent-collaboration", "Agent 协作与委派",
+    "把 plan mode、subagent、worktree、写者审者分离与人工 Gate 装配成可执行委派契约",
+    ["planning", "implementation", "review"], ["implementation-plan"])
 ]);
 
 export function skillMetadata(skill) {

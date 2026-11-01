@@ -5,8 +5,8 @@ This public repository owns the **website, public engineering methodology/adapta
 ## Required workflow
 
 - Read README.md, docs/ARCHITECTURE.md, docs/METHOD.md, src/catalog.mjs, src/engine.mjs, tests before changes. For AI-native methodology or learning-content changes also read docs/methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md, docs/methods/UPSTREAM-SOURCES.md, docs/methods/PROJECT-PILOT.md and docs/learning/START-HERE.md. For Agent orchestration changes also read docs/ORCHESTRATION.md and src/orchestration.mjs.
-- For a catalog update, confirm the authoritative Engineering OS commit and registry via authorized access. Do NOT copy private normative documents or SKILL.md bodies.
-- Preserve 11 unique stages, 8 candidate skills, and the four original routes unless an authorized source change justifies migration.
+- For a catalog update, treat this repository's `src/catalog.mjs` as authoritative and validate with `validateCatalog()` plus `npm run verify`; `PROVENANCE` is historical provenance only. Do NOT copy private normative documents or SKILL.md bodies.
+- Preserve 11 unique stages, 14 candidate skills, and the four original routes unless an authorized source change justifies migration.
 - Compatibility views (8 macro stages, 18 activities, delivery gates) must map back to the 11 canonical stages; never introduce a second lifecycle or state machine.
 - External orchestration providers are execution environments, not lifecycles. They never receive push, deploy, merge or PR authority. External receipts stay UNTRUSTED and cannot promote evidence to VERIFIED.
 - Do not vendor third-party provider source, add an executable dependency, install a provider or log into an account without explicit owner approval and a licence review.

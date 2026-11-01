@@ -57,6 +57,16 @@ export const GIT_WORKFLOW = Object.freeze({
     "worktree 不绕过评审：仍通过 PR 合入。"
   ],
 
+  collaboration: [
+    "Plan mode first：先写计划与 AC，人类批准范围、命令与预算，再委派执行；不得用子代理绕过未决决策。",
+    "Subagent 契约：每个子任务必须带 ticket_id、base_sha、allowed_files、allowed_commands、停止条件、证据路径与 reviewer。",
+    "Agent teams：共享任务表与点对点消息，但写入仍必须使用独立 worktree；平台不自动隔离文件。",
+    "Batch/parallel workers：一个 worker 一个 worktree、一个 PR；不得把多个 worker 合入一个 PR。",
+    "写者不审自己：高风险变更必须由独立 reviewer 复核；文件所有权不相交。",
+    "Handoff 必须带 base SHA、分支/worktree、运行过的命令与结果、未决问题与 UNKNOWN。",
+    "人工 Gate：合并、发布、生产访问、权限变更、超预算、外部沟通、破坏性动作必须由人类批准。"
+  ],
+
   commits: [
     "使用 Conventional Commits，祈使句，主题 ≤72 字符：<type>(<scope>): <summary>。",
     "type 使用 feat / fix / docs / test / refactor / chore / ci / perf；scope 用小写模块或路径名。",
@@ -130,7 +140,7 @@ export const GIT_WORKFLOW = Object.freeze({
 
 export function validateGitWorkflow() {
   const errors = [];
-  for (const key of ["baseSha", "branches", "worktrees", "commits", "pullRequest", "review", "agentOperating", "prohibitions", "merge"]) {
+  for (const key of ["baseSha", "branches", "worktrees", "collaboration", "commits", "pullRequest", "review", "agentOperating", "prohibitions", "merge"]) {
     if (!Array.isArray(GIT_WORKFLOW[key]) || !GIT_WORKFLOW[key].length) errors.push("git workflow missing " + key);
   }
   if (!GIT_WORKFLOW.baseSha.some(x => x.includes("base SHA"))) errors.push("git workflow must name base SHA");

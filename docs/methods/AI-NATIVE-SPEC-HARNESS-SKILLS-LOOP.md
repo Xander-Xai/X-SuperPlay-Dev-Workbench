@@ -54,7 +54,7 @@ Full-stack demonstration → independent review → authorized merge/release →
 | 需求分流与判断 | `src/catalog.mjs`, `src/routing.mjs`, `docs/PLAYBOOK.md` | 选择 SaaS / enterprise / mini-program / mobile、new/existing、task、Tier、AI/RAG/Agent | 已有 |
 | Discovery、Spec、AC | `skills/project-discovery`, `skills/specification`, `src/starter.mjs` | Scope / Non-goals、Given–When–Then、权限负例及证据计划 | 候选 Skill / 草案 |
 | Tracer Tickets / 架构 | `skills/implementation-plan`, `skills/architecture`, `src/workspace.mjs` | 每张卡竖切 UI→API→data、blocked_by、验证/预算/回退 | 有草案生成 |
-| Skills 选择与安装 | `src/install-contract.mjs`, `tools/skill-kit.mjs`, `docs/SKILL_KIT.md` | 阶段路由、依赖闭包、dry-run、受控安装、锁/回滚 | 已有；8 个自有候选 Skill |
+| Skills 选择与安装 | `src/install-contract.mjs`, `tools/skill-kit.mjs`, `docs/SKILL_KIT.md` | 阶段路由、依赖闭包、dry-run、受控安装、锁/回滚 | 已有；14 个自有候选 Skill |
 | Harness 预备 | `tools/project-probe.mjs`, `src/handoff.mjs`, `docs/AGENT_SKILL_LOAD.md` | HEAD/dirty、指令、最小上下文、工具/权限、真实测试命令 | 部分实现；无独立 Harness 守护进程 |
 | Bounded Loop | `src/handoff.mjs`, `src/workspace.mjs`, `docs/PLAYBOOK.md` | 单任务、每假设最多两次无增量修复、双轴审查、STOP | 文档/模板约束；无自动 Loop Runner |
 | 验证与证据身份 | `src/evidence.mjs`, `src/evidence-identity.mjs` | VERIFIED/UNKNOWN 等严格区分、项目/构建身份 | 模型已实现；未接入全部真实 CI/发布链 |
@@ -84,7 +84,7 @@ Full-stack demonstration → independent review → authorized merge/release →
 按真实任务挑选最少数量的 Workbench 自有候选 Skills：
 `project-discovery → specification → implementation-plan → verification → code-review`，按需叠加 `architecture`、`systematic-debugging`、`documentation-sync`。
 
-可研究 Matt Pocock 的 `grill-with-docs → to-spec → to-tickets → implement / tdd → code-review`，但**这些名称不能等同于本仓库的 8 个自有候选 Skills**。先查看 [固定版本来源](UPSTREAM-SOURCES.md)，验证许可证、实现方式、可用 Agent 和供应链风险；安装/执行第三方代码需明确授权。`skill-kit` 的安装回执仅证明受管文件存在，Agent 实际加载须独立探针证明。
+可研究 Matt Pocock 的 `grill-with-docs → to-spec → to-tickets → implement / tdd → code-review`，但**这些名称不能等同于本仓库的 14 个自有候选 Skills**。先查看 [固定版本来源](UPSTREAM-SOURCES.md)，验证许可证、实现方式、可用 Agent 和供应链风险；安装/执行第三方代码需明确授权。`skill-kit` 的安装回执仅证明受管文件存在，Agent 实际加载须独立探针证明。
 
 ### E. Harness Contract（必须在目标产品仓核对）
 
@@ -143,6 +143,15 @@ node tools/xeng.mjs playbook agent
 ```
 
 **注意**：`method` 只打印仓库中的本地文档；`assemble` 默认为 dry-run；以上命令不运行外部 Skill、不启动 Agent 自动开发。
+
+## 4.5 2026-11 对齐补充
+
+- **`intent.md` 先于 `spec.md`**：问题、预期结果、影响面、约束、开放问题。`spec.md` 与 intent 冲突时先更新 intent。
+- **Advisory skill vs deterministic hook**：Skill 让违规变少，hook 让违规近乎不可能。能自动阻断的检查（密钥、禁止路径、必需命令）不要只写在文档里；不能自动化的判断才留给 Skill。
+- **plan mode 默认**：先写计划与 AC，人类批准范围、命令与预算，再执行。
+- **eval-in-CI**：用 20–50 个真实任务做回归，prompt/model 变更必须附前后评测数字。
+- **人工生产门**：合并、发布、生产访问、权限、花费、破坏性动作必须由人类批准；agent 不能自批。
+- **六阶段只是视图**：Plan/Design/Build/Test/Deploy/Maintain 映射到 11 阶段，见 [METHOD.md](../METHOD.md)。
 
 ## 5. 范式真实落地的证据门槛
 

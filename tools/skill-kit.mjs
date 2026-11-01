@@ -118,7 +118,7 @@ export function readSkillBundle(id, root = join(ROOT, "skills")) {
   if (!text.startsWith("---\n")) throw new Error(id + ": SKILL.md must start with frontmatter");
   if (!text.includes("\nname: " + id + "\n")) throw new Error(id + ": frontmatter name mismatch");
   if (!/\ndescription:\s*\S/.test(text)) throw new Error(id + ": frontmatter lacks description");
-  if (!text.includes("self_contained: true")) throw new Error(id + ": bundle is not declared self_contained");
+  if (!/^\s*self_contained:\s*true\s*$/m.test(text)) throw new Error(id + ": bundle is not declared self_contained");
   const warnings = [];
   for (const f of files) {
     const body = f.data.toString("utf8");

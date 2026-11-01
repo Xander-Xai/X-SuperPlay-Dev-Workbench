@@ -1,31 +1,69 @@
 ---
 name: documentation-sync
-description: Make documentation match reality after a change, and detect where docs have already drifted. Use after any implementation change, and proactively when staleness is suspected.
-status: CANDIDATE
-version: 0.2.0
+description: Use when code, configuration, APIs, commands, or ownership changed and current-truth documentation may have drifted. Covers last_verified dates, dead links/commands, ADR indexes, and handoff.
 license: UNLICENSED-PROPRIETARY
-provenance: Xander-Xai/X-SuperPlay-AI-Engineering-OS@8553124f238ab463d4a50debad34e871ef8de060
-self_contained: true
+metadata:
+  version: "0.4.0"
+  status: CANDIDATE
+  owner: Xander-Xai/X-SuperPlay-Dev-Workbench
+  provenance: Xander-Xai/X-SuperPlay-AI-Engineering-OS@8553124f238ab463d4a50debad34e871ef8de060
+  self_contained: true
+  lifecycle_stage: release
+  supported_agents: claude-code,codex,opencode
+  prerequisites: none
+  dependencies: none
+  install_method: node tools/skill-kit.mjs install --target <project> --agent <agent> --skills documentation-sync
+  tests: static frontmatter, catalog mapping, install dry-run, agent discovery, real-project effect
+  upstream_equivalents: documentation-and-adrs,writing-guidelines
 ---
 
 # Documentation Sync
 
-## Steps
+## Core principle
 
-1. **List what the change invalidated.** README claims, AGENTS/CLAUDE commands, current-state facts, config docs, API docs, CHANGELOG. Change first, then this list.
-2. **Update current-truth surfaces in the same change.** The file that answers "what is true now" gets the new fact and a fresh `last_verified`.
-3. **Verify commands.** Every command in the docs you touched must be runnable. Run the cheap ones; flag the expensive ones honestly.
-4. **Check counts.** Replace hardcoded numbers ("37 tests", "12 endpoints") with links to generators or remove them.
-5. **Preserve history.** Never edit dated reports to make them current. Write a new dated report and supersede-link the old one.
-6. **Run mechanical checks.** Link check, dead paths, env drift, and the project's own doctor command.
-7. **Register the document** if the project uses a document registry.
+**Documentation is a claim about current behavior, not a historical narrative.** If it is not verified, date it or remove it.
 
-## Rules
+## What to sync
 
-- Docs in a later PR than the code create a drift window. Same-PR docs for behavior changes.
-- If docs say X and code does Y, decide which is newer intent and fix one. Never leave both.
-- Generated docs are regenerated, never hand-edited.
+- README commands and prerequisites;
+- configuration and environment variable names;
+- API contracts and versioning;
+- architecture decision index and superseded links;
+- runbooks and rollback steps;
+- ownership and contact paths;
+- current-state facts and `last_verified`.
 
-## Output
+## Procedure
 
-A docs diff in the same PR, `last_verified` touched, and the mechanical check output noted in the evidence block. Registry format: `references/doc-registry.md`.
+1. **Find the claims.** Grep for commands, paths, versions, and status statements.
+2. **Run the commands.** A documented command that fails is a defect.
+3. **Check the links.** Relative links must resolve; external links are best-effort.
+4. **Update or date.** If verified, set `last_verified: YYYY-MM-DD`. If unverified, say so or delete the claim.
+5. **Update the ADR index.** New ADRs linked; superseded ADRs marked.
+6. **Remove stale instructions.** Do not leave a "deprecated" path that still looks runnable.
+7. **Hand off.** A reader should be able to reproduce the current state without the author.
+
+## Boundaries
+
+- `documentation-sync` owns drift, links, commands, and current-truth dates.
+- Postmortems belong to `incident-response`.
+- Architecture decisions belong to `architecture`.
+- Do not edit accepted ADRs; supersede them.
+
+## Anti-rationalization
+
+| Excuse | Reality |
+|---|---|
+| "The docs are close enough" | Close enough still sends the next agent down a dead path. |
+| "We'll update docs in the next PR" | The next PR rarely comes. Update in the same change. |
+| "It's just a comment" | Comments and docs are claims; stale claims mislead. |
+| "The link works for me" | Check it in the repository, not your local cache. |
+| "Nobody reads this" | Future agents and reviewers do. And they act on it. |
+
+## Evidence
+
+- list of claims checked;
+- commands run and results;
+- links checked;
+- files updated with dates;
+- remaining UNKNOWNs.

@@ -9,6 +9,7 @@ import { validatePlaybooks } from "./playbooks.mjs";
 import { validateGitWorkflow } from "./git-workflow.mjs";
 import { validateDelivery } from "./delivery.mjs";
 import { validateOrchestration } from "./orchestration.mjs";
+import { validateCollaboration } from "./collaboration.mjs";
 
 const hasId = (arr, id) => arr.some(x => x.id === id);
 const clean = (value, max) => String(value ?? "").replace(/\0/g, "").trim().slice(0, max);
@@ -17,6 +18,13 @@ export function slugify(value) {
   return String(value || "").toLowerCase().normalize("NFKC")
     .replace(/[^a-z0-9一-鿿 -]/g, "").trim()
     .replace(/\s+/g, "-").replace(/-+/g, "-").slice(0, 64) || "new-project";
+}
+
+export function clampStageIndex(count, index) {
+  const total = Number.isFinite(count) ? Math.max(0, Math.floor(count)) : 0;
+  if (!total) return 0;
+  const current = Number.isFinite(index) ? Math.floor(index) : 0;
+  return Math.min(Math.max(current, 0), total - 1);
 }
 
 function stackFor(type, stack) {
@@ -251,6 +259,7 @@ export function validateCatalog() {
   const stageSet = new Set(STAGES.map(x => x.id));
   if (stageSet.size !== 11) errors.push("lifecycle must contain 11 unique stages");
   for (const stage of STAGES) {
+    if (!stage.requiredSkills.length) errors.push("stage " + stage.id + " has no required skill");
     if (!stage.requiredSkills.every(s => SKILLS.some(k => k.id === s)))
       errors.push("unknown required skill in stage " + stage.id);
     if (!stage.recommendedSkills.every(s => SKILLS.some(k => k.id === s)))
@@ -268,7 +277,7 @@ export function validateCatalog() {
   }
   if (TASKS.length !== 13) errors.push("task router must contain 13 task types");
 
-  if (new Set(SKILLS.map(x => x.id)).size !== 8) errors.push("skills must contain 8 unique candidates");
+  if (new Set(SKILLS.map(x => x.id)).size !== 14) errors.push("skills must contain 14 unique candidates");
   for (const skill of SKILLS) {
     if (!skill.stages.every(x => stageSet.has(x))) errors.push("unknown stage in skill " + skill.id);
     if (!skill.dependencies.every(d => SKILLS.some(k => k.id === d))) errors.push("unknown dependency in skill " + skill.id);
@@ -296,6 +305,7 @@ export function validateCatalog() {
   errors.push(...validateGitWorkflow());
   errors.push(...validateDelivery());
   errors.push(...validateOrchestration());
+  errors.push(...validateCollaboration());
   return errors;
 }
 

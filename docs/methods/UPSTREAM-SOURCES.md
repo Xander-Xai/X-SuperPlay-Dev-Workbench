@@ -8,6 +8,8 @@
 | **OpenAI Harness Engineering** | [2026-02-11 官方工程文章](https://openai.com/index/harness-engineering/)（网页，没有 Git SHA） | 项目可读上下文、可执行约束、工具权限、测试反馈与持续修复 | 官方 Harness 代码包或生产级保证 |
 | **Anthropic Ralph Wiggum** | [claude-code 插件 @ `2eff7a8d21c80be48904f62ebdea36d945d7b504`](https://github.com/anthropics/claude-code/tree/2eff7a8d21c80be48904f62ebdea36d945d7b504/plugins/ralph-wiggum) | 有界、文件/状态驱动、证据反馈的迭代原则 | 插件已安装、允许无限循环、允许绕过审批 |
 | **本仓库旧工程方法** | 旧工程仓原方法 `X-SuperPlay-AI-Engineering-OS@bbd5910:03-ai-coding/ai-native-spec-harness-loop.md` · 适配 SOP `…:03-ai-coding/upstream-method-adoption.md` · 源清单 `…:09-reference/ai-native-upstream-source-manifest.md`（旧仓已退役，按提交与路径溯源，不提供在线链接） | Workbench 维护新的自有叙述、路由映射与 CLI 入口 | 旧仓仍是实时依赖或新方法已经 Dogfood |
+| **Anthropic AI-Native SDLC Playbook** | [2026-08-21 官方文章](https://claude.com/blog/the-ai-native-sdlc-playbook)（网页，没有 Git SHA） | 六阶段交付视图、`intent.md` 产物链、plan mode、skills/hooks 分层、eval-in-CI、人工生产门 | 官方产品已采用本仓、自动合并或自动发布 |
+| **Agent Skills 开放规范** | [agentskills.io/specification](https://agentskills.io/specification)（2026-11-01 观测，无 Git SHA） | frontmatter 顶层 `name`/`description`/`license`，扩展字段进 `metadata`；三级渐进披露 | 本仓 Skill 已被所有 host 自动发现或验证 |
 
 ## Matt Pocock 原始 Skills（只读参考）
 
@@ -18,9 +20,9 @@
 | 澄清需求 | [grill-with-docs](https://github.com/mattpocock/skills/blob/5beb35b040e3de97e54fa9e386d7e42d15c295c2/skills/engineering/grill-with-docs/SKILL.md) | `skills/project-discovery` | 语义借鉴，非功能等同 |
 | 输出规格 | [to-spec](https://github.com/mattpocock/skills/blob/5beb35b040e3de97e54fa9e386d7e42d15c295c2/skills/engineering/to-spec/SKILL.md) | `skills/specification` | 语义借鉴，非功能等同 |
 | 拆分可追踪任务 | [to-tickets](https://github.com/mattpocock/skills/blob/5beb35b040e3de97e54fa9e386d7e42d15c295c2/skills/engineering/to-tickets/SKILL.md) · [设计说明](https://github.com/mattpocock/skills/blob/5beb35b040e3de97e54fa9e386d7e42d15c295c2/docs/engineering/to-tickets.md) | `skills/implementation-plan` + workspace tickets | 语义借鉴，非功能等同 |
-| 执行任务 | [implement](https://github.com/mattpocock/skills/blob/5beb35b040e3de97e54fa9e386d7e42d15c295c2/skills/engineering/implement/SKILL.md) · [implement-spec](https://github.com/mattpocock/skills/blob/5beb35b040e3de97e54fa9e386d7e42d15c295c2/skills/engineering/implement-spec/SKILL.md) | Workbench `implementation` 阶段 + 目标项目 Agent | 无对应的原版 Skill 注册 |
-| 测试驱动 | [tdd](https://github.com/mattpocock/skills/blob/5beb35b040e3de97e54fa9e386d7e42d15c295c2/skills/engineering/tdd/SKILL.md) | `skills/verification` + 目标项目测试框架 | 不声称 TDD Skill 已安装 |
-| 代码评审 | [code-review](https://github.com/mattpocock/skills/blob/5beb35b040e3de97e54fa9e386d7e42d15c295c2/skills/engineering/code-review/SKILL.md) | `skills/code-review` + Spec/Standards 双轴 | 语义借鉴，非功能等同 |
+| 执行任务 | [implement](https://github.com/mattpocock/skills/blob/5beb35b040e3de97e54fa9e386d7e42d15c295c2/skills/engineering/implement/SKILL.md) · [implement-spec](https://github.com/mattpocock/skills/blob/5beb35b040e3de97e54fa9e386d7e42d15c295c2/skills/engineering/implement-spec/SKILL.md) | `skills/implementation` | 语义借鉴，非功能等同 |
+| 测试驱动 | [tdd](https://github.com/mattpocock/skills/blob/5beb35b040e3de97e54fa9e386d7e42d15c295c2/skills/engineering/tdd/SKILL.md) | `skills/implementation` + `skills/verification` | 语义借鉴，非功能等同 |
+| 代码评审 | [code-review](https://github.com/mattpocock/skills/blob/5beb35b040e3de97e54fa9e386d7e42d15c295c2/skills/engineering/code-review/SKILL.md) | `skills/code-review` + `skills/security-review` | 语义借鉴，非功能等同 |
 
 ## Ralph Wiggum（研究插件结构，不启用无限循环）
 

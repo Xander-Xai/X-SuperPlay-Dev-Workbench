@@ -22,7 +22,7 @@ test("help and version are offline and non-destructive",()=>{
   assert.match(help.stdout,/xeng init/);
   const version=cli("version");
   assert.equal(version.status,0);
-  assert.match(version.stdout,/0\.3\.0/);
+  assert.match(version.stdout,/0\.4\.0/);
 });
 
 test("init --dry-run writes nothing",()=>withTemp(dir=>{
@@ -132,6 +132,16 @@ test("task prints the route for a task type",()=>{
   assert.match(r.stdout,/task=bug/);
   assert.match(r.stdout,/discovery/);
   assert.match(r.stdout,/skipped:/);
+});
+
+test("task --json returns a machine-readable route",()=>{
+  const r=cli("task","bug","--type=saas","--tier=B","--mode=new","--json");
+  assert.equal(r.status,0,r.stderr);
+  const route=JSON.parse(r.stdout);
+  assert.equal(route.task.id,"bug");
+  assert.equal(route.type.id,"saas");
+  assert.deepEqual(route.stages.map(s=>s.id),["discovery","implementation","verification","review"]);
+  assert.ok(Array.isArray(route.skipped));
 });
 
 test("unknown command exits non-zero",()=>{

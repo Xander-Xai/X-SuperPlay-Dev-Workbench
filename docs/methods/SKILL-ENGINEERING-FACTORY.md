@@ -1,6 +1,6 @@
 # Skill Engineering Factory：Skills 底层、生成、评测与晋级
 
-> **方法文档 / 非已实现的自动 Skill 生成器**。这份规范明确“写一个 `SKILL.md`”与“建成可复用、可信的 Coding Skill”之间的区别，提供 Code Expert Skill 示例及可执行验收思路。参考 [Matt Pocock Skills 固定来源](UPSTREAM-SOURCES.md)，**不复制**第三方 Skill 正文；本仓库已有的 8 个 `CANDIDATE` Skills 由 `src/catalog.mjs` 管理，`tools/skill-kit.mjs` 负责受控安装，而不是本文件自动注册新 Skill。
+> **方法文档 / 非已实现的自动 Skill 生成器**。这份规范明确“写一个 `SKILL.md`”与“建成可复用、可信的 Coding Skill”之间的区别，提供 Code Expert Skill 示例及可执行验收思路。参考 [Matt Pocock Skills 固定来源](UPSTREAM-SOURCES.md)，**不复制**第三方 Skill 正文；本仓库已有的 14 个 `CANDIDATE` Skills 由 `src/catalog.mjs` 管理，`tools/skill-kit.mjs` 负责受控安装，而不是本文件自动注册新 Skill。
 
 ## 1. Skill / Prompt / Agent / Harness 的层级
 
@@ -122,7 +122,7 @@ node tools/skill-kit.mjs plan --target ../your-project --agent codex --skills co
 node tools/xeng.mjs agent-check --target ../your-project --agent codex
 ```
 
-- **当前可用功能**：8 个受管候选 Skills 的元数据与安装机制、项目级 dry-run 与 SHA 回执；既有 Skill 的具体运行路径参见 [docs/SKILL_KIT](../SKILL_KIT.md) 与 [Agent load](../AGENT_SKILL_LOAD.md)。
+- **当前可用功能**：14 个受管候选 Skills 的元数据与安装机制、项目级 dry-run 与 SHA 回执；既有 Skill 的具体运行路径参见 [docs/SKILL_KIT](../SKILL_KIT.md) 与 [Agent load](../AGENT_SKILL_LOAD.md)。
 - **明确未实现**：Code Expert Skill 自动生成器、从自然语言自动注册 Skill、自动跨项目评测/晋级、第三方 Matt Pocock Skills 直接安装和运行证明。以上需另立设计与安全 Gate；文档无法充当执行回执。
 - **License**：仓库仍为 `UNLICENSED-PROPRIETARY`；示例中 `OWNER_TO_DECIDE` 是待定占位，未获得许可证决定前不得发布该示例为正式可再分发 Skill。
 

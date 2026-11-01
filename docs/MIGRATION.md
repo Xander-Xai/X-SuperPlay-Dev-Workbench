@@ -26,7 +26,7 @@ Workbench 现在是工程运行时的所有者。旧 Engineering OS 只保留为
 
 - 不复制私有 SKILL.md 正文；8 个 Skill 以公开、自包含的 bundle 重写。
 - 不复制私有治理文件、客户证据、内部路径或凭证。
-- 生命周期保留 11 个唯一阶段；任务路由 13 种；Profiles 17 个（13 个基础 + 4 个叠加：AI 应用、RAG、Agent、支付）；Skills 8 个候选；4 条路线各有独立 SOP。
+- 生命周期保留 11 个唯一阶段；任务路由 13 种；Profiles 17 个（13 个基础 + 4 个叠加：AI 应用、RAG、Agent、支付）；Skills 14 个候选；4 条路线各有独立 SOP。
 - 所有导出证据保持 `NOT_RUN`。
 
 ### 2026-10-31 最后一轮工程内容迁移
@@ -63,7 +63,7 @@ Workbench 现在是工程运行时的所有者。旧 Engineering OS 只保留为
 | 任务路由 | `03-ai-coding/task-router.yaml` | `TASKS` + `src/routing.mjs` | 13 种任务，映射到 11 阶段 |
 | Profiles | `registry/profiles.yaml` + `04-profiles/*` | `PROFILES` | 17 个（13 基础 + 4 叠加） |
 | 路线 SOP | 分散在旧模板与检查单 | `ROUTE_SOPS` + `src/workspace.mjs#routeSopMarkdown` | 4 条路线的前置、平台限制、负例、Gate、失败处理与回退 |
-| Skills 注册表 | `registry/skills.yaml` | `SKILLS` | 8 个候选，完整元数据，`installed=false` |
+| Skills 注册表 | `registry/skills.yaml` | `SKILLS` | 迁移时 8 个，v0.4 扩展至 14 个候选；完整元数据，`installed=false` |
 | 标准 | `registry/standards.yaml` | Profile 义务字段 + Git/PR 工作流 | 10 类标准语义并入 required/recommended；Git 细则结构化 |
 | 模板 | `06-templates/*` | `src/starter.mjs` / `src/workspace.mjs` | Spec、Tickets、ADR、验证、发布、交接、路线 SOP、实施计划、复盘、外部需求、PR、Git、Playbook、资产包 |
 | xeng init | `tools/xeng.py` | `tools/xeng.mjs init` | Node 实现，默认 dry-run，不覆盖 |

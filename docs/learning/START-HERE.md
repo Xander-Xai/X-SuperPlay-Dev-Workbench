@@ -44,7 +44,7 @@ README
 ## 这份学习体系不覆盖什么
 
 - 不证明任何真实项目、设备、部署或客户验收。`REAL_PROJECT_DOGFOOD = NOT_RUN / BLOCKED`。
-- 不把本地 8 个候选 Skill 写成已验证。它们全部是 `CANDIDATE`。
+- 不把本地 14 个候选 Skill 写成已验证。它们全部是 `CANDIDATE`。
 - 不把外部 Skill 仓库整体等同于“其中每个 Skill 都可用”。
 - 不把文档完成写成运行时实现完成。`RUNTIME_IMPLEMENTATION` 本轮保持不变。
 

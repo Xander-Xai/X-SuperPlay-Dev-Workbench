@@ -46,9 +46,9 @@ npm run dev
 | 入口 | 作用 |
 |---|---|
 | **项目启动器** | 项目类型 → 新/旧项目 → 任务类型 → Tier / 技术栈 / 扩展 → 生成路线、阶段 Gate、路线 SOP、导出 |
-| **工作流浏览器** | 11 个唯一阶段、4 条路线 SOP、13 种任务路由、17 个 Profile、Git 工作流、L0–L6 成熟度、A/B/C/D 等级义务 |
-| **Skills 能力库** | 8 个自包含候选 Skill、标准元数据、依赖闭包、按 Agent 生成 dry-run 安装命令 |
-| **项目工作区** | 生成 16 份可审查草案：Manifest、ENGINEERING_PROFILE、Spec/Tickets、ADR、验证计划、发布清单、Agent 交接、路线 SOP、Review 记录、实施计划、复盘、外部需求简报、PR 模板、Git 工作流、工程 Playbook、完整资产包 |
+| **工作流浏览器** | 11 个唯一阶段、4 条路线 SOP、13 种任务路由、17 个 Profile、Git 工作流、Agent 编排（只读）、L0–L6 成熟度、A/B/C/D 等级义务 |
+| **Skills 能力库** | 14 个自包含候选 Skill、标准元数据、依赖闭包、按 Agent 生成 dry-run 安装命令 |
+| **项目工作区** | 生成 18 份可审查草案：Manifest、ENGINEERING_PROFILE、Intent、Spec/Tickets、ADR、验证计划、发布清单、Agent 交接、路线 SOP、Review 记录、实施计划、委派计划、复盘、外部需求简报、PR 模板、Git 工作流、工程 Playbook、完整资产包 |
 | **工程 Playbook** | 3 份 Profile 附属操作手册：AI 应用日常研发、企业 RAG 从零构建、企业 Agent 从零开发 |
 | **证据与改进** | 证据状态机、本地报告导入（不上传）、阶段摘要与改进闭环 |
 
@@ -56,10 +56,10 @@ npm run dev
 
 4 条交付路线复用同一套 11 阶段生命周期，各自增加前置条件、平台不可替代环节、必须覆盖的负例、Gate、失败处理与回退：
 
-- **SaaS**：租户隔离、认证会话、迁移升降级、订阅/支付幂等、备份与监控；必须证明租户 A 无法读取或修改租户 B 的数据。
-- **企业自研**：业务访谈、流程与权限矩阵、SSO/RBAC、集成契约、审计、数据迁移、UAT 与运行交接。
-- **微信小程序**：AppID/资质、登录与服务端会话、合法域名、隐私授权、真机、提审与发布；平台审核和资质不能由本地测试替代。
-- **移动 APP**：在 Flutter / React Native / Android / iOS 中择一，覆盖导航状态、设备权限、安全存储、离线恢复、签名与商店审核；不同时强制四套技术栈。
+- **SaaS**：租户隔离、认证会话、迁移升降级、订阅/支付幂等、备份与监控；并覆盖 OIDC/SAML、SCIM、会话撤销、审计保留、DPA/数据驻留、DSAR、Webhook 签名与重放保护、灰度与恢复演练；必须证明租户 A 无法读取或修改租户 B 的数据。
+- **企业自研**：业务访谈、流程与权限矩阵、SSO/RBAC、集成契约、审计、数据迁移、UAT 与运行交接；并覆盖 OIDC/SAML、SCIM 开通停用、ABAC、职责分离、审计 WORM、电子签收、双跑切换与供应商退出。
+- **微信小程序**：AppID/资质、登录与服务端会话、合法域名、隐私授权、真机、提审与发布；并覆盖 ICP 备案与主体一致、公安备案、付费认证、《隐私保护指引》与实际接口 1:1、`wx.getPrivacySetting` / `wx.requirePrivacyAuthorize`、内容安全 API、TLS 1.2+、分包体积、灰度与注销删除；平台审核和资质不能由本地测试替代。
+- **移动 APP**：在 Flutter / React Native / Android / iOS 中择一，覆盖导航状态、设备权限、安全存储、离线恢复、签名与商店审核；并覆盖 Android API 36 与 16 KB page size、AAB 密钥、Xcode 26 / iOS 26 SDK、隐私清单与 ATT、Data Safety、账号删除、年龄分级与分阶段发布；不同时强制四套技术栈。
 
 路线 SOP 会随方案进入工作区资产包；平台不可替代的环节必须标 `BLOCKED` / `NOT_RUN`，不得用本地测试冒充平台回执。
 
@@ -160,7 +160,7 @@ node tools/xeng.mjs agent-check --target ../your-project --agent codex
 
 ## Skills：自包含 bundle
 
-8 个候选 Skill 均位于 `skills/<id>/`，包含 `SKILL.md` 与 `references/`，不再依赖旧仓目录结构。每个 Skill 都带标准化元数据：`id / version / owner / source / license / supported_agents / lifecycle_stage / prerequisites / dependencies / install_method / tests / status`。
+14 个候选 Skill 均位于 `skills/<id>/`，包含 `SKILL.md`（部分含 `references/`），不再依赖旧仓目录结构。每个 Skill 都带标准化元数据：`id / version / owner / source / license / supported_agents / lifecycle_stage / prerequisites / dependencies / install_method / tests / status`；`SKILL.md` frontmatter 按 agentskills.io 只保留 `name` / `description` / `license`，其余字段放入 `metadata`，catalog 仍是唯一真值源。
 
 状态阶梯为 `CANDIDATE → LOCALLY_VERIFIED → REAL_PROJECT_VERIFIED → REUSABLE`。没有真实使用证据，不会自动晋级；当前全部为 `CANDIDATE`。
 
@@ -223,12 +223,12 @@ npm run probe -- --target ../your-project --type saas --output project-baseline.
 
 | 项 | 状态 |
 |---|---|
-| `npm run check` / `npm test` / `npm run verify` / `npm run build` | Windows 11 当前工作树通过（154 passed / 1 skipped，Node 24.16.0）；`main` 最新远端 CI 在 `d8a54dc` 通过 |
-| 学习体系分支（`docs/ai-native-learning-system`，PR #31） | 本地 `verify` / `build` 通过；远端检查尚未报告；合入前不代表 `main` 已包含 |
+| `npm run check` / `npm test` / `npm run verify` / `npm run build` | Windows 11 当前工作树通过（193 tests：192 passed / 1 skipped，Node 24.16.0）；`main@ccbad29` 的 Workbench checks 通过；v0.4 分支 `feat/v0.4-gap-closure` 待 PR 合并 |
+| 学习体系与交付整合 | 学习体系 PR #31 已合并为 `1b5cfc8`；交付整合 PR #30 已合并为 `0a6e49b`；两者均不代表真实项目验收 |
 | 浏览器交互与移动端布局 | 1440px / 390px 无头 Chrome 截图与脚本化交互通过；真机未验证 |
 | Windows 11 Skill 安装 / 更新 / 卸载 / 回滚 | 本地 fixture 通过；三个 Agent 的真实加载未全部验证 |
 | 真实项目 Dogfood / 真机 / 生产发布 | `BLOCKED`：没有获得授权的真实小程序 / SaaS 项目 |
-| GitHub Pages | 已部署：<https://xander-xai.github.io/X-SuperPlay-Dev-Workbench/>（最近 `main` Pages run 41195396233 成功） |
+| GitHub Pages | 已部署：<https://xander-xai.github.io/X-SuperPlay-Dev-Workbench/>（`main@ccbad29` 的 Pages 部署成功） |
 | 工程内容迁移（G-01…G-05、三份 SOP） | PR #19 合并为 `b2e29ae`；main CI run 41179291809 通过；Pages 已部署（run 41179291799）；文件级对账 106/106 |
 
 **CI 通过只说明本仓库代码检查通过，不代表用户项目、真实设备或生产交付已验收。**
@@ -256,6 +256,14 @@ npm run probe -- --target ../your-project --type saas --output project-baseline.
 - [Skill Engineering Factory 与代码专家 Skill 示例](docs/methods/SKILL-ENGINEERING-FACTORY.md)
 - [工程 Playbook](docs/PLAYBOOKS.md)
 - [项目级 Git 工作流](docs/GIT_WORKFLOW.md)
+- [开发协作与委派](docs/COLLABORATION.md)
+- [路线合规 Gate](docs/ROUTE_COMPLIANCE.md)
+- [CLI 参考](docs/CLI_REFERENCE.md)
+- [部署与 Pages](docs/DEPLOYMENT.md)
+- [Catalog 变更](docs/CATALOG_CHANGES.md)
+- [贡献指南](CONTRIBUTING.md)
+- [v0.4 需求](docs/requirements/2026-11-01-v0.4-gap-closure.md)
+- [2026-11 Skill 与流程对抗审计](docs/research/2026-11-01-skill-and-flow-audit.md)
 - [工程成熟度 L0–L6](docs/MATURITY.md)
 - [Skill Kit 契约](docs/SKILL_KIT.md)
 - [演进路线](docs/ROADMAP.md)
