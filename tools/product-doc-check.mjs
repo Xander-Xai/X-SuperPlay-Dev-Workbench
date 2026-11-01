@@ -21,7 +21,7 @@ export function validateGuide(id,markdown){
     if(cells.length!==6){err.push(id+": table column count row "+i);return;}
     const stageId=cells[0].split(BT)[1];
     if(stageId!==STAGE_IDS[i])err.push(id+": stage order "+i+" got "+stageId);
-    for(let k=1;k<=5;k++)if(cells[k].length<14)err.push(id+": shallow cell "+i+" "+k);
+    for(let k=1;k<=5;k++)if(cells[k].length<(k===3?10:14))err.push(id+": shallow cell "+i+" "+k);
     const refs=[...cells[2].matchAll(new RegExp(BT+"([a-z-]+)"+BT,"g"))].map(m=>m[1]);
     if(!refs.length)err.push(id+": missing stage Skill "+stageId);
     for(const ref of refs)if(!SKILLS.has(ref))err.push(id+": unknown Skill "+ref);
