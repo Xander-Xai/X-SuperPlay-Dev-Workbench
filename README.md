@@ -46,9 +46,9 @@ npm run dev
 | 入口 | 作用 |
 |---|---|
 | **项目启动器** | 项目类型 → 新/旧项目 → 任务类型 → Tier / 技术栈 / 扩展 → 生成路线、阶段 Gate、路线 SOP、导出 |
-| **工作流浏览器** | 11 个唯一阶段、4 条路线 SOP、13 种任务路由、17 个 Profile、Git 工作流、Agent 编排（只读）、L0–L6 成熟度、A/B/C/D 等级义务 |
+| **工作流浏览器** | 11 个唯一阶段、4 条路线 SOP 与路线包、13 种任务路由、17 个 Profile、Git 工作流、Agent 编排（只读）、L0–L6 成熟度、A/B/C/D 等级义务 |
 | **Skills 能力库** | 14 个自包含候选 Skill、标准元数据、依赖闭包、按 Agent 生成 dry-run 安装命令 |
-| **项目工作区** | 生成 18 份可审查草案：Manifest、ENGINEERING_PROFILE、Intent、Spec/Tickets、ADR、验证计划、发布清单、Agent 交接、路线 SOP、Review 记录、实施计划、委派计划、复盘、外部需求简报、PR 模板、Git 工作流、工程 Playbook、完整资产包 |
+| **项目工作区** | 生成 19 份可审查草案：Manifest、ENGINEERING_PROFILE、Intent、Spec/Tickets、ADR、验证计划、发布清单、Agent 交接、路线 SOP、路线包、Review 记录、实施计划、委派计划、复盘、外部需求简报、PR 模板、Git 工作流、工程 Playbook、完整资产包 |
 | **工程 Playbook** | 3 份 Profile 附属操作手册：AI 应用日常研发、企业 RAG 从零构建、企业 Agent 从零开发 |
 | **证据与改进** | 证据状态机、本地报告导入（不上传）、阶段摘要与改进闭环 |
 
@@ -62,6 +62,20 @@ npm run dev
 - **移动 APP**：在 Flutter / React Native / Android / iOS 中择一，覆盖导航状态、设备权限、安全存储、离线恢复、签名与商店审核；并覆盖 Android API 36 与 16 KB page size、AAB 密钥、Xcode 26 / iOS 26 SDK、隐私清单与 ATT、Data Safety、账号删除、年龄分级与分阶段发布；不同时强制四套技术栈。
 
 路线 SOP 会随方案进入工作区资产包；平台不可替代的环节必须标 `BLOCKED` / `NOT_RUN`，不得用本地测试冒充平台回执。
+
+### 路线包：开工前检查、11 阶段流程与 Skill 侧重
+
+每条路线另有一份**路线包**（`src/route-packs.mjs` 为唯一真值，`docs/routes/<type>.md` 由代码生成）：
+
+- **开工前检查（PREFLIGHT，不是第 12 阶段）**：主体与资质、备案、隐私与 DPA、账号与密钥、UAT/审核资源，每项有负责人、证据和是否阻塞开工。
+- **11 阶段流程**：每个阶段在该路线下的具体动作、产物与退出标准；阶段 Skill 由 catalog 推导，core 标记表示该路线主用。
+- **平台与合规 Gate**：Gate 文本仍以 `ROUTE_SOPS` 为准，路线包只补阶段、证据与“不能替代什么”。
+- **负例与 Skill 侧重**：必须覆盖的失败场景，以及 14 个候选 Skill 在该路线上的 core / strengthen / reference 划分。
+
+```bash
+node tools/xeng.mjs route-pack                 # 列出四条路线
+node tools/xeng.mjs route-pack saas --json     # 单条路线包
+```
 
 ## 三份工程 Playbook
 
@@ -223,12 +237,12 @@ npm run probe -- --target ../your-project --type saas --output project-baseline.
 
 | 项 | 状态 |
 |---|---|
-| `npm run check` / `npm test` / `npm run verify` / `npm run build` | Windows 11 当前工作树通过（193 tests：192 passed / 1 skipped，Node 24.16.0）；`main@ccbad29` 的 Workbench checks 通过；v0.4 分支 `feat/v0.4-gap-closure` 待 PR 合并 |
+| `npm run check` / `npm test` / `npm run verify` / `npm run build` | Windows 11 工作树、Node 24.16.0：`feat/route-packs`（PR #35）通过 `check` / `scan` / `security` / `build`，201 tests（200 passed / 1 skipped）；`main@9584142`（v0.4 合并）为 193 tests（192 passed / 1 skipped），`verify` 绿 |
 | 学习体系与交付整合 | 学习体系 PR #31 已合并为 `1b5cfc8`；交付整合 PR #30 已合并为 `0a6e49b`；两者均不代表真实项目验收 |
 | 浏览器交互与移动端布局 | 1440px / 390px 无头 Chrome 截图与脚本化交互通过；真机未验证 |
 | Windows 11 Skill 安装 / 更新 / 卸载 / 回滚 | 本地 fixture 通过；三个 Agent 的真实加载未全部验证 |
 | 真实项目 Dogfood / 真机 / 生产发布 | `BLOCKED`：没有获得授权的真实小程序 / SaaS 项目 |
-| GitHub Pages | 已部署：<https://xander-xai.github.io/X-SuperPlay-Dev-Workbench/>（`main@ccbad29` 的 Pages 部署成功） |
+| GitHub Pages | 已部署：<https://xander-xai.github.io/X-SuperPlay-Dev-Workbench/>（`main@9584142` 的 Pages 部署成功；v0.5 在合并后再部署） |
 | 工程内容迁移（G-01…G-05、三份 SOP） | PR #19 合并为 `b2e29ae`；main CI run 41179291809 通过；Pages 已部署（run 41179291799）；文件级对账 106/106 |
 
 **CI 通过只说明本仓库代码检查通过，不代表用户项目、真实设备或生产交付已验收。**
@@ -258,6 +272,7 @@ npm run probe -- --target ../your-project --type saas --output project-baseline.
 - [项目级 Git 工作流](docs/GIT_WORKFLOW.md)
 - [开发协作与委派](docs/COLLABORATION.md)
 - [路线合规 Gate](docs/ROUTE_COMPLIANCE.md)
+- [路线包：SaaS](docs/routes/saas.md) · [企业自研](docs/routes/enterprise.md) · [微信小程序](docs/routes/mini-program.md) · [移动 APP](docs/routes/app.md)（由 `src/route-packs.mjs` 生成）
 - [CLI 参考](docs/CLI_REFERENCE.md)
 - [部署与 Pages](docs/DEPLOYMENT.md)
 - [Catalog 变更](docs/CATALOG_CHANGES.md)

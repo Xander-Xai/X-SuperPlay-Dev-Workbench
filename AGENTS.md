@@ -8,6 +8,7 @@ This public repository owns the **website, public engineering methodology/adapta
 - For a catalog update, treat this repository's `src/catalog.mjs` as authoritative and validate with `validateCatalog()` plus `npm run verify`; `PROVENANCE` is historical provenance only. Do NOT copy private normative documents or SKILL.md bodies.
 - Preserve 11 unique stages, 14 candidate skills, and the four original routes unless an authorized source change justifies migration.
 - Compatibility views (8 macro stages, 18 activities, delivery gates) must map back to the 11 canonical stages; never introduce a second lifecycle or state machine.
+- Per-route content lives in `src/route-packs.mjs`: readiness is PREFLIGHT, not a stage; gates are referenced from `ROUTE_SOPS` instead of copied. Regenerate `docs/routes/*.md` with `npm run routes:docs`; `npm run check` rejects drift.
 - External orchestration providers are execution environments, not lifecycles. They never receive push, deploy, merge or PR authority. External receipts stay UNTRUSTED and cannot promote evidence to VERIFIED.
 - Do not vendor third-party provider source, add an executable dependency, install a provider or log into an account without explicit owner approval and a licence review.
 - Keep every exported evidence state NOT_RUN unless a different, explicit and verifiable evidence import is designed and independently audited.

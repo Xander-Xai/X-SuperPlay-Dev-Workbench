@@ -52,6 +52,7 @@ node tools/xeng.mjs method --template      # 生成 Markdown 矩阵模板
 node tools/xeng.mjs method matrix          # 11 阶段 × 宏阶段 × 活动
 node tools/xeng.mjs matrix --json
 node tools/xeng.mjs delivery --json        # 交付状态、Loop、Ticket 契约、四路线、AI Overlay、六阶段 crosswalk
+node tools/xeng.mjs route-pack [type] --json # 路线包：开工前检查、11 阶段流程、Gate、负例、Skill 侧重
 node tools/xeng.mjs skills-matrix --json   # 本地/外部 Skills 与验证层
 ~~~
 
@@ -115,6 +116,7 @@ node tools/xeng.mjs skills-matrix --json   # 本地/外部 Skills 与验证层
 ## 四路线与 AI Overlay
 
 - SaaS / 企业 / 小程序 / APP 的覆盖清单见 `PLATFORM_BRANCHES`，与 `ROUTE_SOPS` 一一对应。
+- 每条路线的**开工前检查、11 阶段流程、Gate 的阶段归属、负例与 Skill 侧重**见 `src/route-packs.mjs`，人读版由 `npm run routes:docs` 生成到 `docs/routes/`。开工前检查是 PREFLIGHT，不是第 12 阶段。
 - AI Overlay（LLM / RAG / Agent / 多 Agent / 自动化工作流 / AI-native UX）**不能绕过底层平台权限 Gate**。
 - AI 能力需要 `eval`、`integration-probe`、`review`；假模型、静态扫描、CI 通过不能替代真实评测。
 

@@ -3,6 +3,7 @@ import {
   TYPES, STACKS, ADDONS, PROFILES, PROFILE_IDS, PROFILE_CONFLICTS,
   TASKS, TASK_IDS, STAGES, STAGE_IDS, TIERS, SKILLS, SKILL_IDS, ROUTE_SOPS, DEFAULT_STACK, EVIDENCE_KINDS
 } from "./catalog.mjs";
+import { routePackFor } from "./route-packs.mjs";
 
 const byId = (arr, id) => arr.find(x => x.id === id);
 const uniq = arr => [...new Set(arr)];
@@ -274,6 +275,7 @@ export function composeRoute(input = {}) {
     type, tier: { id: tierId, ...tier }, mode, stack,
     profiles, profileObligations: profileObligations(profiles),
     routeSop: ROUTE_SOPS[type],
+    routePack: routePackFor(type),
     stages: plannedStages, skipped, skills, evidence, evidencePlan: plan,
     warnings,
     status: "GENERATED_NOT_EXECUTED"
@@ -286,6 +288,7 @@ export function validateRoute(route) {
   if (!TASK_IDS.includes(route?.task?.id)) errors.push("unknown task");
   if (!route?.stages?.length) errors.push("route has no stages");
   if (!route?.routeSop || route.routeSop.id !== route.type) errors.push("route SOP missing or mismatched");
+  if (!route?.routePack || route.routePack.id !== route.type) errors.push("route pack missing or mismatched");
   for (const stage of route?.stages ?? []) {
     if (!STAGE_IDS.includes(stage.id)) errors.push("unknown stage " + stage.id);
     if (stage.state !== "NOT_RUN") errors.push("stage " + stage.id + " must start NOT_RUN");

@@ -49,6 +49,14 @@
 - `ROUTE_SOPS` 的字段必须保持非空：`prerequisites`、`platformConstraints`、`preInstallChecks`、`deliverables`、`gates`、`failureHandling`、`rollback`、`optionalBranches`、`negativeCase`、`keySkills`。
 - 新增平台 Gate 时同步 `PLATFORM_BRANCHES`、`docs/ROUTE_COMPLIANCE.md` 与 token 测试。
 
+### Route Pack
+
+- `src/route-packs.mjs` 的 `ROUTE_PACKS` 与 `TYPES` 一一对应；`stageFlow` 必须按 `STAGE_IDS` 顺序覆盖 11 阶段。
+- `gatePlan` 必须覆盖 `ROUTE_SOPS[id].gates` 的每一条且只映射一次；Gate 文本不复制，只引用下标。
+- `skillEmphasis` 的 core/strengthen/reference 必须不重叠并恰好覆盖全部 14 个 Skill；core 必须包含 `implementation`、`verification`、`release-engineering`。
+- 改动路线包后运行 `npm run routes:docs` 重建 `docs/routes/*.md`；`npm run check` 会拒绝文档漂移。
+- 工作区产物 `<slug>-route-pack.md` 随 `workspaceBundle` 生成；产物计数 19 / 17 / 18 必须同步 `test/workspace.test.mjs`。
+
 ### Delivery Activity
 
 - `ACTIVITIES` 必须 18 项、ID 连续、字段完整。

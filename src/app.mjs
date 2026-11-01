@@ -15,6 +15,7 @@ import { GIT_WORKFLOW } from "./git-workflow.mjs";
 import { MATURITY_LEVELS, MATURITY_TARGET } from "./maturity.mjs";
 import { listProviders } from "./orchestration.mjs";
 import { COLLABORATION_MODES, HUMAN_GATES } from "./collaboration.mjs";
+import { ROUTE_PACKS, stageSkillsFor } from "./route-packs.mjs";
 
 const one = selector => document.querySelector(selector);
 const all = selector => [...document.querySelectorAll(selector)];
@@ -315,7 +316,7 @@ function renderWorkflow() {
       TASKS.map(t => [t.id, t.name, String(t.stages.length), t.stages.join(" → "), t.evidence.join(", ")])
     ));
   } else if (activeWorkflowTab === "routes") {
-    body.append(newElement("p", "muted", "4 条交付路线的专属 SOP。复用 11 阶段生命周期，只补充前置条件、平台限制、负例、Gate 与回退。"));
+    body.append(newElement("p", "muted", "4 条交付路线的专属 SOP 与路线包。复用 11 阶段生命周期，只补充前置条件、平台限制、负例、Gate 与回退。"));
     body.append(table(
       ["路线", "前置条件", "必须覆盖的负例", "关键 Gate", "平台不可替代", "回退"],
       Object.values(ROUTE_SOPS).map(s => [
@@ -323,6 +324,43 @@ function renderWorkflow() {
         s.gates.join("；"), s.platformConstraints.join("；"), s.rollback.join("；")
       ])
     ));
+    body.append(newElement("h3", "workflow-heading", "路线包：开工前检查、11 阶段流程与 Skill"));
+    body.append(newElement("p", "muted", "开工前检查是 PREFLIGHT，不是第 12 阶段。阶段 Skill 由 catalog 推导，core 标记表示该路线主用；所有 Skill 仍为 CANDIDATE。"));
+    const stageName = id => STAGES.find(s => s.id === id)?.name ?? id;
+    for (const pack of Object.values(ROUTE_PACKS)) {
+      const sov = ROUTE_SOPS[pack.id];
+      body.append(newElement("h3", "workflow-heading", pack.name + " · " + pack.tagline));
+      body.append(newElement("h4", "workflow-heading", "开工前检查（PREFLIGHT）"));
+      body.append(table(
+        ["检查项", "负责人", "证据", "阻塞"],
+        pack.readiness.map(r => [r.item, r.owner, r.evidence, r.blocking ? "是" : "否"])
+      ));
+      body.append(newElement("h4", "workflow-heading", "11 阶段流程"));
+      body.append(table(
+        ["阶段", "该路线动作", "产物", "退出标准", "本阶段 Skill"],
+        pack.stageFlow.map(f => [
+          stageName(f.stage),
+          f.actions.join("；"),
+          f.artifacts.join("；"),
+          f.exit.join("；"),
+          stageSkillsFor(f.stage).map(id => pack.skillEmphasis.core.includes(id) ? id + "*" : id).join(", ")
+        ])
+      ));
+      body.append(newElement("h4", "workflow-heading", "平台与合规 Gate"));
+      body.append(table(
+        ["阶段", "Gate", "证据", "不能替代"],
+        pack.gatePlan.map(g => [stageName(g.stage), sov.gates[g.gateIndex], g.evidence, g.cannotSubstitute])
+      ));
+      body.append(newElement("h4", "workflow-heading", "负例与 Skill 侧重"));
+      body.append(table(
+        ["阶段", "负例", "预期"],
+        pack.negativeCases.map(n => [stageName(n.stage), n.scenario, n.expected])
+      ));
+      body.append(table(
+        ["层级", "Skill"],
+        [["core", pack.skillEmphasis.core.join(", ")], ["strengthen", pack.skillEmphasis.strengthen.join(", ")], ["reference", pack.skillEmphasis.reference.join(", ")]]
+      ));
+    }
   } else if (activeWorkflowTab === "profiles") {
     const overlayCount = PROFILES.filter(p => p.overlay).length;
     body.append(newElement("p", "muted", PROFILES.length + " 个 Profile（" + (PROFILES.length - overlayCount) + " 个基础 + " + overlayCount + " 个叠加）。叠加 Profile 只作用于适用项目类型。"));

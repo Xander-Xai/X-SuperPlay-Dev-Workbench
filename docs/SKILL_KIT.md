@@ -85,7 +85,7 @@ CANDIDATE → LOCALLY_VERIFIED → REAL_PROJECT_VERIFIED → REUSABLE
 {
   "schemaVersion": 2,
   "runtime": "x-superplay-dev-workbench",
-  "runtimeVersion": "0.4.0",
+  "runtimeVersion": "0.5.0",
   "historicalProvenance": { "repository": "...", "commit": "..." },
   "managed": [
     {
