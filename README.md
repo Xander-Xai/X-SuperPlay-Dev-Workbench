@@ -237,12 +237,12 @@ npm run probe -- --target ../your-project --type saas --output project-baseline.
 
 | 项 | 状态 |
 |---|---|
-| `npm run check` / `npm test` / `npm run verify` / `npm run build` | Windows 11 工作树、Node 24.16.0：`feat/route-packs`（PR #35）通过 `check` / `scan` / `security` / `build`，201 tests（200 passed / 1 skipped）；`main@9584142`（v0.4 合并）为 193 tests（192 passed / 1 skipped），`verify` 绿 |
+| `npm run check` / `npm test` / `npm run verify` / `npm run build` | Windows 11、Node 24.16.0：`main@7651f35` 通过 `check` / `scan` / `security` / `build`，201 tests（200 passed / 1 skipped）；CI 的 `verify` 在同一提交上绿 |
 | 学习体系与交付整合 | 学习体系 PR #31 已合并为 `1b5cfc8`；交付整合 PR #30 已合并为 `0a6e49b`；两者均不代表真实项目验收 |
 | 浏览器交互与移动端布局 | 1440px / 390px 无头 Chrome 截图与脚本化交互通过；真机未验证 |
 | Windows 11 Skill 安装 / 更新 / 卸载 / 回滚 | 本地 fixture 通过；三个 Agent 的真实加载未全部验证 |
 | 真实项目 Dogfood / 真机 / 生产发布 | `BLOCKED`：没有获得授权的真实小程序 / SaaS 项目 |
-| GitHub Pages | 已部署：<https://xander-xai.github.io/X-SuperPlay-Dev-Workbench/>（`main@9584142` 的 Pages 部署成功；v0.5 在合并后再部署） |
+| GitHub Pages | 已部署：<https://xander-xai.github.io/X-SuperPlay-Dev-Workbench/>（`main@7651f35`，含 v0.5 路线包；部署不代表真实项目验收） |
 | 工程内容迁移（G-01…G-05、三份 SOP） | PR #19 合并为 `b2e29ae`；main CI run 41179291809 通过；Pages 已部署（run 41179291799）；文件级对账 106/106 |
 
 **CI 通过只说明本仓库代码检查通过，不代表用户项目、真实设备或生产交付已验收。**

@@ -123,7 +123,7 @@
 - [x] 文档同步：README、ARCHITECTURE、METHOD、ROUTE_COMPLIANCE、CLI_REFERENCE、CATALOG_CHANGES、PRODUCT-GUIDES。
 - [ ] 真实项目验证路线包：每条路线至少一次真实项目走完并记录哪些检查项无效或缺失。
 
-> 状态：`IMPLEMENTED_PENDING_REVIEW`。分支 `feat/route-packs`，PR #35；`main` 侧 CI 覆盖堆积 PR 的修复随后合入。
+> 状态：`MERGED_NOT_REAL_PROJECT_VERIFIED`。PR #35 已合并为 `7651f35`；`main` 的 Workbench checks 与 Pages 部署成功。路线包内容仍未经真实项目验证。
 
 ## v0.3：真实项目 Dogfood
 
