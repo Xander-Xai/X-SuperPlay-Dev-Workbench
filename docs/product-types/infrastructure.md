@@ -1,0 +1,43 @@
+# 基础设施 / 部署运维工具：初步独立开发路线
+
+> **状态：`RESEARCH_PLACEHOLDER / NOT_RUNTIME_ROUTE / NOT_REAL_PROJECT_VERIFIED`**。资料核对：2026-11-02。本文是专用品类占位，不是已注册的 CLI `type`、不是完整可执行 Route Pack，也不是平台审核回执。
+
+## 1. 适用范围 / 排除
+
+- **交付对象**：容器平台、部署控制面、网关、监控与 IaC。
+- **不要混用**：基础设施有独立生产授权和恢复要求，不等于带管理界面的 SaaS。
+- **可参考但不代表已支持的 Profile**：infrastructure。
+- **扩展优先级**：P2（仅路线建设顺序）。
+
+## 2. 从需求到交付：对应权威 11 阶段
+
+| 权威阶段映射 | 本品类应做什么 | 最低产物 |
+|---|---|---|
+| `intake / discovery` | 核实节点归属、生产授权、变更窗口与 RPO/RTO | 需求简报/授权/用户旅程 |
+| `specification` | 定义健康检查、回滚、灾难恢复及容量 AC | Spec/AC 与负例 |
+| `architecture` | 设计环境配置、网络隔离、密钥管理与观测拓扑 | ADR/信任与部署边界 |
+| `planning` | 单节点发布→故障恢复纵切 | Tickets/预算/停止条件 |
+| `implementation` | 实现声明式部署、日志、监控和幂等操作 | 可运行纵向切片与测试 |
+| `verification / review` | 在预发节点执行重放、故障注入与回滚；安全 Review | 实际测试结果/独立 Review |
+| `release` | 经过人工批准后部署，保留变更前后证据 | 构建/发布/回滚回执 |
+| `operation / postmortem` | 维护告警、容量和事故复盘 | 运维观测/复盘报告 |
+
+> 为首次阅读将部分连续阶段并排呈现，但每个原始阶段仍由 `src/catalog.mjs` 统一定义，不能凭此表自行跳过对应 Gate。
+
+## 3. 候选 Skills 与必需工具
+
+- **本品类优先学习/按需装配**：`architecture`、`implementation-plan`、`implementation`、`verification`、`security-review`、`release-engineering`、`incident-response`。它们属于仓库已有 14 个候选 Skill，未因本文执行、安装或晋级。
+- **不能让 Skill 代替的工具/账号**：Docker Compose/IaC、受控预发节点、备份恢复工具。外部平台、设备和真实发布权仍需人工授权。
+
+## 4. 本品类真正不同的验收
+
+- **首批必须设计的负例**：部署不幂等、错误环境变更、明文密钥、恢复不可用。
+- **关键发布 Gate**：受控节点真实部署/健康检查/回滚演练及人工授权。未执行或未获授权必须写为 `NOT_RUN` / `BLOCKED`；不得由 Mock/CI 绿替代。
+- **首张 Ticket 建议**：单节点发布→故障恢复纵切；先满足一个端到端成功路径和至少一个失败路径，并记录实际环境、命令、结果与工件。
+
+## 5. 官方资料与升级界线
+
+- 主要依据：[平台/标准官方入口](https://docs.docker.com/compose/how-tos/production/)。更新平台规则前重新核查原文，本文不永久保证资质、审核或 API 版本要求。
+- **从研究占位升级的条件**：独立 `PREFLIGHT` + Route SOP + 每阶段产物/退出标准 + 专属负例和 Gate + 技术栈分支 + 新旧路由兼容测试 + 至少一次授权真实项目验证。当前全部未执行。
+
+返回 [产品品类导航](README.md)。
