@@ -2,7 +2,7 @@
 name: Defect
 about: Something behaves differently from what the catalog, docs or tests claim
 title: ""
-labels: ""
+labels: "bug"
 assignees: ""
 ---
 
