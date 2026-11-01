@@ -77,6 +77,14 @@ node tools/xeng.mjs route-pack                 # 列出四条路线
 node tools/xeng.mjs route-pack saas --json     # 单条路线包
 ```
 
+## 独立开发品类导航（每类单独的开发流程）
+
+- [产品品类目录](docs/product-types/README.md)：保留 4 条正式 Route Pack；补充 14 条独立产品研究占位和 4 个业务/能力场景。
+- [SaaS 从零开发阅读路径](docs/product-types/saas-walkthrough.md)：11 阶段各做什么、哪些候选 Skill、双租户隔离第一张 Ticket 和验收负例。
+- [本轮产品分类调研报告](docs/research/2026-11-02-product-format-scaffolding.md)：为什么不同平台的开发、发布与验证不能混用。
+
+> 新增 14 类是 `RESEARCH_PLACEHOLDER`，**未加入 `TYPES`、CLI、网页启动器、Route Pack**，不代表运行时已支持或经过真实项目验收。旧四路线、11 阶段与 14 候选 Skill 不变。
+
 ## 三份工程 Playbook
 
 三份操作手册补齐旧 Engineering OS 中仍有使用价值、此前未完整承接的工程内容。它们复用 11 阶段，不建立第二套生命周期：

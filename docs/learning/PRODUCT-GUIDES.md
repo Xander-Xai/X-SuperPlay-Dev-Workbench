@@ -4,6 +4,8 @@
 >
 > 每条路线的**开工前检查、11 阶段流程、Gate 的阶段归属、负例与 Skill 侧重**见代码生成的路线包：[SaaS](../routes/saas.md) · [企业自研](../routes/enterprise.md) · [微信小程序](../routes/mini-program.md) · [移动 APP](../routes/app.md)（真值在 `src/route-packs.mjs`）。
 
+> 本页四类是正式 Route Pack；其他产品形态另设 [独立研究占位和开发步骤](../product-types/README.md)（PWA、桌面、浏览器扩展、CLI、API、自动化、Bot 等），**不是新增可用的 CLI 类型**。不同 SDK、平台审核与测试要求不能照搬本页四条路线。
+
 ## 路线总览
 
 | 路线 | 权威阶段重点 | 平台不可替代环节 | 关键负例 |

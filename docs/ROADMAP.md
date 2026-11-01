@@ -125,6 +125,12 @@
 
 > 状态：`MERGED_NOT_REAL_PROJECT_VERIFIED`。PR #35 已合并为 `7651f35`；`main` 的 Workbench checks 与 Pages 部署成功。路线包内容仍未经真实项目验证。
 
+## 2026-11-02 独立开发品类研究占位（文档层）
+
+- [x] 新增 14 份品类独立开发指南、4 个业务/能力场景指南、SaaS 从零路径及 [调研报告](research/2026-11-02-product-format-scaffolding.md)。每类列出初步步骤、候选 Skill、平台 Gate、负例和参考出处。
+- [ ] 新类型尚未注册 `TYPES`、CLI、网页或独立可执行 Route Pack；保持 `NOT_IMPLEMENTED`。
+- [ ] 真机/设备/宿主测试、Skill 执行、平台审核、真实项目交付和消费者验收仍为 `NOT_RUN`。
+
 ## v0.3：真实项目 Dogfood
 
 - [ ] 已有微信小程序真实仓库：固定 base SHA，导出 Spec + 3 张可执行 Ticket。
