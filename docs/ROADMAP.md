@@ -108,7 +108,7 @@
 - [x] `clampStageIndex`、`xeng task --json`、`xeng assemble` 推荐 Skill、CI `scan`。
 - [x] 文档真实性修正与 `docs/DEPLOYMENT.md` 等六份缺失文档。
 - [x] 六阶段 crosswalk 与 `docs/METHOD.md` 对照。
-- [x] `npm run verify`、`npm run build`、1440/390 截图与 PR（PR 待合并，Pages 在合并后部署）。
+- [x] `npm run verify`、`npm run build`、1440/390 截图与 PR #34（已合并为 `9584142`，Pages 已在合并后部署）。
 
 ## v0.5 四条常见应用路线的完整开发流程与 Skill 装配（2026-11-01）
 
@@ -123,7 +123,7 @@
 - [x] 文档同步：README、ARCHITECTURE、METHOD、ROUTE_COMPLIANCE、CLI_REFERENCE、CATALOG_CHANGES、PRODUCT-GUIDES。
 - [ ] 真实项目验证路线包：每条路线至少一次真实项目走完并记录哪些检查项无效或缺失。
 
-> 状态：`IMPLEMENTED_PENDING_REVIEW`。分支 `feat/route-packs`；PR 待合并，Pages 在合并后部署。
+> 状态：`IMPLEMENTED_PENDING_REVIEW`。分支 `feat/route-packs`，PR #35；`main` 侧 CI 覆盖堆积 PR 的修复随后合入。
 
 ## v0.3：真实项目 Dogfood
 
