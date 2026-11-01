@@ -42,6 +42,33 @@
 
 额外安全来源：API [OWASP API Security Top 10](https://api-security.owasp.org/editions/2023/en/0x11-t10/)；PWA [离线机制](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Offline_and_background_operation)；插件 [VS Code 扩展分发](https://code.visualstudio.com/api/working-with-extensions/publishing-extension)；其他宿主 [支付宝小程序](https://miniprogram.alipay.com/docs/)；XR [Unity XR 包](https://docs.unity.com/en-us/engine/6000.0/manual/xr/support/support-packages)。这些是研究入口，不自动安装第三方代码。
 
+
+## 2026-11-02 二次整改：针对独立验收发现的阻断项
+
+**整改范围**（文档与验证器，不升级运行时类型）：
+
+1. 14 份主路线从 8 行合并概述扩展为 **11 行权威阶段逐项指导**：每行独立说明适用动作、候选 Skill 的输入→输出、工具/真实环境、最低产物和退出 Gate。
+2. 新增 **14 份宿主分册**：Electron/Tauri/原生、Chrome/Edge、飞书/钉钉/Slack/Discord、VS Code/Figma/WordPress、抖音/支付宝；不同协议和发布审核不混写。
+3. 每份主指南补充 `PREFLIGHT`、`DRAFT_NOT_EXECUTED` 的首张纵切 Demo Ticket、正反 AC、阻断条件与平台 Gate。平台子分册也各有最小 Demo 和独立发布回执要求。
+4. 新增 `tools/product-doc-check.mjs`，由原 `tools/check.mjs` 调用；新增 `test/product-docs.test.mjs`，由 `npm test` 自动执行。验证 14 类文档存在、阶段顺序严格匹配 `STAGES`、每阶段核心 Skill 存在且 ID 在 `SKILL_IDS`、14 分册索引、负例/发布 Gate、内部 Markdown 链接。附缺阶段、无效 Skill、漏平台、断链的负例单测。
+5. 已观察首轮新检查在 CI 中发现 postmortem Skill 缺项并修复；后续 CI 与实际项目/平台验收仍需分别查看结果，不得混用。
+
+### 关键宿主差异的新增官方依据
+
+- **Tauri v2**：Updater 签名与 capability 最小权限：https://v2.tauri.app/plugin/updater/ 和 https://tauri.app/security/capabilities/
+- **Electron**：打包、签名与分发：https://www.electronjs.org/docs/latest/tutorial/tutorial-packaging
+- **Chrome/Edge**：MV3 远程代码政策及 Edge Partner Center 发布：https://developer.chrome.com/docs/webstore/program-policies/policies 与 https://learn.microsoft.com/en-us/microsoft-edge/extensions/publish/publish-extension
+- **飞书**：事件订阅：https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/event-subscription-guide/event-subscriptions
+- **钉钉**：Stream 出站连接/机器人消息：https://opensource.dingtalk.com/developerpedia/docs/learn/stream/overview/
+- **Slack**：HTTP Request 签名校验：https://docs.slack.dev/authentication/verifying-requests-from-slack/
+- **VS Code/Figma/WordPress**：各自扩展 manifest、权限及宿主运行边界：https://code.visualstudio.com/api/get-started/your-first-extension 、https://developers.figma.com/docs/plugins/manifest/ 、https://developer.wordpress.org/plugins/plugin-basics/activation-deactivation-hooks/
+- **抖音/支付宝**：抖音小程序开发/提审和支付宝服务商独立授权：https://developer.open-douyin.com/docs/resource/zh-CN/mini-app/introduction/develop-process/publish 与 https://opendocs.alipay.com/mini/developer
+
+### 尚未完成（不能冒充已验收）
+
+- `xeng --type`、UI、Route Pack 注册和 14 种产品的真实开发/提审/生产回滚均未实现/未运行；保留 `RESEARCH_PLACEHOLDER / NOT_RUNTIME_ROUTE / NOT_REAL_PROJECT_VERIFIED`。
+- 部分分册仍只是一轮概念性 Demo，不具备实际客户领域的具体代码仓、平台凭据、测试回执或可运营 SLA。外部接口/资质与标准仍须在实际开工时重新核对。
+
 ## 占位 → 可用的最小升级门槛
 
 - [ ] 先锁定唯一目标平台及真实用户，确认它确实不是既有 Route + Overlay 能表达的场景。

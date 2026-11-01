@@ -41,6 +41,19 @@
 - [内容 / UGC / 社区场景](scenarios/community-content.md)：按实际平台再叠加独立业务契约。
 - [数据分析 / ETL / BI 场景](scenarios/data-bi.md)：按实际平台再叠加独立业务契约。
 
+
+## 技术栈 / 宿主的独立分册（每个平台有自己的 SDK 和验收）
+
+| 产品路线 | 必须先选择的专用子路线 |
+|---|---|
+| 桌面应用 | [Electron](platforms/desktop/electron.md) · [Tauri v2](platforms/desktop/tauri.md) · [原生桌面](platforms/desktop/native.md) |
+| 浏览器扩展 | [Chrome MV3](platforms/browser-extension/chrome.md) · [Microsoft Edge](platforms/browser-extension/edge.md) |
+| 消息机器人 | [飞书](platforms/bot/feishu.md) · [钉钉 Stream](platforms/bot/dingtalk.md) · [Slack](platforms/bot/slack.md) · [Discord](platforms/bot/discord.md) |
+| 生态插件 | [VS Code](platforms/ecosystem-plugin/vscode.md) · [Figma](platforms/ecosystem-plugin/figma.md) · [WordPress](platforms/ecosystem-plugin/wordpress.md) |
+| 非微信小程序 | [抖音](platforms/mini-other/douyin.md) · [支付宝](platforms/mini-other/alipay.md) |
+
+分册只补该宿主独有的技术/权限/发布动作，完整 11 阶段与逐阶段 Skill 仍在对应主指南。若一个项目跨多个宿主，则分别保存验收回执；不能用同类其他平台的审核来替代。
+
 ## 规则：一个品类一条可检验的交付链
 
 - 每条正式路线要回答：项目开始需什么资源？11 阶段各做什么？何时使用哪个候选 Skill？用什么具体工具？平台特有 Gate/负例是什么？怎样真正发布/回滚？
