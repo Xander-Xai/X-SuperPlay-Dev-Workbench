@@ -18,7 +18,8 @@ node tools/xeng.mjs <command> [options]
 | `method [...]` | 方法视图 | `overview\|sources\|pilot\|design\|skills\|activities\|matrix\|A01..A18`、`--json`、`--template` |
 | `validate-registry` | 校验 14 个 Skill bundle 与 catalog 一致 | — |
 | `selftest` | 运行完整测试套件 | — |
-| `task <task-id>` | 某任务类型的阶段路线 | `--tier=`、`--mode=`、`--type=`、`--json` |
+| `task <task-id>` | 某任务类型的阶段路线 | `--tier=`、`--mode=`、`--type=`、`--json`（含 `routePack`） |
+| `route-pack [type]` | 四条路线的开工前检查、11 阶段流程、Gate、负例与 Skill 侧重 | `--json`；无参数列出四条路线 |
 | `matrix` | 8/18/11 矩阵 | `--json` |
 | `delivery` | 交付状态、Loop、Ticket 契约、crosswalk、AI Overlay | `--json` |
 | `skills-matrix` | 本地/外部 Skill 关系矩阵 | `--json` |
@@ -40,6 +41,7 @@ node tools/xeng.mjs <command> [options]
 ```bash
 node tools/xeng.mjs init ../my-app --profile saas,web,backend --tier B --dry-run
 node tools/xeng.mjs task bug --type saas --json
+node tools/xeng.mjs route-pack mini-program --json
 node tools/xeng.mjs assemble --target ../my-app --type saas --task feature --tier B --agent codex
 node tools/xeng.mjs orchestrator plan --provider orca --agent omp --ticket ticket.json --platform windows
 ```

@@ -14,6 +14,7 @@ README
   → docs/learning/STAGE-TO-SKILL-MATRIX.md（Skill 映射与来源）
   → docs/learning/AGENT-PROMPT-RECIPES.md（可复制提示词）
   → docs/learning/PRODUCT-GUIDES.md（四类产品 + 静态 Web + Greenfield/Brownfield + AI Overlay）
+  → docs/routes/<type>.md（四条路线包：开工前检查、11 阶段流程、Gate、负例、Skill 侧重；由代码生成）
   → docs/learning/KNOWLEDGE-ROADMAP.md（L1–L6 学习路线 + 30/60 天）
   → docs/learning/ACCEPTANCE-CHECKLIST.md（文档验收与覆盖矩阵）
 ```

@@ -1,5 +1,6 @@
 // Project Workspace artifacts. Pure string generation; the browser downloads them locally.
-import { PROVENANCE, OWNER, RUNTIME, TIERS } from "./catalog.mjs";
+import { PROVENANCE, OWNER, RUNTIME, TIERS, STAGES } from "./catalog.mjs";
+import { stageSkillsFor } from "./route-packs.mjs";
 import { toManifest } from "./engine.mjs";
 import { starterMarkdown } from "./starter.mjs";
 import { stageHandoff } from "./handoff.mjs";
@@ -241,6 +242,68 @@ export function routeSopMarkdown(plan) {
     "## 关键 Skills", "",
     "- " + sop.keySkills.join(", "),
     "- 所有 Skill 初始为 CANDIDATE 且未安装；安装文件不等于已执行、已验证或已验收。", ""
+  ].join("\n");
+}
+
+export function routePackMarkdown(plan) {
+  const pack = plan.routePack;
+  const sop = plan.routeSop;
+  const stageName = id => STAGES.find(s => s.id === id)?.name ?? id;
+  const skillLine = stage => stageSkillsFor(stage)
+    .map(id => pack.skillEmphasis.core.includes(id) ? id + "*" : id)
+    .join(", ");
+  const table = (headers, rows) => [
+    "| " + headers.join(" | ") + " |",
+    "|" + headers.map(() => "---").join("|") + "|",
+    ...rows.map(row => "| " + row.join(" | ") + " |"),
+    ""
+  ];
+  return [
+    identityBlock(plan), "",
+    "# " + plan.config.name + " · 路线包 · " + pack.name, "",
+    "> 状态：GENERATED / NOT_RUN。复用 11 阶段生命周期；开工前检查是 PREFLIGHT，不是第 12 阶段。",
+    "> 本文件不是合规声明，也不是平台回执。未取得外部证据时保持 NOT_RUN。",
+    "> project_id：" + plan.slug + " · base_sha：" + (plan.config.baseline?.headSha ?? "UNKNOWN"),
+    "> 当前所有者：" + OWNER.repository + " · 运行时：" + RUNTIME.name + " " + RUNTIME.version, "",
+    "## 开工前检查（PREFLIGHT，不是阶段）", "",
+    ...pack.readiness.map(r =>
+      "- [ ] " + r.item + " · 负责人：" + r.owner + " · 证据：" + r.evidence + (r.blocking ? " · 阻塞开工" : " · 建议完成")),
+    "",
+    "## 11 阶段流程", "",
+    ...table(
+      ["阶段", "该路线动作", "产物", "退出标准", "本阶段候选 Skill"],
+      pack.stageFlow.map(f => [
+        stageName(f.stage), f.actions.join("<br>"), f.artifacts.join("<br>"),
+        f.exit.join("<br>"), skillLine(f.stage)
+      ])
+    ),
+    "> Skill 列表由 catalog 的阶段路由推导；`*` 表示该路线 core。候选不等于已安装或已验证。", "",
+    "## 平台与合规 Gate", "",
+    ...table(
+      ["阶段", "Gate", "证据", "不能替代"],
+      pack.gatePlan.map(g => [
+        stageName(g.stage), sop.gates[g.gateIndex], g.evidence, g.cannotSubstitute
+      ])
+    ),
+    "## 必须覆盖的负例", "",
+    ...table(
+      ["阶段", "场景", "预期"],
+      pack.negativeCases.map(n => [stageName(n.stage), n.scenario, n.expected])
+    ),
+    "## Skill 侧重", "",
+    ...table(
+      ["层级", "Skill"],
+      [
+        ["core", pack.skillEmphasis.core.join(", ")],
+        ["strengthen", pack.skillEmphasis.strengthen.join(", ")],
+        ["reference", pack.skillEmphasis.reference.join(", ")]
+      ]
+    ),
+    "## 平台限制", "",
+    ...sop.platformConstraints.map(x => "- " + x), "",
+    "## 边界", "",
+    ...pack.notes.map(x => "- " + x),
+    "- Workbench 不创建账号、不提交备案、不提审、不部署；这些动作必须由授权人类在平台完成。", ""
   ].join("\n");
 }
 
@@ -507,6 +570,7 @@ export function workspaceBundle(plan) {
     [slug + "-agent-handoff.md"]: stageHandoff(plan, plan.stages[0].id),
     [slug + "-delegation-plan.md"]: delegationPlan(plan),
     [slug + "-route-sop.md"]: routeSopMarkdown(plan),
+    [slug + "-route-pack.md"]: routePackMarkdown(plan),
     [slug + "-review-record.md"]: reviewRecord(plan),
     [slug + "-implementation-plan.md"]: implementationPlan(plan),
     [slug + "-postmortem-template.md"]: postmortemTemplate(plan),

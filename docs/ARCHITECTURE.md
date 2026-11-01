@@ -11,7 +11,8 @@ Workbench runtime (this repository)
   src/catalog.mjs        canonical data: 11 stages, 13 tasks, 17 profiles, 14 skills, tiers
   src/routing.mjs        type x task x mode x tier -> ordered stages + skill closure
   src/engine.mjs         plan composition, Markdown/Manifest export, catalog validation
-  src/workspace.mjs      eighteen reviewable project artifacts + bundle
+  src/workspace.mjs      nineteen reviewable project artifacts + bundle
+  src/route-packs.mjs   per-route readiness, stage flow, gates, negative cases and skill emphasis
   src/playbooks.mjs      AI application / RAG / Agent operating manuals
   src/git-workflow.mjs   advisory project Git guidance + per-agent notes
   src/maturity.mjs       L0-L6 gap diagnostic derived from audit checks
@@ -114,7 +115,7 @@ Tier C/D 只能降低非安全义务；`security` 的 review/test、`release` �
 
 ## 工作区资产与共享身份
 
-`workspaceBundle()` 生成 18 个可审查条目：manifest、ENGINEERING_PROFILE、Intent、Spec/Tickets、ADR、验证计划、发布检查单、Agent 交接、委派计划、路线 SOP、Review 记录、实施计划、复盘模板、外部需求简报、PR 模板、Git 工作流、工程 Playbook 与完整资产包。Review 记录按 Spec/Standards 双轴给出 Finding 分类（`MAINLINE_BLOCKER / NON_BLOCKING / QUESTION / SUGGESTION`）与 Scope Change 字段，`reviewed_candidate` 默认 `NOT_RECORDED`。除 manifest 与 bundle 自身外，每个 Markdown/YAML 文件都带同一段 `WORKBENCH_PROJECT_IDENTITY`：`project_id`、`project_type`、`task`、`mode`、`tier`、`base_sha`、`runtime`、`current_owner`、`status`。`<slug>-bundle.json` 汇总全部文件内容、字节数与身份，便于整体导出和一致性核对。
+`workspaceBundle()` 生成 19 个可审查条目：manifest、ENGINEERING_PROFILE、Intent、Spec/Tickets、ADR、验证计划、发布检查单、Agent 交接、委派计划、路线 SOP、路线包、Review 记录、实施计划、复盘模板、外部需求简报、PR 模板、Git 工作流、工程 Playbook 与完整资产包。Review 记录按 Spec/Standards 双轴给出 Finding 分类（`MAINLINE_BLOCKER / NON_BLOCKING / QUESTION / SUGGESTION`）与 Scope Change 字段，`reviewed_candidate` 默认 `NOT_RECORDED`。除 manifest 与 bundle 自身外，每个 Markdown/YAML 文件都带同一段 `WORKBENCH_PROJECT_IDENTITY`：`project_id`、`project_type`、`task`、`mode`、`tier`、`base_sha`、`runtime`、`current_owner`、`status`。`<slug>-bundle.json` 汇总全部文件内容、字节数与身份，便于整体导出和一致性核对。
 
 实施计划包含未核实假设、切片、每假设迭代预算、停止条件与回退；复盘模板区分事实、影响、根因、行动项与未验证项；外部需求简报默认 `ENGINEERING_HYPOTHESIS`，不进入已批准 Spec；PR 模板要求 base SHA、命令、结果、跳过项与未验证项；Git 工作流与工程 Playbook 均为建议性文件，项目本地规则优先。
 
@@ -140,11 +141,13 @@ catalog ──► routing ──► engine ──► workspace ──► playboo
    └──► delivery（纯数据兼容视图：8 宏阶段 / 18 活动 / 交付 Gate / Skills 矩阵）
 ~~~
 
-`engine.mjs` 不导入 `workspace.mjs`；`workspace.mjs` 导入 `engine.mjs` 的 `toManifest`，保持单向依赖。`identity.mjs` 只依赖 `catalog.mjs`，被 starter / handoff / workspace 共享。`playbooks.mjs`、`git-workflow.mjs`、`maturity.mjs`、`delivery.mjs`、`evidence-identity.mjs` 均为浏览器安全纯模块。CLI 工具导入 `src/`，反向不成立。
+`engine.mjs` 不导入 `workspace.mjs`；`workspace.mjs` 导入 `engine.mjs` 的 `toManifest`，保持单向依赖。`identity.mjs` 只依赖 `catalog.mjs`，被 starter / handoff / workspace 共享。`playbooks.mjs`、`git-workflow.mjs`、`maturity.mjs`、`delivery.mjs`、`evidence-identity.mjs`、`route-packs.mjs` 均为浏览器安全纯模块。CLI 工具导入 `src/`，反向不成立。
+
+`route-packs.mjs` 只依赖 `catalog.mjs`：它给四条路线补上开工前检查、11 阶段流程、Gate 的阶段归属、负例与 Skill 侧重，并引用 `ROUTE_SOPS` 的 Gate 文本而不复制。`readiness` 是 PREFLIGHT，不构成第十二个阶段；`validateRoutePacks()` 接入 `validateCatalog()`。
 
 ## 版本与漂移
 
-- 运行时版本在 `RUNTIME.version`，当前 `0.4.0`。
+- 运行时版本在 `RUNTIME.version`，当前 `0.5.0`。
 - 目录数据变更必须通过 `validateCatalog()` 与 `npm run verify`。
 - `tools/dependency-scan.mjs` 检查是否存在对旧私有仓的运行时依赖；历史溯源只在显式允许的文件中出现。
 - 旧仓退役不由本仓库自动执行；需要所有者确认、真实项目验证和单独的回滚计划。

@@ -1,6 +1,6 @@
 {
   "name": "x-superplay-dev-workbench",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "type": "module",
   "description": "AI-native software delivery workbench: task routing, profiles, bundled skills, xeng CLI",
@@ -8,6 +8,7 @@
     "dev": "node tools/serve.mjs",
     "test": "node --test",
     "check": "node tools/check.mjs",
+    "routes:docs": "node tools/render-route-docs.mjs",
     "scan": "node tools/dependency-scan.mjs",
     "security": "node tools/security-gate.mjs",
     "verify": "npm run check && npm run scan && npm run security && npm test",

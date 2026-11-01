@@ -110,6 +110,21 @@
 - [x] 六阶段 crosswalk 与 `docs/METHOD.md` 对照。
 - [x] `npm run verify`、`npm run build`、1440/390 截图与 PR（PR 待合并，Pages 在合并后部署）。
 
+## v0.5 四条常见应用路线的完整开发流程与 Skill 装配（2026-11-01）
+
+目标：让 SaaS、企业自研、微信小程序、移动 APP 四条路线各自回答“开工前要什么、从哪一步做到哪一步、每步用什么 Skill、缺什么证据就不能继续”；11 阶段仍是唯一生命周期。
+
+- [x] `src/route-packs.mjs`：开工前检查、11 阶段流程、Gate 阶段归属、负例、Skill 侧重；Gate 引用 `ROUTE_SOPS` 不复制。
+- [x] `validateRoutePacks()` 接入 `validateCatalog()`；阶段、Skill、Gate 覆盖与唯一性断言。
+- [x] 工作区新增 `<slug>-route-pack.md`（产物 19 / 17 / 18）。
+- [x] `xeng route-pack [type] [--json]`，`task --json` 增加 `routePack`。
+- [x] 站点「路线与路线包」页签内展示路线包；不新增视图、页签或 DOM id。
+- [x] `docs/routes/*.md` 由 `npm run routes:docs` 生成，`npm run check` 拒绝漂移。
+- [x] 文档同步：README、ARCHITECTURE、METHOD、ROUTE_COMPLIANCE、CLI_REFERENCE、CATALOG_CHANGES、PRODUCT-GUIDES。
+- [ ] 真实项目验证路线包：每条路线至少一次真实项目走完并记录哪些检查项无效或缺失。
+
+> 状态：`IMPLEMENTED_PENDING_REVIEW`。分支 `feat/route-packs`；PR 待合并，Pages 在合并后部署。
+
 ## v0.3：真实项目 Dogfood
 
 - [ ] 已有微信小程序真实仓库：固定 base SHA，导出 Spec + 3 张可执行 Ticket。

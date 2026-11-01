@@ -1,6 +1,8 @@
 # 四类产品开发指南与横切说明
 
 > 所有路线复用同一套 11 权威阶段与 18 活动；本文只增加路线特有的前置条件、平台限制、负例与 Gate，不建立新的状态机。
+>
+> 每条路线的**开工前检查、11 阶段流程、Gate 的阶段归属、负例与 Skill 侧重**见代码生成的路线包：[SaaS](../routes/saas.md) · [企业自研](../routes/enterprise.md) · [微信小程序](../routes/mini-program.md) · [移动 APP](../routes/app.md)（真值在 `src/route-packs.mjs`）。
 
 ## 路线总览
 

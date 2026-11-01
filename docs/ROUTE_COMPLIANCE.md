@@ -1,6 +1,8 @@
 # 路线合规 Gate（2026-11）
 
 > 状态：`OBSERVED_2026-11-01`。人读版本；机器真值在 `src/catalog.mjs` 的 `ROUTE_SOPS` 与 `src/delivery.mjs` 的 `PLATFORM_BRANCHES` / `AI_OVERLAY`。
+>
+> 每条路线的**开工前检查、11 阶段流程、Gate 的阶段归属、负例与 Skill 侧重**见由代码生成的 `docs/routes/saas.md`、`docs/routes/enterprise.md`、`docs/routes/mini-program.md`、`docs/routes/app.md`（真值在 `src/route-packs.mjs`）。本页的手写表格只作为速查，**不与生成页面争夺真值**。
 
 这些 Gate 说明“需要什么证据、由谁提供回执”，不声称本仓已满足任何法规或平台审核。未取得外部回执时证据保持 `NOT_RUN`。
 

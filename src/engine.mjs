@@ -10,6 +10,7 @@ import { validateGitWorkflow } from "./git-workflow.mjs";
 import { validateDelivery } from "./delivery.mjs";
 import { validateOrchestration } from "./orchestration.mjs";
 import { validateCollaboration } from "./collaboration.mjs";
+import { validateRoutePacks } from "./route-packs.mjs";
 
 const hasId = (arr, id) => arr.some(x => x.id === id);
 const clean = (value, max) => String(value ?? "").replace(/\0/g, "").trim().slice(0, max);
@@ -74,6 +75,7 @@ export function assemble(input = {}) {
     type, task: route.task, tier: route.tier, mode: route.mode, stack: route.stack,
     profiles: route.profiles,
     routeSop: route.routeSop,
+    routePack: route.routePack,
     profileObligations: route.profileObligations,
     stages, skipped: route.skipped,
     skills: SKILLS, routeSkills: route.skills,
@@ -306,6 +308,7 @@ export function validateCatalog() {
   errors.push(...validateDelivery());
   errors.push(...validateOrchestration());
   errors.push(...validateCollaboration());
+  errors.push(...validateRoutePacks());
   return errors;
 }
 

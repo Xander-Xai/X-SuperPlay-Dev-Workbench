@@ -22,7 +22,7 @@ test("help and version are offline and non-destructive",()=>{
   assert.match(help.stdout,/xeng init/);
   const version=cli("version");
   assert.equal(version.status,0);
-  assert.match(version.stdout,/0\.4\.0/);
+  assert.match(version.stdout,/0\.5\.0/);
 });
 
 test("init --dry-run writes nothing",()=>withTemp(dir=>{
@@ -142,6 +142,24 @@ test("task --json returns a machine-readable route",()=>{
   assert.equal(route.type.id,"saas");
   assert.deepEqual(route.stages.map(s=>s.id),["discovery","implementation","verification","review"]);
   assert.ok(Array.isArray(route.skipped));
+  assert.equal(route.routePack.id,"saas");
+  assert.equal(route.routePack.stageFlow.length,11);
+});
+
+test("route-pack lists four packs and returns a validated pack",()=>{
+  const list=cli("route-pack","--json");
+  assert.equal(list.status,0,list.stderr);
+  assert.deepEqual(JSON.parse(list.stdout).packs.map(p=>p.id),["saas","enterprise","mini-program","app"]);
+  const one=cli("route-pack","saas","--json");
+  assert.equal(one.status,0,one.stderr);
+  const pack=JSON.parse(one.stdout);
+  assert.equal(pack.status,"GENERATED_NOT_EXECUTED");
+  assert.equal(pack.id,"saas");
+  assert.equal(pack.gatePlan.length,5);
+  assert.ok(pack.readiness.every(r=>typeof r.blocking==="boolean"));
+  const bad=cli("route-pack","unknown");
+  assert.equal(bad.status,2);
+  assert.match(bad.stderr,/Unknown route pack/);
 });
 
 test("unknown command exits non-zero",()=>{

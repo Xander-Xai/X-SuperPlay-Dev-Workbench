@@ -7,9 +7,10 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
   TYPES, PROFILES, PROFILE_IDS, STAGES, STAGE_IDS, TASKS, TASK_IDS, TIERS, SKILLS, SKILL_IDS,
-  PROVENANCE, OWNER, GOVERNANCE, RUNTIME
+  PROVENANCE, OWNER, GOVERNANCE, RUNTIME, ROUTE_SOPS
 } from "../src/catalog.mjs";
 import { composeRoute, tierObligations, stageSkillIds } from "../src/routing.mjs";
+import { ROUTE_PACKS, ROUTE_PACK_IDS, ROUTE_PACK_STATUS, routePackFor, stageSkillsFor } from "../src/route-packs.mjs";
 import { validateCatalog } from "../src/engine.mjs";
 import { resolveSkillDependencies } from "../src/install-contract.mjs";
 import { PLAYBOOKS, playbookById, playbookMarkdown } from "../src/playbooks.mjs";
@@ -965,6 +966,7 @@ function cmdTask(argv) {
       evidence: route.evidence,
       skills: route.skills,
       routeSop: route.routeSop,
+      routePack: route.routePack,
       warnings: route.warnings
     }, null, 2));
     return 0;
@@ -974,6 +976,45 @@ function cmdTask(argv) {
   console.log("skipped: " + (route.skipped.map(s => s.id).join(", ") || "none"));
   console.log("evidence: " + route.evidence.join(", "));
   console.log("skills: " + route.skills.map(s => s.id).join(", "));
+  return 0;
+}
+
+function cmdRoutePack(argv) {
+  const json = argv.includes("--json");
+  const id = argv.find(a => !a.startsWith("--"));
+  if (!id) {
+    const list = ROUTE_PACK_IDS.map(x => ({ id: x, name: ROUTE_PACKS[x].name, tagline: ROUTE_PACKS[x].tagline }));
+    if (json) console.log(JSON.stringify({ status: ROUTE_PACK_STATUS, packs: list }, null, 2));
+    else for (const p of list) console.log(p.id.padEnd(14) + p.name + " · " + p.tagline);
+    return 0;
+  }
+  if (!Object.hasOwn(ROUTE_PACKS, id)) {
+    console.error("Unknown route pack: " + id + ". Known: " + ROUTE_PACK_IDS.join(", "));
+    return 2;
+  }
+  const pack = routePackFor(id);
+  if (json) {
+    console.log(JSON.stringify({ status: ROUTE_PACK_STATUS, ...pack }, null, 2));
+    return 0;
+  }
+  const sop = ROUTE_SOPS[id];
+  const stageName = sid => STAGES.find(s => s.id === sid)?.name ?? sid;
+  console.log(pack.id + " · " + pack.name + " · " + pack.tagline);
+  console.log("status: " + ROUTE_PACK_STATUS + " (readiness is PREFLIGHT, not a stage)");
+  console.log("\nreadiness:");
+  for (const r of pack.readiness)
+    console.log("  [" + (r.blocking ? "BLOCKING" : "ADVISORY") + "] " + r.item + " · " + r.owner + " · " + r.evidence);
+  console.log("\nstages:");
+  for (const f of pack.stageFlow)
+    console.log("  " + f.stage.padEnd(16) + f.actions.join("；") + " | skills: " + stageSkillsFor(f.stage).join(", "));
+  console.log("\ngates:");
+  for (const g of pack.gatePlan)
+    console.log("  " + g.stage.padEnd(16) + sop.gates[g.gateIndex] + " | evidence: " + g.evidence);
+  console.log("\nnegative cases:");
+  for (const n of pack.negativeCases) console.log("  " + stageName(n.stage) + ": " + n.scenario + " -> " + n.expected);
+  console.log("\nskills: core=" + pack.skillEmphasis.core.join(","));
+  console.log("        strengthen=" + pack.skillEmphasis.strengthen.join(","));
+  console.log("        reference=" + pack.skillEmphasis.reference.join(","));
   return 0;
 }
 
@@ -1431,6 +1472,7 @@ function usage() {
     "  xeng validate-registry",
     "  xeng selftest",
     "  xeng task <task-id> [--tier=A] [--mode=new] [--type=saas] [--json]",
+    "  xeng route-pack [saas|enterprise|mini-program|app] [--json]",
     "  xeng matrix [--json]",
     "  xeng delivery [--json]",
     "  xeng skills-matrix [--json]",
@@ -1457,6 +1499,7 @@ export function main(argv = process.argv.slice(2)) {
     case "validate-registry": return cmdValidateRegistry(rest);
     case "selftest": return cmdSelftest(rest);
     case "task": return cmdTask(rest);
+    case "route-pack": return cmdRoutePack(rest);
     case "matrix": return cmdMatrix(rest);
     case "delivery": return cmdDelivery(rest);
     case "skills-matrix": return cmdSkillsMatrix(rest);

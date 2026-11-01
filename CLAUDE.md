@@ -62,6 +62,7 @@ catalog (frozen constants)
 Invariants enforced by code, not convention:
 
 - **Counts are assertions.** 11 stages / 13 tasks / 17 profiles / 14 skills / 4 route types are checked in [src/engine.mjs](src/engine.mjs) and [test/engine.test.mjs](test/engine.test.mjs). Changing the catalog means updating both, plus the counts repeated in README/docs.
+- **Route packs are generated.** Per-route readiness, stage flow, gates, negative cases and skill emphasis live in [src/route-packs.mjs](src/route-packs.mjs). After editing it run `npm run routes:docs`; `npm run check` fails on drift in [docs/routes/](docs/routes/).
 - **The 8 macro stages / 18 activities must map back onto the 11 canonical stages exactly once**, and each activity has exactly one primary Skill. This is `validateDelivery()` inside `validateCatalog()`.
 - **Default states are the safety contract:** evidence starts `NOT_RUN`, generated artifacts are `DRAFT_NOT_EXECUTED`, Skills are `CANDIDATE`, imported reports are `IMPORTED_NOT_TRUSTED`. `VERIFIED` is terminal and requires command + result + artifact in an executed layer; nothing promotes it automatically — not CI, not a merged PR, not a successful provider plan.
 - **Orchestration is planning only.** `plan` stays `PLAN_ONLY / DRY_RUN`; external receipts stay `UNTRUSTED / promotion:NONE`; no provider gets push, deploy, merge or PR authority.

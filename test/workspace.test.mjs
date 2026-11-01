@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {assemble} from "../src/engine.mjs";
 import {
-  engineeringProfileYaml,adrTemplate,verificationPlan,releaseChecklist,routeSopMarkdown,reviewRecord,workspaceBundle,
+  engineeringProfileYaml,adrTemplate,verificationPlan,releaseChecklist,routeSopMarkdown,routePackMarkdown,reviewRecord,workspaceBundle,
   implementationPlan,postmortemTemplate,externalDemandBrief,pullRequestDocument,gitWorkflowMarkdown,engineeringPlaybookMarkdown
 } from "../src/workspace.mjs";
 
@@ -13,10 +13,10 @@ const baselinePlan=()=>assemble({
     name:"Demo",projectType:"saas",headSha:"a".repeat(40),dirty:false,detected:["git"]}
 });
 
-test("workspace emits eighteen reviewable artifacts",()=>{
+test("workspace emits nineteen reviewable artifacts",()=>{
   const bundle=workspaceBundle(plan());
   const names=Object.keys(bundle);
-  assert.equal(names.length,18);
+  assert.equal(names.length,19);
   assert.ok(names.every(n=>bundle[n].length>0));
   assert.ok(names.some(n=>n.endsWith("-manifest.json")));
   assert.ok(names.some(n=>n.endsWith("-ENGINEERING_PROFILE.yaml")));
@@ -28,6 +28,7 @@ test("workspace emits eighteen reviewable artifacts",()=>{
   assert.ok(names.some(n=>n.endsWith("-agent-handoff.md")));
   assert.ok(names.some(n=>n.endsWith("-delegation-plan.md")));
   assert.ok(names.some(n=>n.endsWith("-route-sop.md")));
+  assert.ok(names.some(n=>n.endsWith("-route-pack.md")));
   assert.ok(names.some(n=>n.endsWith("-review-record.md")));
   assert.ok(names.some(n=>n.endsWith("-implementation-plan.md")));
   assert.ok(names.some(n=>n.endsWith("-postmortem-template.md")));
@@ -41,7 +42,7 @@ test("every artifact shares one project id and base SHA",()=>{
   const p=baselinePlan();
   const bundle=workspaceBundle(p);
   const artifacts=Object.entries(bundle).filter(([n])=>!n.endsWith("-bundle.json")&&!n.endsWith("-manifest.json"));
-  assert.equal(artifacts.length,16);
+  assert.equal(artifacts.length,17);
   for(const [name,text] of artifacts){
     assert.match(text,new RegExp('project_id: "?'+p.slug),name);
     assert.match(text,new RegExp('base_sha: "?'+"a".repeat(40)),name);
@@ -49,12 +50,16 @@ test("every artifact shares one project id and base SHA",()=>{
   assert.match(bundle[p.slug+"-spec-and-tickets-draft.md"],/baseSha|base_sha/);
   assert.match(bundle[p.slug+"-intent.md"],/## 开放问题/);
   assert.match(bundle[p.slug+"-delegation-plan.md"],/independent-reviewer/);
+  assert.match(bundle[p.slug+"-route-pack.md"],/PREFLIGHT/);
+  assert.match(bundle[p.slug+"-route-pack.md"],/租户 B/);
+  assert.match(bundle[p.slug+"-route-pack.md"],/NOT_RUN/);
+  assert.equal(routePackMarkdown(p),bundle[p.slug+"-route-pack.md"]);
   const pack=JSON.parse(bundle[p.slug+"-bundle.json"]);
   assert.equal(pack.kind,"WORKBENCH_PROJECT_BUNDLE");
   assert.equal(pack.status,"DRAFT_NOT_EXECUTED");
   assert.equal(pack.identity.projectId,p.slug);
   assert.equal(pack.identity.baseSha,"a".repeat(40));
-  assert.equal(pack.files.length,17);
+  assert.equal(pack.files.length,18);
   for(const f of pack.files){
     assert.ok(f.content.includes(p.slug),f.name);
     assert.ok(f.content.includes("a".repeat(40)),f.name);

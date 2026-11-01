@@ -3,6 +3,7 @@ import {fileURLToPath} from "node:url";
 import {resolve,dirname} from "node:path";
 import {validateCatalog} from "../src/engine.mjs";
 import {PROFILES,TASKS,SKILLS,STAGES} from "../src/catalog.mjs";
+import {renderRouteDocs} from "./render-route-docs.mjs";
 const base=resolve(dirname(fileURLToPath(import.meta.url)),"..");
 const failures=validateCatalog();
 const html=await readFile(resolve(base,"index.html"),"utf-8");
@@ -22,15 +23,18 @@ const required=[
   "src/install-contract.mjs","src/starter.mjs","src/baseline.mjs","src/handoff.mjs",
   "src/workspace.mjs","src/evidence.mjs","src/identity.mjs","src/evidence-identity.mjs",
   "src/playbooks.mjs","src/git-workflow.mjs","src/maturity.mjs","src/delivery.mjs",
-  "src/orchestration.mjs","src/collaboration.mjs",
+  "src/orchestration.mjs","src/collaboration.mjs","src/route-packs.mjs",
   "tools/project-probe.mjs","tools/skill-kit.mjs","tools/xeng.mjs","tools/security-gate.mjs",
+  "tools/render-route-docs.mjs",
   "README.md","SECURITY.md","docs/ARCHITECTURE.md","docs/MIGRATION.md","docs/AGENT_SKILL_LOAD.md",
   "docs/PLAYBOOKS.md","docs/GIT_WORKFLOW.md","docs/MATURITY.md","docs/METHOD.md",
   "docs/ORCHESTRATION.md","docs/COLLABORATION.md","docs/ROUTE_COMPLIANCE.md",
+  "docs/routes/saas.md","docs/routes/enterprise.md","docs/routes/mini-program.md","docs/routes/app.md",
   "docs/DEPLOYMENT.md","docs/CLI_REFERENCE.md","docs/CATALOG_CHANGES.md","CONTRIBUTING.md",
   "docs/research/2026-11-01-skill-and-flow-audit.md",
   "docs/research/2026-11-01-ai-native-sdlc-alignment.md",
   "docs/requirements/2026-11-01-v0.4-gap-closure.md",
+  "docs/requirements/2026-11-01-v0.5-route-packs.md",
   "docs/research/2026-10-31-ai-native-fullstack-synthesis.md",
   "docs/methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md",
   "docs/methods/UPSTREAM-SOURCES.md","docs/methods/PROJECT-PILOT.md",
@@ -49,6 +53,12 @@ for(const file of required){
 for(const skill of SKILLS){
   try{if(!(await stat(resolve(base,skill.bundle,"SKILL.md"))).isFile())failures.push("missing bundle "+skill.id);}
   catch{failures.push("missing bundle "+skill.id);}
+}
+for(const [file,expected] of Object.entries(renderRouteDocs())){
+  try{
+    const actual=(await readFile(resolve(base,file),"utf-8")).replace(/\r\n/g,"\n");
+    if(actual!==expected)failures.push("route doc drift "+file+" (run npm run routes:docs)");
+  }catch{failures.push("missing "+file);}
 }
 if(/(github_pat_|ghp_[A-Za-z0-9]{20}|sk-[a-zA-Z0-9]{20})/.test(html))failures.push("potential secret in HTML");
 if(/python\s+tools\/xeng\.py/.test(html))failures.push("legacy Python CLI referenced in UI");
