@@ -23,11 +23,15 @@ import {
   SKILL_RELATION_POLICY, LEARNING_PATH, deliveryMatrix, activityById, learningPathTickets,
   SDLC_CROSSWALK
 } from "../src/delivery.mjs";
-import { run as runSkillKit } from "./skill-kit.mjs";
+import { run as runSkillKit, readSkillBundle } from "./skill-kit.mjs";
 import {
   PROVIDERS, AGENT_RUNTIMES, PROVIDER_IDS, AGENT_RUNTIME_IDS,
   listProviders, getProvider, planHandoff, normalizeExternalReceipt, verifyReceiptAgainstPlan
 } from "../src/orchestration.mjs";
+import { validateTicketPreflight } from "../src/ticket-preflight.mjs";
+import { runTicketFixture } from "../src/ticket-runner.mjs";
+import { traceTicketEvidence } from "../src/ticket-trace.mjs";
+import { evaluateSkillCases } from "../src/skill-eval.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const LEVEL_ORDER = { not_applicable: 0, optional: 1, recommended: 2, required: 3 };
@@ -1153,12 +1157,30 @@ function cmdAgentCheck(argv) {
   const verify = runSkillKit(["verify", "--target", target, "--agent", opts.agent], { silent: true });
   const installed = (verify.skills ?? []).length > 0;
   const filesOk = verify.status === "VERIFIED_UNCHANGED";
+  const bundleChecks = (verify.skills ?? []).map(row => {
+    try {
+      const bundle = readSkillBundle(row.skill);
+      return { skill: row.skill, status: "BUNDLE_VALID", sha256: bundle.bundleSha256, files: bundle.files.map(file => file.path) };
+    } catch (error) {
+      return { skill: row.skill, status: "BUNDLE_INVALID", error: error.message };
+    }
+  });
+  const bundleOk = bundleChecks.every(row => row.status === "BUNDLE_VALID");
+  const runtimeLoad = "NOT_VERIFIED";
   const out = {
-    status: !installed ? "NOT_INSTALLED" : filesOk ? "FILES_VERIFIED_RUNTIME_NOT_VERIFIED" : "DRIFT_DETECTED",
+    status: !installed ? "NOT_INSTALLED" : !bundleOk ? "BUNDLE_INVALID" : filesOk ? "FILES_VERIFIED_RUNTIME_NOT_VERIFIED" : "DRIFT_DETECTED",
     agent: opts.agent,
     target,
     skills: verify.skills ?? [],
-    runtimeLoad: "NOT_VERIFIED",
+    verificationLayers: {
+      bundle: installed ? bundleOk ? "BUNDLE_VALID" : "BUNDLE_INVALID" : "NOT_CHECKED",
+      installation: !installed ? "NOT_INSTALLED" : filesOk ? "FILES_VERIFIED_UNCHANGED" : "DRIFT_DETECTED",
+      agentDiscovery: "NOT_RUN",
+      agentInvocation: "NOT_RUN",
+      realProjectEffect: "NOT_RUN"
+    },
+    bundleChecks,
+    runtimeLoad,
     probeCommand: opts.agent === "opencode"
       ? "cd <target> && opencode debug skill"
       : opts.agent === "codex"
@@ -1167,7 +1189,7 @@ function cmdAgentCheck(argv) {
     note: "File hashes do not prove the Agent discovered or executed the skill. Record the probe output separately."
   };
   console.log(JSON.stringify(out, null, 2));
-  return installed && filesOk ? 0 : 1;
+  return installed && filesOk && bundleOk ? 0 : 1;
 }
 
 // ---------------------------------------------------------------- method / matrix / delivery / skills-matrix
@@ -1457,6 +1479,108 @@ function orchestratorReceipt(argv) {
   return verification && !verification.ok ? 2 : 0;
 }
 
+function cmdTicketPreflight(argv) {
+  const opts = { target: null, ticket: null, tickets: null, json: false };
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === "--json") { opts.json = true; continue; }
+    if (!["--target", "--ticket", "--tickets"].includes(arg)) throw new Error("Unknown option: " + arg);
+    if (!argv[i + 1] || argv[i + 1].startsWith("--")) throw new Error("Missing value for " + arg);
+    const key = arg.slice(2);
+    if (opts[key] !== null) throw new Error("Duplicate option: " + arg);
+    opts[key] = argv[++i];
+  }
+  if (!opts.target || !opts.ticket) throw new Error("ticket-preflight requires --target and --ticket");
+  const ticketPath = resolve(opts.ticket);
+  const ticket = JSON.parse(readFileSync(ticketPath, "utf8"));
+  let tickets = [ticket];
+  if (opts.tickets) {
+    const input = JSON.parse(readFileSync(resolve(opts.tickets), "utf8"));
+    tickets = Array.isArray(input) ? input : input?.tickets;
+    if (!Array.isArray(tickets)) throw new Error("--tickets must contain an array or an object with tickets[]");
+    if (!tickets.some(row => row?.ticket_id === ticket?.ticket_id)) tickets.push(ticket);
+  }
+  const report = validateTicketPreflight({ target: resolve(opts.target), ticket, tickets });
+  console.log(JSON.stringify(report, null, 2));
+  return report.status === "PREFLIGHT_CLEAR_NOT_HARNESS_READY" ? 0 : 2;
+}
+
+function cmdTicketRun(argv) {
+  const opts = { target: null, ticket: null, tickets: null, evidenceDir: null, execute: false, confirmReviewed: false };
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === "--execute") { opts.execute = true; continue; }
+    if (arg === "--confirm-reviewed") { opts.confirmReviewed = true; continue; }
+    if (arg === "--json") continue;
+    if (!["--target", "--ticket", "--tickets", "--evidence-dir"].includes(arg)) throw new Error("Unknown option: " + arg);
+    if (!argv[i + 1] || argv[i + 1].startsWith("--")) throw new Error("Missing value for " + arg);
+    const key = { "--target": "target", "--ticket": "ticket", "--tickets": "tickets", "--evidence-dir": "evidenceDir" }[arg];
+    if (opts[key] !== null) throw new Error("Duplicate option: " + arg);
+    opts[key] = argv[++i];
+  }
+  if (!opts.target || !opts.ticket) throw new Error("ticket-run requires --target and --ticket");
+  const ticket = readJsonFileStrict(opts.ticket);
+  let tickets = [ticket];
+  if (opts.tickets) {
+    const input = readJsonFileStrict(opts.tickets);
+    tickets = Array.isArray(input) ? input : input?.tickets;
+    if (!Array.isArray(tickets)) throw new Error("--tickets must contain an array or an object with tickets[]");
+    if (!tickets.some(row => row?.ticket_id === ticket?.ticket_id)) tickets.push(ticket);
+  }
+  return runTicketFixture({
+    target: resolve(opts.target), ticket, tickets, execute: opts.execute,
+    confirmReviewed: opts.confirmReviewed, evidenceDir: opts.evidenceDir
+  }).then(report => {
+    console.log(JSON.stringify(report, null, 2));
+    return report.status === "DRY_RUN" || report.status === "PASSED_UNTRUSTED_FIXTURE" ? 0 : 2;
+  });
+}
+
+function cmdTicketTrace(argv) {
+  const opts = { input: null };
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === "--json") continue;
+    if (arg !== "--input") throw new Error("Unknown option: " + arg);
+    if (opts.input !== null) throw new Error("Duplicate option: --input");
+    if (!argv[i + 1] || argv[i + 1].startsWith("--")) throw new Error("Missing value for --input");
+    opts.input = argv[++i];
+  }
+  if (!opts.input) throw new Error("ticket-trace requires --input <trace.json>");
+  const report = traceTicketEvidence(readJsonFileStrict(opts.input));
+  console.log(JSON.stringify(report, null, 2));
+  return report.mappingComplete ? 0 : 1;
+}
+
+function readSkillEvalInput(file) {
+  const absolute = resolve(file);
+  const stat = lstatMaybe(absolute);
+  if (!stat || stat.isSymbolicLink() || !stat.isFile()) throw new Error("Skill Eval input must be an existing regular, non-symlink file");
+  if (stat.size > 1024 * 1024) throw new Error("Skill Eval input exceeds the 1 MiB limit");
+  const text = readFileSync(absolute, "utf8");
+  let input;
+  try { input = JSON.parse(text); }
+  catch { throw new Error("invalid JSON in Skill Eval input"); }
+  if (!input || typeof input !== "object" || Array.isArray(input)) throw new Error("Skill Eval input must be a JSON object");
+  return input;
+}
+
+function cmdSkillEval(argv) {
+  const opts = { input: null };
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === "--json") continue;
+    if (arg !== "--input") throw new Error("Unknown option: " + arg);
+    if (opts.input !== null) throw new Error("Duplicate option: --input");
+    if (!argv[i + 1] || argv[i + 1].startsWith("--")) throw new Error("Missing value for --input");
+    opts.input = argv[++i];
+  }
+  if (!opts.input) throw new Error("skill-eval requires --input <cases.json>");
+  const report = evaluateSkillCases(readSkillEvalInput(opts.input));
+  console.log(JSON.stringify(report, null, 2));
+  return report.suiteStatus === "PASS" ? 0 : 1;
+}
+
 // ---------------------------------------------------------------- main
 
 function usage() {
@@ -1480,7 +1604,10 @@ function usage() {
     "  xeng orchestrator plan --provider orca --agent omp --ticket <file> [--base-sha <sha>] [--project-id <id>] [--repository <repo>] [--platform windows|wsl2|linux|macos]",
     "  xeng assemble --target <dir> --type saas --task feature --tier B --agent codex [--stack flutter] [--addons rag,agent] [--apply --confirm-reviewed]",
     "  xeng agent-check --target <dir> --agent codex",
-    "  xeng version",
+    "  xeng ticket-preflight --target <dir> --ticket <ticket.json> [--tickets <ticket-set.json>] [--json]",
+    "  xeng ticket-run --target <fixture-repo> --ticket <ticket.json> [--execute --confirm-reviewed --evidence-dir <existing-dir>] [--json]",
+    "  xeng ticket-trace --input <trace.json> [--json]",
+    "  xeng skill-eval --input <cases.json> [--json]",
     "",
     "No network access. init never overwrites existing files. assemble reuses skill-kit and is dry-run by default."
   ].join("\n");
@@ -1506,12 +1633,20 @@ export function main(argv = process.argv.slice(2)) {
     case "orchestrator": return cmdOrchestrator(rest);
     case "assemble": return cmdAssemble(rest);
     case "agent-check": return cmdAgentCheck(rest);
+    case "ticket-preflight": return cmdTicketPreflight(rest);
+    case "ticket-run": return cmdTicketRun(rest);
+    case "ticket-trace": return cmdTicketTrace(rest);
+    case "skill-eval": return cmdSkillEval(rest);
     case "version": console.log(RUNTIME.name + " " + RUNTIME.version); return 0;
     default: console.error("Unknown command: " + cmd + "\n\n" + usage()); return 2;
   }
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  try { process.exitCode = main(); }
-  catch (e) { console.error("ERROR: " + e.message); process.exitCode = 2; }
+  try {
+    const result = main();
+    if (result && typeof result.then === "function")
+      result.then(code => { process.exitCode = code; }).catch(e => { console.error("ERROR: " + e.message); process.exitCode = 2; });
+    else process.exitCode = result;
+  } catch (e) { console.error("ERROR: " + e.message); process.exitCode = 2; }
 }

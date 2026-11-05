@@ -76,7 +76,8 @@
 - [x] 扩展 `xeng method`（`activities` / `activity <id>` / `matrix` / `--template`），并新增 `xeng matrix / delivery / skills-matrix`。
 - [x] `validateDelivery()` 接入 `validateCatalog()` 与 `npm run check`。
 - [x] 三报告整合文档 `docs/research/2026-10-31-ai-native-fullstack-synthesis.md` 与 `docs/METHOD.md`。
-- [ ] 工具层强制 `allowed_files` / `allowed_commands`（当前仅字段）。
+- [x] `xeng ticket-preflight` 静态开工检查；`xeng ticket-run` 在固定 WSL2 bubblewrap sandbox 中执行单一合成 smoke fixture，默认 dry-run，Ticket 声明命令不解释或执行，证据仍 `UNTRUSTED / promotion:NONE`。
+- [ ] 通用项目测试 Ticket Runner、可写目录沙箱、任意项目执行及完整 OS 级资源/生命周期控制（当前仅内置只读 smoke fixture；不做 Agent 执行）。
 - [ ] 真实项目执行 `CODE_TESTED` → `CONSUMER_ACCEPTED` 证据链。
 
 ## v0.2.3 Agent 编排适配（2026-10-31；已合入 PR #32）

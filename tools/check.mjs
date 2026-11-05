@@ -1,4 +1,5 @@
 import {readFile,stat} from "node:fs/promises";
+import {spawnSync} from "node:child_process";
 import {fileURLToPath} from "node:url";
 import {resolve,dirname} from "node:path";
 import {validateCatalog} from "../src/engine.mjs";
@@ -23,7 +24,7 @@ const required=[
   "src/install-contract.mjs","src/starter.mjs","src/baseline.mjs","src/handoff.mjs",
   "src/workspace.mjs","src/evidence.mjs","src/identity.mjs","src/evidence-identity.mjs",
   "src/playbooks.mjs","src/git-workflow.mjs","src/maturity.mjs","src/delivery.mjs",
-  "src/orchestration.mjs","src/collaboration.mjs","src/route-packs.mjs",
+  "src/orchestration.mjs","src/collaboration.mjs","src/route-packs.mjs","src/ticket-preflight.mjs","src/ticket-runner.mjs","src/ticket-trace.mjs","src/skill-eval.mjs",
   "tools/project-probe.mjs","tools/skill-kit.mjs","tools/xeng.mjs","tools/security-gate.mjs",
   "tools/render-route-docs.mjs",
   "README.md","SECURITY.md","docs/ARCHITECTURE.md","docs/MIGRATION.md","docs/AGENT_SKILL_LOAD.md",
@@ -39,7 +40,7 @@ const required=[
   "docs/methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md",
   "docs/methods/UPSTREAM-SOURCES.md","docs/methods/PROJECT-PILOT.md",
   "test/methodology.test.mjs",
-  "test/orchestration.test.mjs",
+  "test/orchestration.test.mjs","test/ticket-preflight.test.mjs","test/ticket-runner.test.mjs","test/ticket-trace.test.mjs","test/skill-eval.test.mjs","test/fixtures/skill-eval-cases.json",
   "docs/methods/AI-NATIVE-PRODUCT-AGENT-DESIGN.md",
   "docs/methods/SKILL-ENGINEERING-FACTORY.md",
   ".github/pull_request_template.md","migration/eng-os-split-20261031.json",
@@ -63,5 +64,7 @@ for(const [file,expected] of Object.entries(renderRouteDocs())){
 if(/(github_pat_|ghp_[A-Za-z0-9]{20}|sk-[a-zA-Z0-9]{20})/.test(html))failures.push("potential secret in HTML");
 if(/python\s+tools\/xeng\.py/.test(html))failures.push("legacy Python CLI referenced in UI");
 if(/--source\s+\.\.\/X-SuperPlay-AI-Engineering-OS/.test(html))failures.push("legacy private source flag referenced in UI");
+const syntax=spawnSync(process.execPath,["--check",resolve(base,"tools/xeng.mjs")],{encoding:"utf8"});
+if(syntax.status!==0)failures.push("xeng CLI syntax check failed: "+(syntax.stderr||syntax.stdout||"unknown syntax error").trim());
 if(failures.length){console.error(failures.join("\n"));process.exitCode=1;}
 else console.log("CHECK PASS: "+STAGES.length+" stages, "+TASKS.length+" tasks, "+PROFILES.length+" profiles, "+SKILLS.length+" candidates, expected UI");

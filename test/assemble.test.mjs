@@ -71,6 +71,13 @@ test("assemble apply refuses without confirmation, then installs without overwri
     assert.equal(check.r.status,0,check.r.stderr);
     assert.equal(check.json.status,"FILES_VERIFIED_RUNTIME_NOT_VERIFIED");
     assert.equal(check.json.runtimeLoad,"NOT_VERIFIED");
+    assert.deepEqual(check.json.verificationLayers, {
+      bundle: "BUNDLE_VALID",
+      installation: "FILES_VERIFIED_UNCHANGED",
+      agentDiscovery: "NOT_RUN",
+      agentInvocation: "NOT_RUN",
+      realProjectEffect: "NOT_RUN"
+    });
     assert.match(check.json.probeCommand,/claude/);
   }finally{rmSync(dir,{recursive:true,force:true});}
 });

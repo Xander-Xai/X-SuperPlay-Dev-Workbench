@@ -25,7 +25,11 @@ node tools/xeng.mjs <command> [options]
 | `skills-matrix` | 本地/外部 Skill 关系矩阵 | `--json` |
 | `orchestrator list\|doctor\|plan\|receipt` | 外部编排只读注册表与 PLAN_ONLY 交接 | `--json`；`plan` 另支持 `--provider`、`--agent`、`--ticket`、`--base-sha`、`--project-id`、`--repository`、`--platform` |
 | `assemble` | 为目标项目生成 Skill 安装计划 | `--target`（必填）、`--type`、`--task`、`--tier`、`--mode`、`--agent`（必填）、`--stack`、`--addons`、`--apply --confirm-reviewed` |
-| `agent-check` | 检查 Agent 是否能发现已安装 Skill | `--target`、`--agent` |
+| `agent-check` | 校验 bundle 内容与已安装文件哈希；Agent 发现/调用/效果单独保持 `NOT_RUN` 直到真实探针 | `--target`、`--agent` |
+| `ticket-preflight` | 对单张批准 Ticket 做静态开工检查；不执行命令、不产生 Harness Ready | `--target`、`--ticket`、可选 `--tickets`、`--json` |
+| `ticket-run` | 仅对内置合成 sandbox smoke fixture 做受控测试；默认 dry-run，不运行 Ticket 提供的代码 | `--target`、`--ticket`、`--execute --confirm-reviewed --evidence-dir <existing-dir>` |
+| `ticket-trace` | 确定性检查 Spec AC → Ticket → Test → Receipt → Git SHA 声明链；不提升证据可信度 | `--input <trace.json>`、`--json` |
+| `skill-eval` | 离线确定性评测 Skill 触发规则与合成轨迹；不安装 Skill、不调用 Agent/模型 | `--input <cases.json>`、`--json` |
 | `version` | 打印版本 | — |
 
 ### 退出码
@@ -33,7 +37,7 @@ node tools/xeng.mjs <command> [options]
 | 码 | 含义 |
 |---|---|
 | 0 | 成功 |
-| 1 | `doctor` 发现漂移，或 `maturity` 检查存在阻断项 |
+| 1 | `doctor` 发现漂移、`maturity` 有阻断项，或 Skill Eval 预期与观察结果不符 |
 | 2 | 参数错误、安全阻断、覆盖拒绝、未知命令 |
 
 ### 示例
@@ -44,7 +48,22 @@ node tools/xeng.mjs task bug --type saas --json
 node tools/xeng.mjs route-pack mini-program --json
 node tools/xeng.mjs assemble --target ../my-app --type saas --task feature --tier B --agent codex
 node tools/xeng.mjs orchestrator plan --provider orca --agent omp --ticket ticket.json --platform windows
+node tools/xeng.mjs ticket-preflight --target ../my-app --ticket ticket.json --tickets tickets.json --json
+node tools/xeng.mjs ticket-run --target <synthetic-git-fixture> --ticket <approved-smoke-ticket.json> --json
+node tools/xeng.mjs ticket-run --target <synthetic-git-fixture> --ticket <approved-smoke-ticket.json> --execute --confirm-reviewed --evidence-dir <existing-dir> --json
+node tools/xeng.mjs ticket-trace --input <spec-ticket-test-receipts.json> --json
+node tools/xeng.mjs skill-eval --input test/fixtures/skill-eval-cases.json --json
 ```
+
+`ticket-preflight` requires a clean target Git root, exact `base_sha`, explicit approval and non-placeholder ACs, exact non-glob file paths without symlink components, safe declared commands, a declared test/check command, budgets and stop conditions. Dependencies require structurally complete receipts whose claims remain untrusted. A clear result is `PREFLIGHT_CLEAR_NOT_HARNESS_READY`: no commands ran, there is no runtime scope/command sandbox, and `harnessReady` stays `false`.
+
+`ticket-run` 当前只接受仓库内唯一文件 `test/fixtures/sandbox-smoke.json`（必须是 `{"schemaVersion":1,"expected":"isolated"}`）和唯一命令标识 `xeng-fixture-test:sandbox-smoke-v1`。它**不执行 Ticket 源码或 Ticket 的命令字符串**，而是将固定 smoke program 作为 argv 直接传给已有 WSL2 `bubblewrap`：独立 user/PID/network/IPC/UTS/cgroup namespaces、只读最小运行时、无 Windows 挂载/环境/互操作 socket、非特权 UID、capability drop、`no_new_privs` 与 `prlimit`。实际 smoke 观察并核对 RLIMIT：20 秒总超时（且不超过 Ticket 声明预算）、8 KiB 捕获输出、256 MiB 地址空间、10 秒 CPU、16 个进程/UID、1 MiB 单文件上限、64 个打开文件。缺少任一运行时能力时阻断；没有宿主机回退。它不是通用项目测试 Runner，也不接受 Agent 写入。默认只报告 dry-run；实际运行需 `--execute --confirm-reviewed`，并指定仓库外已存在的证据目录。该路径用排他创建防重复；重复 Ticket/base SHA 会阻断。
+
+运行回执包含确切 argv、fixture SHA-256、退出码、受限日志及隔离断言，保存为本地 JSON；回执为 `UNTRUSTED`，`promotion` 永远为 `NONE`，不得当作 `VERIFIED` 或产品验收。只支持 Windows → 已配置的 WSL2 Ubuntu-22.04；原生 WSL/Linux/macOS `NOT_RUN`。WSL 内核/虚拟机逃逸、超出 WSL 内核能力的隔离、一般项目测试、修改产品仓、网络访问、密钥/生产/付费服务均不支持。
+
+`ticket-trace --input` 接收一个 JSON 对象，包含 `headSha`、`spec.spec_id`、`spec.acceptanceCriteria[{ac_id}]`、`tickets[{ticket_id,spec_id,base_sha,accepted_AC_ids,blocked_by,status}]`、`tests[{test_id,ticket_id,accepted_AC_ids,execution,status,exitCode,receiptId}]`、`receipts[{receiptId,ticketId,specId,gitSha,evidenceState,promotion,artifact}]`。AC 与 Ticket 必须显式映射；报告区分 `TRACE_INCOMPLETE` 和 `TRACE_COMPLETE_UNTRUSTED`，后者只说明声明链可连通，不表示测试真实性或证据可信，不会提升到 `VERIFIED`。
+
+`skill-eval --input` 接收 `schemaVersion:1`、`kind:OFFLINE_SKILL_EVAL_CASES` 的 JSON 用例包；case 中仅允许有限的事件类型和相对路径，不接受命令或 URL 执行字段。它计算关键 Skills 的固定关键词触发规则与合成执行轨迹，输出 `OFFLINE_SYNTHETIC_EVAL`、输入 SHA-256、逐 case 观察、预期匹配及汇总指标。`PASS/FAIL/BLOCKED/NOT_RUN` 是合成用例的观察状态；`suiteStatus: PASS` 表示观察与用例声明的预期一致（即使其中有预期 FAIL/BLOCKED 案例）。报告固定 `real_agent_execution: NOT_RUN`、`trusted:false`、`promotion:NONE`，不表示真实 Agent 的 Skill 调用或效果。
 
 ## 2. `skill-kit`
 

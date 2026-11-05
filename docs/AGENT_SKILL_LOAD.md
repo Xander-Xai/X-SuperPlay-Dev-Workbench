@@ -8,6 +8,8 @@
 
 `xeng agent-check` 只能证明第 1 项。第 2、3 项必须在真实 Agent 中执行，未执行即 `NOT_VERIFIED`。
 
+`xeng agent-check` now emits independent `verificationLayers`: bundle validity and installed-file integrity can be checked locally; `agentDiscovery`, `agentInvocation` and `realProjectEffect` remain `NOT_RUN` until the named external probe/run has actually occurred. Its suggested probe command is a reproduction hint, not evidence. Bundle validity and hashes still do not prove that an Agent read or followed a Skill.
+
 ## 结论矩阵（2026-10-31 实测）
 
 | Agent | 版本 | 安装目录 | 发现 | 调用 | 引用文件 | Windows/WSL 路径 | 结论 |
@@ -70,3 +72,10 @@ wsl -d Ubuntu-22.04 -- bash -lc 'cd /mnt/d/.../opencode-wsl && opencode debug sk
 - 未测试企业代理、受限网络或非默认 Agent 配置下的加载。
 - 未执行真实项目安装；所有 fixture 均为临时目录。
 - Agent 版本变化后需重新验证，旧结论不自动延续。
+
+## 2026-11-05 Codex 隔离 fixture 复核
+
+- Codex CLI `0.159.0`；使用既有 `skill-kit` 将 `verification` 安装到隔离 fixture，安装回执为 `FILES_INSTALLED_NOT_TESTED`；`xeng agent-check` 检查 Bundle 与安装文件哈希均通过。
+- 在 fixture 目录运行 `codex -C <fixture> debug prompt-input`，退出码 0；脱敏检查确认 Codex prompt-input 列出 `r7/verification/SKILL.md`。原始 prompt-input 没有保存。
+- 上述命令只验证 discovery，未发起模型请求，不能证明模型读取/遵循 SKILL.md。Invocation 与行为评测 `BLOCKED / NOT_RUN`：该次真实调用可能消耗外部付费/订阅额度，需单独授权；未尝试绕过认证或额度限制。
+- 脱敏回执：`D:\Temp\AI-Agents\claude\2026-11-05-p0-phase2\codex-skill-discovery-receipt.json`。全部步骤只使用合成 fixture；无真实产品仓写入。

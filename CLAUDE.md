@@ -88,6 +88,7 @@ A new module in the browser bundle needs four coordinated edits; missing any one
 - [docs/ORCHESTRATION.md](docs/ORCHESTRATION.md) — Orca / Herdr / Multica / Tern registry, adapter contract and security limits.
 - [docs/ROADMAP.md](docs/ROADMAP.md) — current status; check it before claiming something is implemented.
 - [docs/learning/START-HERE.md](docs/learning/START-HERE.md) — learning entry (18-activity guide, stage-to-skill matrix, prompts, L1–L6 routes).
+- **开发 Skills / SDD / Matt Pocock：**入口是 [AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md](docs/methods/AI-NATIVE-SPEC-HARNESS-SKILLS-LOOP.md)；本仓可用候选按 `project-discovery → specification → architecture → implementation-plan → implementation → verification → code-review` 查阅对应 [skills/](skills/)。SDD 规格工作流由 `specification` 承担（不是名为 `spec-driven-development` 的本仓 Skill）。Matt Pocock 的原版仅是固定版本只读参考，非本仓已安装 Skill；原版到本仓候选的映射和状态见 [UPSTREAM-SOURCES.md](docs/methods/UPSTREAM-SOURCES.md)。搜索“开发 Skill / 全栈开发 / SDD / spec-driven-development / Matt Pocock / Matt Skills”时从此入口检索，并区分本仓候选与上游参考。
 - [docs/methods/](docs/methods/) — canonical local synthesis, pinned upstream sources, product/Agent design, Skill factory, pilot SOP.
 
 ## Rules that matter here

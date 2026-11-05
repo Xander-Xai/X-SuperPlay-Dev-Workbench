@@ -18,6 +18,8 @@ Workbench runtime (this repository)
   src/maturity.mjs       L0-L6 gap diagnostic derived from audit checks
   src/delivery.mjs       8 macro stages / 18 activities / delivery gates / skills matrix (compatibility view)
   src/orchestration.mjs  read-only provider registry + PLAN_ONLY handoff + untrusted receipt import
+  src/ticket-preflight.mjs static ticket/repo-state checks; no command runner or harness authority
+  src/ticket-runner.mjs  one fixed WSL2 sandbox smoke fixture; no Ticket source execution
   src/identity.mjs       shared project_id / base_sha header for every artifact
   src/evidence.mjs       state machine + local report import
   src/evidence-identity.mjs  sha256 identities for reports, artifacts and runtime receipts
@@ -27,7 +29,7 @@ Workbench runtime (this repository)
   src/install-contract.mjs  agent destinations + skill dependency closure
   src/app.mjs            browser UI (no network, no filesystem)
         │
-        ├── tools/xeng.mjs          init / audit / doctor / maturity / playbook / method / matrix / delivery / skills-matrix / orchestrator / assemble / agent-check / validate-registry / selftest / task
+        ├── tools/xeng.mjs          init / audit / doctor / maturity / playbook / method / matrix / delivery / skills-matrix / orchestrator / assemble / agent-check / ticket-preflight / ticket-run / validate-registry / selftest / task
         ├── tools/skill-kit.mjs     bundled install / verify / update / uninstall / rollback
         ├── tools/project-probe.mjs read-only local baseline
         └── tools/build-site.mjs    dist allowlist
@@ -84,6 +86,7 @@ Workbench runtime (this repository)
 - 外部回执固定为 `UNTRUSTED / UNKNOWN / promotion:NONE`；`VERIFIED` 仍需目标项目内的真实命令、结果与工件。
 - `validateOrchestration()` 接入 `validateCatalog()`；Tern 在 Windows 保持 `BLOCKED`，Multica 保持许可证审查。
 - 浏览器端只渲染注册表，不调用本机终端、不读取凭据、不执行任意命令。详见 [ORCHESTRATION.md](ORCHESTRATION.md)。
+- `xeng ticket-run` 是独立的窄测试通道：只通过 argv 调用预装的 WSL2 bubblewrap，执行内置固定 smoke program；不运行 Ticket 的命令或源码，不写宿主目录。证据另存于显式指定的仓库外目录，始终 `UNTRUSTED / promotion:NONE`。非 Windows→WSL2、缺少 namespace/runtime 或输出/时限限制无法执行时 fail-closed。它不是通用 Runner；不能从合成 sandbox 测试推断产品代码有效。
 
 ## 证据模型
 
