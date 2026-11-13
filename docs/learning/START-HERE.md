@@ -1,6 +1,6 @@
 # START HERE · AI-Native 全栈交付学习体系
 
-**关联学习执行仓（2026-11-13）**：[X-SuperPlay-FullStack-Learning-OS](https://github.com/Xander-Xai/X-SuperPlay-FullStack-Learning-OS) 已将 React/TS、Java/JVM/Spring、前端深化、数据库、异步与部署整理为单条 [V3.0 24 周学习 Roadmap](https://github.com/Xander-Xai/X-SuperPlay-FullStack-Learning-OS/blob/main/ROADMAP.md)（当前 `PLAN / NOT_RUN`）。本仓继续是**11 阶段工程生命周期、Skills/Profiles 和交付验收**的权威来源；24 周学习路线不是本仓新的生命周期，也不意味着运行时已接入、部署或真实项目交付。
+**关联学习执行仓（2026-11-13）**：[X-SuperPlay-FullStack-Learning-OS](https://github.com/Xander-Xai/X-SuperPlay-FullStack-Learning-OS) 已将前后端/Java/Spring/数据/部署等整理成 [V4.0 知识Roadmap](https://github.com/Xander-Xai/X-SuperPlay-FullStack-Learning-OS/blob/main/ROADMAP.md) 与 [按需学习入口](https://github.com/Xander-Xai/X-SuperPlay-FullStack-Learning-OS/blob/main/docs/learning/DEMAND-ROUTER.md)（W坐标是覆盖索引，不要求按周顺序执行；学习者能力仍 `NOT_RUN`）。本仓继续是**11 阶段工程生命周期、Skills/Profiles 和交付验收**的权威来源；知识地图不是本仓新的生命周期，也不意味着运行时已接入、部署或真实项目交付。
 
 本目录是 Workbench 的**学习与操作文档入口**。目标只有一个：让已经具备 Python / FastAPI / RAG / Agent 基础、但缺少商业级完整项目经验的人，能够按文档理解并执行从需求到交付的完整流程。
 

@@ -1,6 +1,6 @@
 # X-SuperPlay Dev Workbench
 
-**关联学习执行仓（2026-11-13）**：[X-SuperPlay-FullStack-Learning-OS](https://github.com/Xander-Xai/X-SuperPlay-FullStack-Learning-OS) 已将 React/TS、Java/JVM/Spring、前端深化、数据库、异步与部署整理为单条 [V3.0 24 周学习 Roadmap](https://github.com/Xander-Xai/X-SuperPlay-FullStack-Learning-OS/blob/main/ROADMAP.md)（当前 `PLAN / NOT_RUN`）。本仓继续是**11 阶段工程生命周期、Skills/Profiles 和交付验收**的权威来源；24 周学习路线不是本仓新的生命周期，也不意味着运行时已接入、部署或真实项目交付。
+**关联学习执行仓（2026-11-13）**：[X-SuperPlay-FullStack-Learning-OS](https://github.com/Xander-Xai/X-SuperPlay-FullStack-Learning-OS) 已将前后端/Java/Spring/数据/部署等整理成 [V4.0 知识Roadmap](https://github.com/Xander-Xai/X-SuperPlay-FullStack-Learning-OS/blob/main/ROADMAP.md) 与 [按需学习入口](https://github.com/Xander-Xai/X-SuperPlay-FullStack-Learning-OS/blob/main/docs/learning/DEMAND-ROUTER.md)（W坐标是覆盖索引，不要求按周顺序执行；学习者能力仍 `NOT_RUN`）。本仓继续是**11 阶段工程生命周期、Skills/Profiles 和交付验收**的权威来源；知识地图不是本仓新的生命周期，也不意味着运行时已接入、部署或真实项目交付。
 
 **AI-Native 软件交付工作台。** 从一个真实项目出发，选择项目类型、项目状态与任务类型，组合工程 Profiles 与候选 Skills，得到可执行的十一阶段路线、工作区资产和 Agent 交接。
 
