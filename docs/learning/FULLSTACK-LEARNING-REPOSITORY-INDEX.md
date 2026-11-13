@@ -15,3 +15,12 @@
 2. 将本仓方法用于学员项目时，引用明确版本和测试命令，不假定候选 Skills 已安装或通过真实项目验收。
 3. 证据状态：文档存在≠运行完成；CI≠人的独立考核；学习项目≠Utility-Sites 生产交付。
 4. 本次仅建立知识索引，没有变更 `src/`、`skills/`、`test/` 和运行时行为。
+
+
+## 可运行的产品驱动学习切片（2026-11-14）
+
+[FullStack-Learning-OS](https://github.com/Xander-Xai/X-SuperPlay-FullStack-Learning-OS) 不再只有 24 周理论表，现有 [ReconLab 合成核对代码](https://github.com/Xander-Xai/X-SuperPlay-FullStack-Learning-OS/tree/main/ai-fullstack-workbench)，通过 React/TS + FastAPI 的实际 CI 测试与构建。
+[W1–W24 产品驱动实战映射](https://github.com/Xander-Xai/X-SuperPlay-FullStack-Learning-OS/blob/main/docs/learning/PRODUCT-DRIVEN-EXECUTION.md) 将每周课程落实为代码改动/故障注入/独立复测。
+[下游上线 Gate](https://github.com/Xander-Xai/X-SuperPlay-FullStack-Learning-OS/blob/main/docs/project/DOWNSTREAM-RELEASE-GATES.md) 按本仓 SaaS/企业交付方法核对授权、UAT、备份恢复、隐私/安全。
+
+**不混同**：Workbench 11 阶段仍是工程过程权威；ReconLab 为学习仓合成样本，不授权修改 Utility-Sites 的冻结产品或部署到公网；本人 24 周学习验收目前仍为 NOT_RUN。
