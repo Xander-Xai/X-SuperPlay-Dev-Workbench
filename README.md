@@ -29,6 +29,12 @@ node tools/xeng.mjs method skills   # Skill 工厂/代码专家 Skill 创建与�
 
 **完成度边界**：方法文档与离线 CLI 已纳入本仓版本控制；Skill Factory 自动生成器、Harness/Loop 独立 Runner **未实现**；外部 Skills **未安装**；真实项目 Dogfood、Provider/设备与消费者验收仍为 `NOT_RUN`。文档和 CI 不证明产品已交付。
 
+## Vibe Coding 防迷路：每轮先恢复目标，再执行一个 Ticket
+
+**日常使用入口**：[跨会话项目导航与 `NOW.md` 模板](docs/methods/PROJECT-CONTINUITY.md)（目标产品仓使用，不新增 Workbench 生命周期）。先看 `*-intent.md` 的用户价值、版本闭环、Non-goals 与停止条件；再对齐当前 Spec/AC 和唯一 Ticket；只读核实目标仓 Git/测试事实；执行、验证、交接后更新目标仓的 NOW 快照。已有等效项目状态记录时优先复用。
+
+这是对现有 Spec–Skills–Harness–Loop 的**日常操作补充**，不等于自动 Runner、项目权限授权或真实产品验收；`NOW.md` 不是新的状态权威。
+
 ## 三分钟运行
 
 需要 Node.js 20+。零运行时依赖，无需 `npm install`，无需数据库或 API Key。
