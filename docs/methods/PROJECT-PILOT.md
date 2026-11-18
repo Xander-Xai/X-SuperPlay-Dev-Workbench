@@ -159,6 +159,12 @@ E. 若两次重复失败却无新假设、新证据，或出现越权、秘密�
 输出按 AC 列 PASS/FAIL/UNKNOWN/NOT_RUN 和下一步，绝不把 Mock/CI 成功冒充用户验收。
 ```
 
+## 6.5 跨会话目标恢复（防止“开发着开发着忘了为什么”）
+
+这个试点已提供 Spec、Tracer Tickets、Harness 和有界 Loop，但真实开发往往分多次 Claude Code / Codex 会话。**不要增加第二套状态机**：目标仓的已批准 Intent 和 Spec/Issue 仍是权威；上一次交接只是一份派生快照。
+
+具体使用 [项目导航与 NOW 模板](PROJECT-CONTINUITY.md)。每次开工先只读核对 `Intent → Spec/AC → 当前 Ticket`，重新核实 HEAD/dirty 与回执。每次停工将实际结果、未验收 AC、阻塞、Backlog 和下一步唯一任务写入目标仓已有状态记录。未获 Owner 批准不能自动继续下一票或改变本期目标。
+
 ## 7. 灯塔项目实战验收（尚未执行）
 
 - [ ] 产品仓真实 HEAD/dirty、项目规则、数据与权限已核实；基线证据入产品仓

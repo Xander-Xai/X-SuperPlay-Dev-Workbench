@@ -23,6 +23,10 @@ README
 
 权威生命周期始终是 `src/catalog.mjs` 的 11 个阶段。8 宏阶段（G0–G7）与 18 项活动（A01–A18）是**兼容视图**，定义在 `src/delivery.mjs`，不构成第二套状态机。
 
+## 每天实际使用（防迷路快捷入口）
+
+学习 11 阶段不等于每天都要从第一阶段重新开始。**开发会话**请看 [Vibe Coding 目标对齐、单 Ticket 与跨会话恢复](../methods/PROJECT-CONTINUITY.md)：Intent → 当前版本最小闭环 → Spec/AC → 唯一 Ticket → 实际验证 → NOW 快照；它只是现有生命周期的日常使用说明，不增加第 12 阶段。NOW 在**目标产品仓**维护，不能作为已执行的 Workbench 证据。
+
 ## 状态图例
 
 | 标记 | 含义 |
