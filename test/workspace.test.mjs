@@ -49,6 +49,12 @@ test("every artifact shares one project id and base SHA",()=>{
   }
   assert.match(bundle[p.slug+"-spec-and-tickets-draft.md"],/baseSha|base_sha/);
   assert.match(bundle[p.slug+"-intent.md"],/## 开放问题/);
+  assert.match(bundle[p.slug+"-intent.md"],/## 价值证据与成功标准/);
+  assert.match(bundle[p.slug+"-intent.md"],/## 本期版本目标（最小完整闭环）/);
+  assert.match(bundle[p.slug+"-intent.md"],/## 本期非目标与停止条件/);
+  assert.match(bundle[p.slug+"-intent.md"],/UNKNOWN/);
+  assert.match(bundle[p.slug+"-agent-handoff.md"],/恢复项目方向/);
+  assert.match(bundle[p.slug+"-agent-handoff.md"],/NEXT_ONE_TICKET/);
   assert.match(bundle[p.slug+"-delegation-plan.md"],/independent-reviewer/);
   assert.match(bundle[p.slug+"-route-pack.md"],/PREFLIGHT/);
   assert.match(bundle[p.slug+"-route-pack.md"],/租户 B/);
