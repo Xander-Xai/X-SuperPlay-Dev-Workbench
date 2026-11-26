@@ -71,6 +71,8 @@ Full-stack demonstration → independent review → authorized merge/release →
 - 区分：已验证客户需求 / 未验证市场信号 / 招聘 JD 推断 / 个人学习题材。后二者标 `ENGINEERING_HYPOTHESIS`，不冒充客户验收。
 - 只追问会阻断本张任务卡的事实；无法核实就保留 `UNKNOWN`，不自动扩大作用域。
 
+**Discovery / Grill 执行约定（主动需求质询）**：明确低风险任务直接进入现有路线；复杂、模糊、高成本任务先只读核实仓库、用户证据和已有约束，挑战指定技术是否必要。每轮默认问一个阻断问题，给出推荐方案、替代与机会成本；已有证据不重复问。目标、范围/非目标、交付、AC、权限、风险、预算和停止条件形成摘要，经 Owner 确认后才开始重大实现。已批准范围内的小修复不重复确认；新证据推翻需求或改变范围时回到 Discovery，不越过原门禁。Grill Me 显式触发，Just Do It 仅省略非必要问题，不能越权。此处为行为约定，不新增阶段、Skill 或自动门禁；实际加载待验证。
+
 ### B. Spec / AC（借鉴 to-spec）
 
 至少明确 Goal、Non-goals、数据/权限边界、主流程、负例、可运行验证与通过阈值。AC 要逐项写明 Given/When/Then；对于模型功能另列真实 Provider/数据集版本、指标与不可验证项。未经 Owner 授权不更改批准的 AC。
